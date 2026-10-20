@@ -1,21 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { SparklineChart } from "@/components/layout/Applications/AppMetricCard";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
-import { EthAssetURLs } from "@/lib/urls";
-import { useSSEChains } from "@/components/layout/SingleChains/useSSEChains";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { formatUptime } from "@/components/layout/EthAgg/helpers";
 import Card from "./_components/Card";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG } from "./_components/colors";
-import { EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
 
 // Fractions → "2.56%".
 const pct = (fraction: number, digits = 2) => `${(fraction * 100).toFixed(digits)}%`;
@@ -30,6 +27,34 @@ const formatSeconds = (s: number) => `${Number(s.toFixed(1))}`;
 // Ethereum's genesis block (30 July 2015), the start of the uptime on the
 // ecosystem page's "Ethereum Uptime" card (EthAgg/MetricsTop.tsx).
 const GENESIS_MS = 1438269973000;
+
+// Ethereum's live chain stats. Only the first message is read (see useEthBlockTime).
+const ETH_CHAIN_SSE_URL = "https://sse.growthepie.com/events/chain/ethereum";
+
+/**
+ * Ethereum's block time in seconds, read once on load. The stream sends a message a
+ * second (~2.8 MB an hour) for a number that's almost always 12, so the connection
+ * closes after its first message instead of staying open.
+ */
+function useEthBlockTime() {
+  const [blockTime, setBlockTime] = useState<number | null>(null);
+  useEffect(() => {
+    const source = new EventSource(ETH_CHAIN_SSE_URL);
+    source.onmessage = (event) => {
+      source.close();
+      try {
+        const value = JSON.parse(event.data)?.data?.block_time;
+        if (Number.isFinite(value) && value > 0) setBlockTime(value);
+      } catch {
+        // Leave it empty: the card shows "—".
+      }
+    };
+    // Don't let EventSource keep retrying; the card just shows "—".
+    source.onerror = () => source.close();
+    return () => source.close();
+  }, []);
+  return blockTime;
+}
 
 // The gas sparkline shows the last 90 of the 365 daily points.
 const GAS_SPARKLINE_DAYS = 90;
@@ -143,11 +168,11 @@ function MarketHours() {
 export default function SixThingsSection() {
   const { resolvedTheme } = useTheme();
   const feeColor = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"].yellow;
-  const { data, isLoading } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
+  const { data, isLoading } = useEthAssetSection("properties");
   const props = data?.data;
-  // Ethereum's block time, live from the growthepie SSE stream (same feed as the chain pages).
-  const { chainData: ethLive } = useSSEChains("ethereum");
-  const blockTime = ethLive?.block_time && Number.isFinite(ethLive.block_time) ? formatSeconds(ethLive.block_time) : null;
+  // Ethereum's block time from the growthepie stream (same feed as the chain pages), read once on load.
+  const liveBlockTime = useEthBlockTime();
+  const blockTime = liveBlockTime ? formatSeconds(liveBlockTime) : null;
 
   const yieldBreakdown = props?.yield_breakdown;
   const scarcity = props?.scarcity?.assets;
@@ -268,7 +293,7 @@ export default function SixThingsSection() {
           tag="bearer asset"
           value={blockTime ? `${blockTime}s` : "—"}
           unit="to settle, any day"
-          info={`Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every ${blockTime ?? "12"} seconds (live block time from growthepie); times for the other rails are typical, not exact.`}
+          info={`Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every ${blockTime ?? "12"} seconds (block time from growthepie, read when the page loads); times for the other rails are typical, not exact.`}
         >
           {/* ETH's time is the live block time; the other rails are fixed, typical times.
               Each tile is a size container: "1 business day" (~104px) drops to its short

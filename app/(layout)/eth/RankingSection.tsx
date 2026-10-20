@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -12,8 +11,8 @@ import Card from "./_components/Card";
 import { BarRow } from "./_components/StatBar";
 import ScrollArea from "./_components/ScrollArea";
 import { ACCENT_HEX } from "./_components/colors";
-import { EthAssetMarketCapsResponse, MarketCapCategory } from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { MarketCapCategory } from "@/lib/eth-the-asset/data";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 type Asset = { key: string; name: string; cap: number; kind: MarketCapCategory; method?: string; logo?: string };
 
@@ -61,7 +60,7 @@ export default function RankingSection() {
   }, [ethEnd]);
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
-  const { data } = useSWR<EthAssetMarketCapsResponse>(EthAssetURLs.marketCaps);
+  const { data } = useEthAssetSection("market_caps");
   const caps = data?.data;
 
   const allAssets = useMemo<Asset[]>(() => {

@@ -1,5 +1,7 @@
 // ─── eth_asset/*.json ─────────────────────────────────────────────────────────
-// Response types for the EthAssetURLs. Timestamps are unix ms (UTC);
+// Response types for the eth_asset sections. They now arrive in the two EthAssetURLs
+// bundles (read with useEthAssetSection), each in the shape of the single file it came
+// from: { last_updated_utc, data }. Timestamps are unix ms (UTC);
 // `percent` values and `change_pct` are fractions (0.0256 = 2.56%).
 
 export type EthAssetSource = { name: string; url: string };
@@ -167,93 +169,76 @@ export type EthAssetPurchasingPowerResponse = {
   };
 };
 
-export type DailyFlow = { date: string; issued: number; burned: number };
+/** A bundle: each section's data under data.<section>, and when each was last updated. */
+export type EthAssetBundle<Sections> = {
+  last_updated_utc: string;
+  sections_last_updated_utc: Partial<Record<keyof Sections, string>>;
+  data: Partial<Sections>;
+};
 
-/**
- * Daily issuance and burn for the complete UTC days in kpis.json's 7d window
- * (3-hour buckets). Burn is the sum of a day's 8 buckets; issuance is the day's
- * supply change plus that burn, with supply read at the first bucket of each day
- * and of the next. Buckets aren't aligned to midnight, so each "day" runs from its
- * first bucket's start to the next day's (e.g. 01:00–01:00 UTC).
- */
-export function computeRecentDailyFlows(kpis: EthAssetKpisResponse | undefined): DailyFlow[] {
-  const supply = kpis?.data?.kpis?.eth_supply?.timeframes?.["7d"]?.data;
-  const burned = kpis?.data?.kpis?.eth_burned?.timeframes?.["7d"]?.data;
-  if (!supply?.length || !burned?.length) return [];
+/** Sections of live.json (hourly). */
+export type EthAssetLiveSections = {
+  kpis: EthAssetKpisResponse["data"];
+  stats: EthAssetStatsResponse["data"];
+  properties: EthAssetPropertiesResponse["data"];
+  productive_asset: EthAssetProductiveAssetResponse["data"];
+};
 
-  const dayOf = (t: number) => new Date(t).toISOString().slice(0, 10);
-  // Points are oldest first, so the first one seen for a day is its first bucket.
-  const supplyAtDayStart = new Map<string, number>();
-  for (const [t, v] of supply) if (!supplyAtDayStart.has(dayOf(t))) supplyAtDayStart.set(dayOf(t), v);
-  const burnByDay = new Map<string, { total: number; buckets: number }>();
-  for (const [t, v] of burned) {
-    const day = burnByDay.get(dayOf(t)) ?? { total: 0, buckets: 0 };
-    burnByDay.set(dayOf(t), { total: day.total + v, buckets: day.buckets + 1 });
-  }
+export type SupplyFlowScenario = {
+  key: string;
+  name: string;
+  /** The real week the burn is taken from (UTC dates, inclusive). */
+  period: { start: string; end: string };
+  /** Today's issuance in every scenario; last_week uses that week's actual issuance. */
+  issued_per_week: number;
+  burned_per_week: number;
+  net_per_week: number;
+  /** Fraction of supply a year. */
+  net_annual_pct: number;
+  burned_share_of_issuance: number;
+  /**
+   * 0–1: where the week's burn sits between the quiet week (0) and the highest weekly
+   * burn (1), on a log scale: (ln burn − ln quiet) / (ln max − ln quiet).
+   */
+  demand_level: number;
+  description: string;
+  /** last_week only: [unix ms, issued, burned, supply at end of day] per day. */
+  daily?: { types: string[]; data: [number, number, number, number][] };
+};
 
-  return [...burnByDay.entries()].flatMap(([date, burn]) => {
-    const next = dayOf(Date.parse(`${date}T00:00:00Z`) + 86_400_000);
-    const start = supplyAtDayStart.get(date);
-    const end = supplyAtDayStart.get(next);
-    if (burn.buckets !== 8 || start === undefined || end === undefined) return [];
-    return [{ date, issued: end - start + burn.total, burned: burn.total }];
-  });
-}
+export type SupplyFlow = {
+  supply: { value: number; as_of: string };
+  /** Weekly burn that exactly cancels today's issuance. */
+  break_even_burn_per_week: number;
+  break_even_demand_level: number;
+  scenarios: SupplyFlowScenario[];
+  sources: EthAssetSource[];
+};
 
-// ─── eim/eth_supply.json ──────────────────────────────────────────────────────
-// Real-data helper for the "ETH the Asset" page. Reads the same endpoint already
-// used by lib/quick-bites/qb-ETH-supply.ts and lib/utils/dynamicContent.ts
-// (eim/eth_supply.json), so the numbers on this page always agree with the
-// existing "ETH Supply & Issuance Tracker" quick-bite.
+/** One daily "Today in ETH" card: a metric, picked and written up automatically. */
+export type TodayCard = {
+  /** The day the card was written (YYYY-MM-DD); cards come newest first. */
+  date: string;
+  /** The day the data is from, already formatted ("Oct 19, 2026"). */
+  data_date: string;
+  candidate_id: string;
+  metric: string;
+  unit: string;
+  value: number;
+  value_formatted: string;
+  headline: string;
+  sentence: string;
+  /** Empty for milestone cards (e.g. lifetime totals). */
+  sparkline: { types: string[]; data: [number, number][] };
+  /** The model that wrote the headline and sentence. */
+  model: string;
+  sources: EthAssetSource[];
+};
 
-export interface EthSupplySnapshot {
-  /** Latest total ETH supply. */
-  totalSupply: number;
-  /** Net change in supply over the last 30 days (can be negative). */
-  netIssuance30d: number;
-  /** Latest annualized issuance rate, as a percentage (e.g. 0.44 for 0.44%/yr). */
-  annualIssuanceRatePct: number;
-  /** Issuance rate as a fraction (e.g. 0.0044), for percentage-of-supply math. */
-  annualIssuanceRateFraction: number;
-  /** Issued ETH per week implied by the current annualized rate, for the supply bathtub. */
-  weeklyIssuanceEth: number;
-  /** Timestamps of the most recent daily points, for charts that need a real time axis. */
-  recentTimestamps: number[];
-  /** Total supply for those same daily points. */
-  recentSupply: number[];
-  /** Timestamps of every daily point, for the hero's supply tile (sliced to the selected timespan there). */
-  allTimestamps: number[];
-  /** Total supply for those same daily points. */
-  allSupply: number[];
-}
-
-// Mirrors the exact formulas already used in lib/utils/dynamicContent.ts for the
-// {{eth_total_supply}} / {{eth_net_issuance_30d}} / {{eth_annual_issuance_rate}}
-// placeholders, so this page's numbers match the existing ETH Supply quick-bite.
-export function computeEthSupplySnapshot(json: any): EthSupplySnapshot | null {
-  const supplyData = json?.data?.chart?.eth_supply?.daily?.data;
-  const issuanceData = json?.data?.chart?.eth_issuance_rate?.daily?.data;
-  if (!Array.isArray(supplyData) || !supplyData.length || !Array.isArray(issuanceData) || !issuanceData.length) {
-    return null;
-  }
-
-  const totalSupply = supplyData[supplyData.length - 1][1];
-  const thirtyDaysAgoIndex = Math.max(0, supplyData.length - 31);
-  const netIssuance30d = totalSupply - supplyData[thirtyDaysAgoIndex][1];
-  const annualIssuanceRateFraction = issuanceData[issuanceData.length - 1][1];
-  const annualIssuanceRatePct = annualIssuanceRateFraction * 100;
-  const weeklyIssuanceEth = (totalSupply * annualIssuanceRateFraction) / 52;
-  const recent: [number, number][] = supplyData.slice(-90);
-
-  return {
-    totalSupply,
-    netIssuance30d,
-    annualIssuanceRatePct,
-    annualIssuanceRateFraction,
-    weeklyIssuanceEth,
-    recentTimestamps: recent.map((point) => point[0]),
-    recentSupply: recent.map((point) => point[1]),
-    allTimestamps: supplyData.map((point: [number, number]) => point[0]),
-    allSupply: supplyData.map((point: [number, number]) => point[1]),
-  };
-}
+/** Sections of daily.json (daily). */
+export type EthAssetDailySections = {
+  purchasing_power: EthAssetPurchasingPowerResponse["data"];
+  market_caps: EthAssetMarketCapsResponse["data"];
+  supply_flow: SupplyFlow;
+  today: { cards: TodayCard[] };
+};

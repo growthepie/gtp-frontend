@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
-import useSWR from "swr";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
@@ -12,15 +11,8 @@ import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonR
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { useMediaQuery } from "@react-hook/media-query";
 import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
-import {
-  EthAssetKpisResponse,
-  EthAssetStatsResponse,
-  KPI_TIMEFRAMES,
-  KpiKey,
-  KpiTimeframe,
-  liveStatValue,
-} from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-the-asset/data";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { ACCENT_HEX, AccentColor } from "./_components/colors";
 import EtherDiamond from "./_components/EtherDiamond";
 
@@ -48,8 +40,8 @@ const toPct = (fraction: number | null | undefined) =>
 
 export default function EthHero() {
   const { globalMetrics } = useSSEMetrics();
-  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
-  const { data: statsData } = useSWR<EthAssetStatsResponse>(EthAssetURLs.stats);
+  const { data: kpisData } = useEthAssetSection("kpis");
+  const { data: statsData } = useEthAssetSection("stats");
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
   const [now, setNow] = useState(() => Date.now());

@@ -1,40 +1,17 @@
-import useSWR from "swr";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { SectionTitle, SectionDescription, SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
 import Sparkline from "./_components/Sparkline";
-import { IllustrativeNote } from "./_components/IllustrativeTag";
 import FaqBlock from "@/components/quick-bites/blocks/FaqBlock";
 import { generateBlockId } from "@/lib/types/blockTypes";
-import { AccentColor, FAKE_TEXT, fakeColor, ifFake } from "./_components/colors";
-import { EthAssetKpisResponse, EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { AccentColor } from "./_components/colors";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
-type TodayCard = {
-  value: string;
-  unit: string;
-  title: string;
-  body: string;
-  color: AccentColor;
-  trend: number[];
-  /** Example content, not from the JSONs. */
-  fake?: boolean;
-};
-
-// Supply and staking are live (properties.json / kpis.json, 7-day trend lines)
-// with headlines picked from the data. The L2 cost card is still illustrative — a
-// live daily digest needs its own editorial/data pipeline, which doesn't exist yet.
-const EXAMPLE_CARDS: TodayCard[] = [
-  {
-    value: "$0.003",
-    unit: "median L2 transaction",
-    title: "Cheapest month ever to use",
-    body: "The median Layer 2 transaction cost a fraction of a cent — down sharply on last month.",
-    color: "red",
-    trend: [0.009, 0.008, 0.0072, 0.006, 0.0048, 0.0039, 0.003],
-    fake: true,
-  },
-];
+// "Today in ETH" shows the newest cards from daily.json's `today` section: one card a
+// day, each a metric with an automatically written headline and sentence.
+const TODAY_CARD_COUNT = 3;
+// Accent per position, so the three cards stay distinguishable.
+const TODAY_COLORS: AccentColor[] = ["turquoise", "yellow", "red"];
 
 const MYTHS = [
   {
@@ -55,38 +32,9 @@ const MYTHS = [
 ];
 
 export default function DailySection() {
-  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
-  const { data: propsData } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
-  const supplyChange = propsData?.data?.scarcity?.assets?.eth?.value;
-  const supplyWeek = kpisData?.data?.kpis?.eth_supply?.timeframes?.["7d"];
-  const stakedWeek = kpisData?.data?.kpis?.staked_share?.timeframes?.["7d"];
-
-  const liveCards: TodayCard[] = [];
-  if (supplyChange !== undefined && supplyWeek?.data?.length) {
-    const grew = supplyChange >= 0;
-    liveCards.push({
-      value: `${grew ? "+" : "−"}${Math.abs(supplyChange * 100).toFixed(2)}%`,
-      unit: "net supply, annualised",
-      title: grew ? "Supply is growing slowly" : "Supply is shrinking",
-      body: grew
-        ? "Over the last 30 days, more ETH was created than burned. Busier blocks burn more and can flip it."
-        : "Over the last 30 days, fees burned more ETH than was created.",
-      color: "turquoise",
-      trend: supplyWeek.data.map(([, v]) => v),
-    });
-  }
-  if (stakedWeek?.current !== undefined && stakedWeek.data?.length) {
-    const stakedPct = stakedWeek.current * 100;
-    liveCards.push({
-      value: `${stakedPct.toFixed(1)}%`,
-      unit: "of all ETH staked",
-      title: `Over ${Math.floor(stakedPct / 5) * 5}% of ETH is staked`,
-      body: "That ETH is locked securing the network rather than sitting on an exchange.",
-      color: "yellow",
-      trend: stakedWeek.data.map(([, v]) => v * 100),
-    });
-  }
-  const todayCards = [...liveCards, ...EXAMPLE_CARDS];
+  const { data: todayData } = useEthAssetSection("today");
+  const todayCards = (todayData?.data?.cards ?? []).slice(0, TODAY_CARD_COUNT);
+  const todaySources = [...new Set(todayCards.flatMap((c) => c.sources.map((s) => s.name)))];
 
   return (
     <div className="flex flex-col gap-y-[30px]">
@@ -94,22 +42,27 @@ export default function DailySection() {
         <SectionTitle icon="gtp-quick-bites" title="Today in ETH" titleSize="md" as="h2" />
         <SectionDescription>One number, one sentence.</SectionDescription>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px]">
-          {todayCards.map((card) => (
-            <Card key={card.title} fake={card.fake}>
-              <div className="flex items-baseline gap-x-[5px]">
-                <span className={`numbers-2xl ${ifFake(!!card.fake, FAKE_TEXT)}`}>{card.value}</span>
-                <span className="heading-small-xxxs pt-[1px]">{card.unit}</span>
-              </div>
-              <Sparkline points={card.trend} color={card.fake ? fakeColor(card.color) : card.color} height={44} />
-              <span className="heading-small-xs">{card.title}</span>
-              <span className="text-xs md:text-sm">{card.body}</span>
-            </Card>
-          ))}
+          {todayCards.map((card, i) => {
+            const color = TODAY_COLORS[i % TODAY_COLORS.length];
+            const trend = card.sparkline.data.map(([, v]) => v).filter(Number.isFinite);
+            return (
+              <Card key={card.date}>
+                <div className="flex items-baseline justify-between gap-x-[10px]">
+                  <span className="numbers-2xl">{card.value_formatted}</span>
+                  <span className="heading-small-xxxs pt-[1px] text-color-text-primary/70 whitespace-nowrap">{card.data_date}</span>
+                </div>
+                {/* Milestone cards have no trend; keep the space so the three cards line up. */}
+                {trend.length > 1 ? <Sparkline points={trend} color={color} height={44} /> : <div className="h-[44px]" />}
+                <span className="heading-small-xs">{card.headline}</span>
+                <span className="text-xs md:text-sm">{card.sentence}</span>
+              </Card>
+            );
+          })}
         </div>
-        <IllustrativeNote>
-          Supply and staking are live, with 7-day trend lines. The Layer 2 cost card is example content until this is
-          wired to a live daily digest.
-        </IllustrativeNote>
+        <div className="text-xs text-color-text-primary/70">
+          A new card each day, picked from the day&apos;s data and written up automatically.
+          {todaySources.length > 0 && <> Sources: {todaySources.join(", ")}.</>}
+        </div>
       </div>
 
       <FaqBlock

@@ -113,14 +113,13 @@ export const EconomicsURL = "https://api.growthepie.com/v1/economics.json";
 
 export const EthSupplyURL = "https://api.growthepie.com/v1/eim/eth_supply.json";
 
-// "ETH the asset" page data, regenerated hourly at :35 UTC.
+// "ETH the asset" page data, in two bundles. Each holds several sections under
+// data.<section>, identical to the single files they replace (see useEthAssetSection).
 export const EthAssetURLs = {
-  kpis: "https://api.growthepie.com/v1/eth_asset/kpis.json",
-  stats: "https://api.growthepie.com/v1/eth_asset/stats.json",
-  properties: "https://api.growthepie.com/v1/eth_asset/properties.json",
-  marketCaps: "https://api.growthepie.com/v1/eth_asset/market_caps.json",
-  productiveAsset: "https://api.growthepie.com/v1/eth_asset/productive_asset.json",
-  purchasingPower: "https://api.growthepie.com/v1/eth_asset/purchasing_power.json",
+  /** Hourly: kpis, stats, properties, productive_asset. */
+  live: "https://api.growthepie.com/v1/eth_asset/live.json",
+  /** Daily: purchasing_power, supply_flow, today, market_caps. */
+  daily: "https://api.growthepie.com/v1/eth_asset/daily.json",
 };
 
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import useSWR from "swr";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
@@ -14,8 +13,7 @@ import Card, { Callout } from "./_components/Card";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { AccentColor, FAKE_TEXT, fakeColor, ifFake } from "./_components/colors";
-import { EthAssetKpisResponse, EthAssetProductiveAssetResponse, EthAssetPropertiesResponse } from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 const usd = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 const compactUsd = (n: number) => (n >= 1e9 ? `$${(n / 1e9).toFixed(1)}B` : usd(n));
@@ -98,9 +96,9 @@ export default function ProductiveAssetSection() {
   const [amount, setAmount] = useState(10);
   const [modesWrapping, setModesWrapping] = useState(false);
   const isMobile = useMediaQuery("(max-width: 967px)");
-  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
-  const { data: propsData } = useSWR<EthAssetPropertiesResponse>(EthAssetURLs.properties);
-  const { data: productiveData } = useSWR<EthAssetProductiveAssetResponse>(EthAssetURLs.productiveAsset);
+  const { data: kpisData } = useEthAssetSection("kpis");
+  const { data: propsData } = useEthAssetSection("properties");
+  const { data: productiveData } = useEthAssetSection("productive_asset");
   const price = kpisData?.data?.kpis?.eth_price?.timeframes?.["24h"]?.current;
   const supply = kpisData?.data?.kpis?.eth_supply?.timeframes?.["24h"]?.current;
   const stakedShare = kpisData?.data?.kpis?.staked_share?.timeframes?.["24h"]?.current;

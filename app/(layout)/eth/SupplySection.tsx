@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import useSWR from "swr";
+import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -12,33 +11,23 @@ import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_RGB, FAKE_TEXT, SHOW_FAKE_DATA, fakeColor, ifFake } from "./_components/colors";
-import { computeRecentDailyFlows, EthAssetKpisResponse, EthSupplySnapshot } from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
-const FALLBACK_SUPPLY = 120.7e6;
-const FALLBACK_ISSUE_WK = 18050;
-
-// Illustrative — no live network-demand/burn endpoint exists yet. Shape only:
-// higher demand for blockspace burns more ETH per week.
-const burnAt = (d: number) => Math.round(1500 + Math.pow(d / 100, 1.7) * 29000);
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
 
 const fmtDay = (date: string) =>
   new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 const fmtEth = (n: number) => Math.round(n).toLocaleString("en-US");
-// Inverse of burnAt, so the slider sits where last week's burn falls on the curve.
-const demandFor = (burn: number) =>
-  Math.min(100, Math.max(0, Math.round(100 * Math.pow(Math.max(0, burn - 1500) / 29000, 1 / 1.7))));
 
 // The native range thumb is 16px wide and its centre travels from 8px to
 // (width − 8px), so a value's position on the track is offset by half a thumb.
 const SLIDER_THUMB_PX = 16;
 
-const PRESETS = [
-  { name: "Quiet week", d: 22, note: "Layer 2s made transactions cheap. Little ETH burns." },
-  { name: "Busy week", d: 58, note: "Fees rise with demand, so more ETH burns." },
-  { name: "Mania", d: 92, note: "Burn overtakes issuance. Supply shrinks." },
-];
+// supply_flow's scenarios: last_week is the selectable "Last week", the others are presets.
+const LAST_WEEK_KEY = "last_week";
+// Ends of the demand scale: demand_level 0 is the quiet week's burn, 1 the highest.
+const SCALE_MIN_KEY = "quiet_week";
+const SCALE_MAX_KEY = "mania";
 
 /* ── The simulation ──────────────────────────────────────────────────────────
    The water level is a STOCK: it is the running integral of the net flow, not a
@@ -85,7 +74,10 @@ function describeWeeks(weeks: number) {
     const days = Math.max(1, Math.round(weeks * 7));
     return `${days} day${days === 1 ? "" : "s"}`;
   }
-  if (weeks < 8) return `${Math.max(1, Math.round(weeks))} weeks`;
+  if (weeks < 8) {
+    const whole = Math.max(1, Math.round(weeks));
+    return `${whole} week${whole === 1 ? "" : "s"}`;
+  }
   if (weeks < 104) return `${Math.round(weeks / 4.345)} months`;
   return `${(weeks / 52).toFixed(1)} years`;
 }
@@ -162,7 +154,8 @@ function Bathtub({
   const yFor = (offsetEth: number) => WATER_MID_Y - ((offsetEth - view.centre) / bandEth) * HALF_PX;
   const waterY = yFor(view.offset);
   const simulatedSupply = totalSupply + view.offset;
-  const drainW = 6 + (outflow / 31000) * 26;
+  // Square-root scale, so a quiet week's trickle and the record burn (~110k ETH) both fit.
+  const drainW = 6 + Math.sqrt(Math.min(outflow, 120_000) / 120_000) * 26;
 
   // Scale ticks at round supply values inside the window.
   const firstTick = Math.ceil((view.centre - bandEth) / tickEth) * tickEth;
@@ -276,51 +269,57 @@ function Bathtub({
   );
 }
 
-export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplySnapshot | null }) {
-  const [demand, setDemand] = useState(58);
-  // "Last week" uses that week's actual flows instead of the demand curve;
-  // moving the slider or picking another preset leaves it.
-  const [showLastWeek, setShowLastWeek] = useState(false);
+export default function SupplySection() {
+  // Either a real week from supply_flow (by key) or a free slider position (0–100).
+  const [scenarioKey, setScenarioKey] = useState<string | null>("busy_week");
+  const [demand, setDemand] = useState(0);
   const [controlsWrapping, setControlsWrapping] = useState(false);
-  const { data: kpisData } = useSWR<EthAssetKpisResponse>(EthAssetURLs.kpis);
+  const { data: flowData } = useEthAssetSection("supply_flow");
+  const flow = flowData?.data;
 
-  // "Last week": the complete UTC days in kpis.json's 7d window (usually 6). The
-  // tub runs on their average daily flows × 7; the note shows the actual totals.
-  const lastWeek = useMemo(() => {
-    const days = computeRecentDailyFlows(kpisData);
-    if (!days.length) return null;
-    const issued = days.reduce((sum, d) => sum + d.issued, 0);
-    const burned = days.reduce((sum, d) => sum + d.burned, 0);
-    const range = `${fmtDay(days[0].date)} – ${fmtDay(days[days.length - 1].date)}`;
-    const weeklyBurned = (burned / days.length) * 7;
-    return {
-      weeklyIssued: (issued / days.length) * 7,
-      weeklyBurned,
-      burned,
-      range,
-      demand: demandFor(weeklyBurned),
-      preset: {
-        name: "Last week",
-        note: `${range} (${days.length} days): ${fmtEth(issued)} ETH issued, ${fmtEth(burned)} ETH burned.`,
-      },
-    };
-  }, [kpisData]);
-  const isLastWeek = showLastWeek && !!lastWeek;
+  const scenarios = flow?.scenarios ?? [];
+  const lastWeek = scenarios.find((sc) => sc.key === LAST_WEEK_KEY);
+  const presets = scenarios.filter((sc) => sc.key !== LAST_WEEK_KEY);
+  const scaleMin = scenarios.find((sc) => sc.key === SCALE_MIN_KEY);
+  const scaleMax = scenarios.find((sc) => sc.key === SCALE_MAX_KEY);
+  const scenario = scenarios.find((sc) => sc.key === scenarioKey);
 
-  // Every mode uses the same supply and issuance as the rest of the page (kpis.json);
-  // eth_supply.json is only a fallback if that hasn't loaded.
-  const totalSupply =
-    kpisData?.data?.kpis?.eth_supply?.timeframes?.["24h"]?.current ?? ethSnapshot?.totalSupply ?? FALLBACK_SUPPLY;
-  const inflow = lastWeek?.weeklyIssued ?? ethSnapshot?.weeklyIssuanceEth ?? FALLBACK_ISSUE_WK;
-  const outflow = isLastWeek ? lastWeek.weeklyBurned : burnAt(demand);
+  if (!flow || !scenarios.length) {
+    return (
+      <div className="flex flex-col gap-y-[15px]">
+        <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
+        <Card className="min-h-[280px] items-center justify-center text-xs text-color-text-primary/70">Loading supply…</Card>
+      </div>
+    );
+  }
+
+  // Between real weeks, the slider's burn follows the same log scale as demand_level:
+  // the quiet week's burn at 0, the highest weekly burn at 100.
+  const burnAtDemand = (d: number) =>
+    scaleMin && scaleMax ? scaleMin.burned_per_week * Math.pow(scaleMax.burned_per_week / scaleMin.burned_per_week, d / 100) : 0;
+  const sliderValue = scenario ? scenario.demand_level * 100 : demand;
+
+  const totalSupply = flow.supply.value;
+  // Today's issuance (the same in every scenario apart from last week's actual figure).
+  const inflow = scenario?.issued_per_week ?? presets[0]?.issued_per_week ?? lastWeek?.issued_per_week ?? 0;
+  const outflow = scenario ? scenario.burned_per_week : burnAtDemand(demand);
   const netEth = inflow - outflow;
-  // The scenarios' burn (and so everything derived from it) comes from the illustrative
-  // demand curve; "Last week" is all real data.
-  const burnIsFake = !isLastWeek;
-  const netPct = ((netEth * 52) / totalSupply) * 100;
-  const preset = isLastWeek
-    ? lastWeek.preset
-    : PRESETS.reduce((a, b) => (Math.abs(b.d - demand) < Math.abs(a.d - demand) ? b : a));
+  // A real week uses supply_flow's own annual figure; a slider position works it out the same way.
+  const netPct = scenario ? scenario.net_annual_pct * 100 : ((netEth * 365) / 7 / totalSupply) * 100;
+  const isLastWeek = scenario?.key === LAST_WEEK_KEY;
+  // Real weeks are real data; a slider position between them is an estimate from the curve.
+  const burnIsFake = !scenario;
+
+  const lastWeekTotals = lastWeek?.daily?.data?.reduce(
+    (acc, [, issued, burned]) => ({ issued: acc.issued + issued, burned: acc.burned + burned, days: acc.days + 1 }),
+    { issued: 0, burned: 0, days: 0 },
+  );
+  const note = scenario
+    ? isLastWeek && lastWeekTotals
+      ? `${fmtDay(scenario.period.start)} – ${fmtDay(scenario.period.end)} (${lastWeekTotals.days} days): ${fmtEth(lastWeekTotals.issued)} ETH issued, ${fmtEth(lastWeekTotals.burned)} ETH burned.`
+      : `${scenario.description} Week of ${fmtDay(scenario.period.start)}, ${scenario.period.start.slice(0, 4)}.`
+    : `Between real weeks: about ${fmtEth(outflow)} ETH burned a week at this level of demand.`;
+  const sources = flow.sources.map((src) => src.name).join(", ");
 
   return (
     <div className="flex flex-col gap-y-[15px]">
@@ -337,26 +336,13 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
         style={controlsWrapping ? { borderRadius: "15px" } : undefined}
       >
         <GTPButtonRow wrap autoFill>
-          {lastWeek && (
+          {/* Last week first, then the presets: every button is a real week from supply_flow. */}
+          {[...(lastWeek ? [lastWeek] : []), ...presets].map((sc) => (
             <GTPButton
-              label={lastWeek.preset.name}
-              isSelected={isLastWeek}
-              clickHandler={() => {
-                setShowLastWeek(true);
-                setDemand(lastWeek.demand);
-              }}
-              size="sm"
-            />
-          )}
-          {PRESETS.map((p) => (
-            <GTPButton
-              key={p.name}
-              label={p.name}
-              isSelected={preset.name === p.name}
-              clickHandler={() => {
-                setShowLastWeek(false);
-                setDemand(p.d);
-              }}
+              key={sc.key}
+              label={sc.name}
+              isSelected={scenarioKey === sc.key}
+              clickHandler={() => setScenarioKey(sc.key)}
               size="sm"
             />
           ))}
@@ -368,9 +354,11 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
               type="range"
               min="0"
               max="100"
-              value={demand}
+              step="any"
+              value={sliderValue}
+              // Moving the slider leaves the selected week for a position between real weeks.
               onChange={(e) => {
-                setShowLastWeek(false);
+                setScenarioKey(null);
                 setDemand(+e.target.value);
               }}
               aria-label="Network demand"
@@ -384,21 +372,18 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  aria-label={`Last week: network demand ${lastWeek.demand} of 100`}
-                  onClick={() => {
-                    setShowLastWeek(true);
-                    setDemand(lastWeek.demand);
-                  }}
+                  aria-label={`Last week: network demand ${Math.round(lastWeek.demand_level * 100)} of 100`}
+                  onClick={() => setScenarioKey(lastWeek.key)}
                   className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[8px] h-[22px] flex justify-center cursor-pointer"
                   style={{
-                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${lastWeek.demand / 100})`,
+                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${lastWeek.demand_level})`,
                   }}
                 >
                   <span className="w-[2px] h-full rounded-full bg-color-accent-yellow" />
                 </button>
               </TooltipTrigger>
               <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
-                {lastWeek.range} · {fmtEth(lastWeek.burned)} ETH burned
+                {fmtDay(lastWeek.period.start)} – {fmtDay(lastWeek.period.end)} · {fmtEth(lastWeek.burned_per_week)} ETH burned
               </TooltipContent>
             </Tooltip>
             )}
@@ -437,14 +422,15 @@ export default function SupplySection({ ethSnapshot }: { ethSnapshot: EthSupplyS
             ]}
           />
           <div className="h-px bg-color-bg-medium" />
-          <span className="text-xs md:text-sm">{preset.note}</span>
+          <span className="text-xs md:text-sm">{note}</span>
         </div>
       </Card>
 
       <IllustrativeNote>
-        Issuance is the average of the last complete days, in every mode; &quot;Last week&quot; also uses their actual
-        burn. The demand-to-burn curve is illustrative. The tub runs as a time-lapse so
-        the level moves visibly — the real rate is the annual figure above.
+        Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
+        actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
+        burn, so they&apos;re estimates. The tub runs as a time-lapse so the level moves visibly — the real rate is the
+        annual figure above. Sources: {sources}.
       </IllustrativeNote>
     </div>
   );

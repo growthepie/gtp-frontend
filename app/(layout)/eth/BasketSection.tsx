@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -10,8 +9,8 @@ import Card from "./_components/Card";
 import Pictogram from "./_components/Pictogram";
 import Dumbbell from "./_components/Dumbbell";
 import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, GOLD_BAR } from "./_components/BasketIcons";
-import { EthAssetPurchasingPowerResponse, PurchasingPowerItem } from "@/lib/eth-the-asset/data";
-import { EthAssetURLs } from "@/lib/urls";
+import { PurchasingPowerItem } from "@/lib/eth-the-asset/data";
+import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 // Everything here comes from purchasing_power.json: per region, how many of each item
 // one ETH buys now and a year ago, and how much of that change came from the ETH price
@@ -47,7 +46,7 @@ export default function BasketSection() {
   const [regionKey, setRegionKey] = useState<RegionKey>("us");
   const [regionsWrapping, setRegionsWrapping] = useState(false);
   const [selectedKey, setSelectedKey] = useState("bread");
-  const { data } = useSWR<EthAssetPurchasingPowerResponse>(EthAssetURLs.purchasingPower);
+  const { data } = useEthAssetSection("purchasing_power");
 
   const region = data?.data?.regions?.[regionKey];
   // Only items with a glyph and finite numbers are drawn.
