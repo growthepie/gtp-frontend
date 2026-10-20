@@ -124,9 +124,56 @@ export type YieldComparisonAsset = {
   sources: EthAssetSource[];
 };
 
+// Stake / lend / borrow figures. Every rate and share is a fraction (0.0255 = 2.55%).
+export type ProductiveMarket = { name: string; chain: string; url: string };
+
+export type ProductiveUses = {
+  /** ETH price for the "what it earns you" calculator. */
+  price_usd: number;
+  stake: {
+    apr: number;
+    apr_breakdown: { issuance: number; tips: number; mev: number };
+    total_staked_eth: number;
+    share_of_supply: number;
+    /** The validator and queue figures can be null: hide their tiles then. */
+    active_validators: number | null;
+    /** Time until a new exit request would exit. */
+    exit_queue: { days: number | null; eth: number | null; validators: number | null } | null;
+    entry_queue: { days: number | null; eth: number | null } | null;
+    sources: EthAssetSource[];
+  };
+  lend: {
+    /** Supply APR. */
+    apr: number;
+    apr_breakdown: { borrower_interest: number };
+    utilisation: number;
+    /** The largest market. */
+    market: ProductiveMarket;
+    /** ETH supplied across all lending markets. */
+    lending_supplied_eth: number;
+    borrow_apr?: number;
+    reserve_factor?: number;
+    market_available_liquidity_eth?: number;
+    sources: EthAssetSource[];
+  };
+  borrow: {
+    /** Stablecoin borrow APR: the USDC/USDT average. */
+    apr: number;
+    apr_breakdown: { base_rate: number; utilisation: number; above_kink_premium: number };
+    max_ltv: number;
+    liquidation_threshold: number;
+    eth_collateral_usd: number;
+    eth_collateral_eth: number;
+    market: ProductiveMarket;
+    stablecoins: Record<string, { borrow_apr: number }>;
+    sources: EthAssetSource[];
+  };
+};
+
 export type EthAssetProductiveAssetResponse = {
   last_updated_utc: string;
   data: {
+    productive_uses?: ProductiveUses;
     yield_comparison: { name: string; unit: string; assets: YieldComparisonAsset[] };
   };
 };

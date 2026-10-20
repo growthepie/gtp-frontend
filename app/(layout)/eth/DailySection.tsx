@@ -6,6 +6,7 @@ import FaqBlock from "@/components/quick-bites/blocks/FaqBlock";
 import { generateBlockId } from "@/lib/types/blockTypes";
 import { AccentColor } from "./_components/colors";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 // "Today in ETH" shows the newest cards from daily.json's `today` section: one card a
 // day, each a metric with an automatically written headline and sentence.
@@ -75,9 +76,11 @@ export default function DailySection() {
         }}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-[15px] items-start">
+      {/* "Go deeper" fills the row on its own when the newsletter card is hidden. */}
+      <div className={`grid grid-cols-1 ${IS_PRODUCTION ? "" : "md:grid-cols-2"} gap-[15px] items-start`}>
         {/* Placeholder: there's no newsletter behind this yet (input and button are disabled),
-            so it's marked like the fake data. */}
+            so it's marked like the fake data, and hidden in production. */}
+        {!IS_PRODUCTION && (
         <Card fake>
           <span className="heading-small-xs">Get the weekly numbers</span>
           <span className="text-xs md:text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
@@ -91,6 +94,7 @@ export default function DailySection() {
             <GTPButton label="Subscribe" leftIcon="gtp-email" variant="highlight" disabled size="sm" />
           </div>
         </Card>
+        )}
         <Card>
           <span className="heading-small-xs">Go deeper</span>
           <span className="text-xs md:text-sm">Community work behind these numbers.</span>

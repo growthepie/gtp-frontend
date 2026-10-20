@@ -10,6 +10,7 @@ import SupplySection from "./SupplySection";
 import BasketSection from "./BasketSection";
 import RankingSection from "./RankingSection";
 import DailySection from "./DailySection";
+import { IS_PRODUCTION } from "@/lib/helpers";
 
 export default function EthTheAssetPage() {
   // The top loading bar follows the two bundles (every section reads from one of them).
@@ -25,7 +26,8 @@ export default function EthTheAssetPage() {
         <RankingSection />
         <SupplySection />
         <ProductiveAssetSection />
-        <BasketSection />
+        {/* Hidden in production for now; shown on local, dev and preview. */}
+        {!IS_PRODUCTION && <BasketSection />}
         <DailySection />
       </Container>
     </>

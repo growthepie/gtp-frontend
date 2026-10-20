@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
@@ -10,7 +10,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { useMediaQuery } from "@react-hook/media-query";
-import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
+import { useSSE } from "@/hooks/useSSE";
 import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-the-asset/data";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { ACCENT_HEX, AccentColor, FALLBACK_TEXT, FALLBACK_TILE_BG, ifFallback } from "./_components/colors";
@@ -34,12 +34,34 @@ const TIMESPANS: Record<KpiTimeframe, { label: string; shortLabel: string; dateF
   "5y": { label: "5 years", shortLabel: "5y", dateFormat: "MMM YYYY" },
 };
 
+const ETH_PRICE_SSE_URL = "https://sse.growthepie.com/events/eth-price";
+
+// Live ETH/USD from growthepie's price stream: an "initial" message, then an "update"
+// about every 2s. A price flagged stale, or off from the stream's own cross-check,
+// doesn't count, and neither does one from a dropped connection: the hero then falls
+// back to kpis.json's hourly price. Paused while the tab is hidden (useSSE).
+function useLiveEthPrice() {
+  const [price, setPrice] = useState<number | null>(null);
+  const onMessage = useCallback((event: MessageEvent) => {
+    try {
+      const d = JSON.parse(event.data)?.data;
+      const ok = d && Number.isFinite(d.price) && d.price > 0 && !d.stale && !d.deviation_warning;
+      setPrice(ok ? d.price : null);
+    } catch {
+      // Ignore a malformed message; the next one comes in ~2s.
+    }
+  }, []);
+  const onError = useCallback(() => setPrice(null), []);
+  useSSE(ETH_PRICE_SSE_URL, { onMessage, onError });
+  return price;
+}
+
 // change_pct is a fraction; the card wants a percentage. Null hides the badge.
 const toPct = (fraction: number | null | undefined) =>
   fraction === null || fraction === undefined ? null : fraction * 100;
 
 export default function EthHero() {
-  const { globalMetrics } = useSSEMetrics();
+  const livePrice = useLiveEthPrice();
   const { data: kpisData, isLoading: kpisLoading } = useEthAssetSection("kpis");
   const { data: statsData } = useEthAssetSection("stats");
   const { resolvedTheme } = useTheme();
@@ -83,9 +105,8 @@ export default function EthHero() {
     };
   }, [kpisData, timespan]);
 
-  // The live SSE price when it's streaming, otherwise kpis.json's latest hourly price.
-  const livePrice = globalMetrics.eth_price_usd;
-  const isLivePrice = !!livePrice && livePrice > 0;
+  // The live stream's price when it's coming in, otherwise kpis.json's latest hourly price.
+  const isLivePrice = livePrice !== null;
   // Fallback: the hourly price standing in for the live one, or no price at all once loaded.
   const priceIsFallback = !isLivePrice && !kpisLoading;
   const displayedPrice = isLivePrice ? livePrice : kpis.price.current;
@@ -141,20 +162,19 @@ export default function EthHero() {
             ) : (
               <span className={`numbers-5xl text-color-text-primary/40 ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>—</span>
             )}
-            {/* The SSE stream doesn't currently send eth_price_usd, so the headline usually
-                falls back to kpis.json's hourly price — only claim "live" when it really is. */}
+            {/* Only claim "live" while the stream's price is shown, not the hourly fallback. */}
             {isLivePrice ? (
               <span className="heading-small-xs flex items-center gap-x-[5px]">
                 <span className="relative flex h-[6px] w-[6px]">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
                   <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
                 </span>
-                1 ETH · live
+                Live price
               </span>
             ) : (
               displayedPrice && (
                 <span className="heading-small-xs text-color-text-primary/70">
-                  1 ETH{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
+                  Hourly price{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
                 </span>
               )
             )}
