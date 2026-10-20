@@ -1,3 +1,5 @@
+import { IS_PRODUCTION } from "@/lib/helpers";
+
 // Shared color mapping for the "ETH the Asset" page's hand-rolled visuals.
 // Ties every mark to the site's real accent tokens (tailwind.config.js
 // `color-accent-*`) instead of ad-hoc hex values.
@@ -95,3 +97,18 @@ export const FAKE_ART = SHOW_FAKE_DATA ? "sepia" : "";
 export const fakeColor = (real: AccentColor): AccentColor => (SHOW_FAKE_DATA ? "fake" : real);
 /** Pick one of the above only when `isFake` (for tiles that are fake in some modes). */
 export const ifFake = (isFake: boolean, marker: string) => (isFake ? marker : "");
+
+// ─── Fallback markers (dev only) ──────────────────────────────────────────────
+// A fallback is a value shown because the real one didn't arrive: "—" for a value
+// whose JSON loaded without it (or failed), or the hourly price standing in for the
+// live one. Off in production; anywhere else (local dev, the dev and preview
+// deployments) these get the same purple tile and brown text as fake data, so a
+// missing value is easy to spot instead of passing for a real one.
+export const SHOW_FALLBACK_MARKERS = !IS_PRODUCTION;
+
+/** Tile background for a tile showing a fallback. Production: none. */
+export const FALLBACK_TILE_BG = SHOW_FALLBACK_MARKERS ? "!bg-[#e6daf5] dark:!bg-[#2a1745]" : "";
+/** Text colour for a fallback value. Production: the element's normal text colour. */
+export const FALLBACK_TEXT = SHOW_FALLBACK_MARKERS ? "!text-[#8a5a2b] dark:!text-[#b07a45]" : "";
+/** Pick one of the above only when `isFallback`. */
+export const ifFallback = (isFallback: boolean, marker: string) => (isFallback ? marker : "");

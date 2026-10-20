@@ -2,7 +2,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 
 const EXPLAINER =
-  "growthepie doesn't track this metric yet, so the figure here is an example of the shape of the data — not a live measurement.";
+  "growthepie doesn't track this metric yet, so the figure here is an example of the shape of the data, not a live measurement.";
 
 /**
  * Marks a figure that isn't backed by a live growthepie data source. Quiet by

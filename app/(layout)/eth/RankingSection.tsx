@@ -10,7 +10,7 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import Card from "./_components/Card";
 import { BarRow } from "./_components/StatBar";
 import ScrollArea from "./_components/ScrollArea";
-import { ACCENT_HEX } from "./_components/colors";
+import { ACCENT_HEX, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 import { MarketCapCategory } from "@/lib/eth-the-asset/data";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
@@ -60,7 +60,7 @@ export default function RankingSection() {
   }, [ethEnd]);
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
-  const { data } = useEthAssetSection("market_caps");
+  const { data, isLoading } = useEthAssetSection("market_caps");
   const caps = data?.data;
 
   const allAssets = useMemo<Asset[]>(() => {
@@ -114,7 +114,7 @@ export default function RankingSection() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
       <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-5">
-        <SectionTitle icon="gtp-rank" title="How big is it, really?" titleSize="md" as="h2" />
+        <SectionTitle icon="gtp-rank" title="How big is it really?" titleSize="md" as="h2" />
         <SectionDescription>ETH next to assets you already have a sense of.</SectionDescription>
         {/* Same control bar as the fundamentals charts. It sits inside this column, so
             side by side it stops at the column edge rather than running under ETH / BTC.
@@ -185,9 +185,10 @@ export default function RankingSection() {
             ))}
           </GTPButtonRow>
         </GTPButtonContainer>
-        <Card className="flex-1">
+        {/* Fallback (dev only): loaded, but no ratio to show. */}
+        <Card className="flex-1" fallback={!isLoading && !latestRatio}>
           <div className="flex items-baseline gap-x-[10px]">
-            <span className="numbers-2xl">{latestRatio ? `${latestRatio.toFixed(1)}%` : "—"}</span>
+            <span className={`numbers-2xl ${ifFallback(!isLoading && !latestRatio, FALLBACK_TEXT)}`}>{latestRatio ? `${latestRatio.toFixed(1)}%` : "—"}</span>
             <span className="heading-small-xxxs pt-[1px]">of Bitcoin&apos;s market cap</span>
           </div>
           {/* Fixed height when stacked; grows into the card when side by side. */}

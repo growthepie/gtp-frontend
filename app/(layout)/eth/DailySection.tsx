@@ -27,7 +27,7 @@ const MYTHS = [
   {
     question: "“It’s only used for speculation.”",
     answer:
-      "Most of the fees on Ethereum today come from payments, stablecoin transfers and trading — the same things a payment network does.",
+      "Most of the fees on Ethereum today come from payments, stablecoin transfers and trading, the same things a payment network does.",
   },
 ];
 
@@ -80,7 +80,7 @@ export default function DailySection() {
             so it's marked like the fake data. */}
         <Card fake>
           <span className="heading-small-xs">Get the weekly numbers</span>
-          <span className="text-xs md:text-sm">Supply, yield and usage — one email each week. No price predictions.</span>
+          <span className="text-xs md:text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
           <div className="flex gap-x-[8px]">
             <input
               placeholder="you@email.com"

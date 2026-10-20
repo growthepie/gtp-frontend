@@ -274,7 +274,7 @@ export default function SupplySection() {
   const [scenarioKey, setScenarioKey] = useState<string | null>("busy_week");
   const [demand, setDemand] = useState(0);
   const [controlsWrapping, setControlsWrapping] = useState(false);
-  const { data: flowData } = useEthAssetSection("supply_flow");
+  const { data: flowData, isLoading: flowLoading } = useEthAssetSection("supply_flow");
   const flow = flowData?.data;
 
   const scenarios = flow?.scenarios ?? [];
@@ -288,7 +288,10 @@ export default function SupplySection() {
     return (
       <div className="flex flex-col gap-y-[15px]">
         <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
-        <Card className="min-h-[280px] items-center justify-center text-xs text-color-text-primary/70">Loading supply…</Card>
+        {/* Still showing once loaded means the data is missing: a fallback (dev only). */}
+        <Card className="min-h-[280px] items-center justify-center text-xs text-color-text-primary/70" fallback={!flowLoading}>
+          Loading supply…
+        </Card>
       </div>
     );
   }
@@ -429,7 +432,7 @@ export default function SupplySection() {
       <IllustrativeNote>
         Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
         actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
-        burn, so they&apos;re estimates. The tub runs as a time-lapse so the level moves visibly — the real rate is the
+        burn, so they&apos;re estimates. The tub runs as a time-lapse so the level moves visibly. The real rate is the
         annual figure above. Sources: {sources}.
       </IllustrativeNote>
     </div>

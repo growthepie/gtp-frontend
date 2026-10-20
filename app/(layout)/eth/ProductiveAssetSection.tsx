@@ -164,7 +164,7 @@ export default function ProductiveAssetSection() {
     <div className="flex flex-col gap-y-[15px]">
       <SectionTitle icon="gtp-metrics-fdv" title="ETH is a productive asset" titleSize="md" as="h2" />
       <SectionDescription>
-        Gold sits in a vault. ETH can do three jobs — and it can do them at the same time.
+        Gold sits in a vault. ETH can do three jobs, and it can do them at the same time.
       </SectionDescription>
 
       {/* Same control bar as the fundamentals charts. The buttons fill the bar once it's
@@ -279,7 +279,7 @@ export default function ProductiveAssetSection() {
       </div>
 
       <Card>
-        <span className="heading-small-xs">Yield on the asset itself — what each one pays just for holding it</span>
+        <span className="heading-small-xs">Yield on the asset itself: what each one pays just for holding it</span>
         <div className="flex flex-col gap-y-[8px]">
           {yieldComparison.map((row) => (
             <BarRow
@@ -296,7 +296,7 @@ export default function ProductiveAssetSection() {
           ))}
         </div>
         <span className="text-xs md:text-sm">
-          Nominal rates. Staking pays in ETH, so the dollar value moves with the price — a treasury does not.
+          Nominal rates. Staking pays in ETH, so the dollar value moves with the price. A treasury does not.
         </span>
         <span className="text-xs text-color-text-primary/70">
           Hover a row for how it&apos;s measured.{yieldSources.length > 0 && <> Sources: {yieldSources.join(", ")}.</>}

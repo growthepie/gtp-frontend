@@ -13,7 +13,7 @@ import { useMediaQuery } from "@react-hook/media-query";
 import { useSSEMetrics } from "@/components/layout/EthAgg/useSSEMetrics";
 import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-the-asset/data";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
-import { ACCENT_HEX, AccentColor } from "./_components/colors";
+import { ACCENT_HEX, AccentColor, FALLBACK_TEXT, FALLBACK_TILE_BG, ifFallback } from "./_components/colors";
 import EtherDiamond from "./_components/EtherDiamond";
 
 // Imperva (Thales) Bad Bot Report 2026: automated share of web traffic in 2025.
@@ -40,7 +40,7 @@ const toPct = (fraction: number | null | undefined) =>
 
 export default function EthHero() {
   const { globalMetrics } = useSSEMetrics();
-  const { data: kpisData } = useEthAssetSection("kpis");
+  const { data: kpisData, isLoading: kpisLoading } = useEthAssetSection("kpis");
   const { data: statsData } = useEthAssetSection("stats");
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
@@ -59,7 +59,7 @@ export default function EthHero() {
     : null;
 
   const isMobile = useMediaQuery("(max-width: 967px)");
-  const [timespan, setTimespan] = useState<KpiTimeframe>("1y");
+  const [timespan, setTimespan] = useState<KpiTimeframe>("7d");
   const [timespanBarWrapping, setTimespanBarWrapping] = useState(false);
 
   // Every card reads the same timeframe from kpis.json.
@@ -86,6 +86,8 @@ export default function EthHero() {
   // The live SSE price when it's streaming, otherwise kpis.json's latest hourly price.
   const livePrice = globalMetrics.eth_price_usd;
   const isLivePrice = !!livePrice && livePrice > 0;
+  // Fallback: the hourly price standing in for the live one, or no price at all once loaded.
+  const priceIsFallback = !isLivePrice && !kpisLoading;
   const displayedPrice = isLivePrice ? livePrice : kpis.price.current;
   const kpisUpdated = kpisData?.last_updated_utc;
   const dateFormat = TIMESPANS[timespan].dateFormat;
@@ -128,7 +130,7 @@ export default function EthHero() {
         <div className="flex flex-col gap-y-[15px] @[850px]:self-start">
           <div className="flex items-baseline gap-x-[12px] flex-wrap">
             {displayedPrice ? (
-              <span className="numbers-5xl">
+              <span className={`numbers-5xl ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>
                 {displayedPrice.toLocaleString("en-US", {
                   style: "currency",
                   currency: "USD",
@@ -137,7 +139,7 @@ export default function EthHero() {
                 })}
               </span>
             ) : (
-              <span className="numbers-5xl text-color-text-primary/40">—</span>
+              <span className={`numbers-5xl text-color-text-primary/40 ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>—</span>
             )}
             {/* The SSE stream doesn't currently send eth_price_usd, so the headline usually
                 falls back to kpis.json's hourly price — only claim "live" when it really is. */}
@@ -186,12 +188,12 @@ export default function EthHero() {
                 <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
                   <span>
                     Every address that has ever been active on Ethereum Mainnet, ticking forward at today&apos;s pace
-                    of new addresses. Wallets aren&apos;t people — one person can
+                    of new addresses. Wallets aren&apos;t people: one person can
                     have many, and exchanges hold ETH for millions of users in a few. Addresses that have only used Layer 2s
                     aren&apos;t counted.
                   </span>
                   <span>
-                    Not every wallet is a person, either: online, {BOT_TRAFFIC_SHARE_PCT}% of web traffic is bots — 40%
+                    Not every wallet is a person, either: online, {BOT_TRAFFIC_SHARE_PCT}% of web traffic is bots. That&apos;s 40%
                     malicious and 13% benign ones like search crawlers, against 47% humans (Imperva Bad Bot Report 2026,
                     measured across sites Imperva protects).
                   </span>
@@ -276,12 +278,13 @@ export default function EthHero() {
               color={tile("turquoise")}
             />
           ) : (
-            <div className="flex h-2xl items-center justify-between gap-x-[10px] rounded-[15px] bg-color-bg-default p-[15px]">
+            // Shown when the price series is missing, so it's always a fallback once loaded.
+            <div className={`flex h-2xl items-center justify-between gap-x-[10px] rounded-[15px] bg-color-bg-default p-[15px] ${ifFallback(!kpisLoading, FALLBACK_TILE_BG)}`}>
               <span className="flex items-center gap-x-[10px]">
                 <GTPIcon icon="gtp-tokeneth" size="md" />
                 <span className="heading-large-xxs xs:heading-large-xs">ETH price</span>
               </span>
-              <span className="numbers-sm xs:numbers-md text-color-accent-turquoise">
+              <span className={`numbers-sm xs:numbers-md text-color-accent-turquoise ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>
                 {displayedPrice?.toLocaleString("en-US", { style: "currency", currency: "USD" }) ?? "—"}
               </span>
             </div>

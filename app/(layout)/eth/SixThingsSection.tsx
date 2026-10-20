@@ -12,7 +12,7 @@ import { formatUptime } from "@/components/layout/EthAgg/helpers";
 import Card from "./_components/Card";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG } from "./_components/colors";
+import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 
 // Fractions → "2.56%".
 const pct = (fraction: number, digits = 2) => `${(fraction * 100).toFixed(digits)}%`;
@@ -38,6 +38,8 @@ const ETH_CHAIN_SSE_URL = "https://sse.growthepie.com/events/chain/ethereum";
  */
 function useEthBlockTime() {
   const [blockTime, setBlockTime] = useState<number | null>(null);
+  // True once the stream has answered or failed, so a missing value counts as a fallback.
+  const [done, setDone] = useState(false);
   useEffect(() => {
     const source = new EventSource(ETH_CHAIN_SSE_URL);
     source.onmessage = (event) => {
@@ -48,12 +50,16 @@ function useEthBlockTime() {
       } catch {
         // Leave it empty: the card shows "—".
       }
+      setDone(true);
     };
     // Don't let EventSource keep retrying; the card just shows "—".
-    source.onerror = () => source.close();
+    source.onerror = () => {
+      source.close();
+      setDone(true);
+    };
     return () => source.close();
   }, []);
-  return blockTime;
+  return { blockTime, done };
 }
 
 // The gas sparkline shows the last 90 of the 365 daily points.
@@ -69,6 +75,7 @@ function PropCard({
   info,
   children,
   fake = false,
+  fallback = false,
 }: {
   icon: GTPIconName;
   title: string;
@@ -81,6 +88,8 @@ function PropCard({
   children?: React.ReactNode;
   /** Fixed facts rather than JSON data: purple tile, brown headline while SHOW_FAKE_DATA is on. */
   fake?: boolean;
+  /** The value is a fallback (its data didn't arrive): purple tile and brown headline on dev only. */
+  fallback?: boolean;
 }) {
   // With a short unit, check whether value + full unit fit on one line. A hidden copy
   // of the full unit is measured, since the visible one may be the short form.
@@ -100,7 +109,7 @@ function PropCard({
   }, [unitShort]);
 
   return (
-    <Card fake={fake}>
+    <Card fake={fake} fallback={fallback}>
       {/* Title truncates before the tag or info button get squeezed on narrow cards. */}
       <div className="flex items-center gap-x-[8px]">
         <GTPIcon icon={icon} size="md" className="shrink-0" />
@@ -119,7 +128,7 @@ function PropCard({
       </div>
       {/* gap-x matches the 5px in the fit check above. */}
       <div ref={row} className="relative flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
-        <span ref={valueEl} className={`numbers-2xl ${fake ? FAKE_TEXT : ""}`}>{value}</span>
+        <span ref={valueEl} className={`numbers-2xl ${fake ? FAKE_TEXT : ""} ${ifFallback(fallback, FALLBACK_TEXT)}`}>{value}</span>
         <span className={`heading-small-xxxs pt-[1px] ${fake ? FAKE_TEXT : ""}`}>{unitShort && !unitFits ? unitShort : unit}</span>
         {unitShort && (
           <span ref={fullUnit} aria-hidden className="heading-small-xxxs absolute invisible whitespace-nowrap pointer-events-none">
@@ -171,7 +180,7 @@ export default function SixThingsSection() {
   const { data, isLoading } = useEthAssetSection("properties");
   const props = data?.data;
   // Ethereum's block time from the growthepie stream (same feed as the chain pages), read once on load.
-  const liveBlockTime = useEthBlockTime();
+  const { blockTime: liveBlockTime, done: blockTimeDone } = useEthBlockTime();
   const blockTime = liveBlockTime ? formatSeconds(liveBlockTime) : null;
 
   const yieldBreakdown = props?.yield_breakdown;
@@ -215,7 +224,8 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-metrics-fdv"
           title="Productive"
-          tag="yield"
+          tag="Yield"
+          fallback={!isLoading && !yieldBreakdown}
           value={yieldBreakdown ? pct(yieldBreakdown.total) : "—"}
           unit="APR, paid in ETH"
           info="Stakers lock ETH to secure Ethereum and are paid in ETH: new issuance plus priority tips and MEV. Source: ethsupply.fyi."
@@ -241,7 +251,8 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-shield"
           title="Scarce"
-          tag="store of value"
+          tag="Store of Value"
+          fallback={!isLoading && !scarcity}
           value={scarcity ? signedPct(scarcity.eth.value) : "—"}
           unit="ETH supply a year"
           info={
@@ -274,7 +285,8 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-metrics-totalvaluelocked"
           title="Trusted"
-          tag="collateral"
+          tag="Collateral"
+          fallback={!isLoading && !collateral}
           value={collateral ? formatUsd(collateral.total_usd) : "—"}
           unit={collateral ? `${(collateral.total_eth / 1e6).toFixed(1)}M ETH posted onchain` : "ETH posted onchain"}
           info="ETH is the main collateral onchain: it backs loans in lending markets, liquid staking tokens and DEX liquidity. Source: DefiLlama, updated daily."
@@ -290,7 +302,8 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-wallet"
           title="Reliable"
-          tag="bearer asset"
+          tag="Bearer Asset"
+          fallback={blockTimeDone && !blockTime}
           value={blockTime ? `${blockTime}s` : "—"}
           unit="to settle, any day"
           info={`Whoever holds the keys owns the ETH, with no bank or broker in between. A new block lands every ${blockTime ?? "12"} seconds (block time from growthepie, read when the page loads); times for the other rails are typical, not exact.`}
@@ -307,7 +320,7 @@ export default function SixThingsSection() {
             ].map(({ label, value, highlight, short }) => (
               <div key={label} className="@container flex flex-col gap-y-[2px] px-[10px] py-[8px] rounded-[8px] bg-color-bg-medium">
                 <span className="heading-small-xxxs text-color-text-primary/70">{label}</span>
-                <span className={`numbers-sm whitespace-nowrap ${highlight ? "text-color-accent-turquoise" : ""}`}>
+                <span className={`numbers-sm whitespace-nowrap ${highlight ? "text-color-accent-turquoise" : ""} ${ifFallback(!!highlight && blockTimeDone && !blockTime, FALLBACK_TEXT)}`}>
                   {short ? (
                     <>
                       <span className="hidden @[108px]:inline">{value}</span>
@@ -325,7 +338,8 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-metrics-throughput"
           title="Useful"
-          tag="digital oil"
+          tag="Digital Oil"
+          fallback={!isLoading && recentGas.length <= 1}
           value="ETH"
           unit={l2Count ? `pays for gas on L1 and ${l2Count} Layer 2s` : "pays for gas on L1 and Layer 2s"}
           info="Transactions on Ethereum Mainnet and its Layer 2s use ETH to pay for computation and blockspace. The chart shows ETH paid as gas per day across them over the last 90 days. Source: growthepie."
@@ -354,7 +368,7 @@ export default function SixThingsSection() {
         <PropCard
           icon="gtp-clock"
           title="Available"
-          tag="freedom tech"
+          tag="Freedom Tech"
           value="24/7"
           unit={`for ${uptime.full}`}
           unitShort={`for over ${uptime.years} years`}

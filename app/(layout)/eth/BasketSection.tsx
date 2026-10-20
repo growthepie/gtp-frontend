@@ -46,7 +46,7 @@ export default function BasketSection() {
   const [regionKey, setRegionKey] = useState<RegionKey>("us");
   const [regionsWrapping, setRegionsWrapping] = useState(false);
   const [selectedKey, setSelectedKey] = useState("bread");
-  const { data } = useEthAssetSection("purchasing_power");
+  const { data, isLoading } = useEthAssetSection("purchasing_power");
 
   const region = data?.data?.regions?.[regionKey];
   // Only items with a glyph and finite numbers are drawn.
@@ -59,7 +59,8 @@ export default function BasketSection() {
     return (
       <div className="flex flex-col gap-y-[15px]">
         <SectionTitle icon="gtp-package" title="What one ETH actually buys" titleSize="md" as="h2" />
-        <Card className="min-h-[200px] items-center justify-center text-xs text-color-text-primary/70">
+        {/* Still showing once loaded means the data is missing: a fallback (dev only). */}
+        <Card className="min-h-[200px] items-center justify-center text-xs text-color-text-primary/70" fallback={!isLoading}>
           Loading prices…
         </Card>
       </div>
@@ -73,7 +74,7 @@ export default function BasketSection() {
     <div className="flex flex-col gap-y-[15px]">
       <SectionTitle icon="gtp-package" title="What one ETH actually buys" titleSize="md" as="h2" />
       <SectionDescription>
-        Supply and burn only matter if they change what ETH gets you. Two things move that number — and neither of them
+        Supply and burn only matter if they change what ETH gets you. Two things move that number, and neither of them
         is the burn.
       </SectionDescription>
 
@@ -133,8 +134,8 @@ export default function BasketSection() {
             before={{ label: "a year ago", value: item.units_per_eth_year_ago }}
             after={{ label: "today", value: item.units_per_eth }}
             steps={[
-              { label: "ETH price — the market", delta: item.change_units.eth_price, color: "yellow" },
-              { label: "Shop price — inflation", delta: item.change_units.shop_price, color: "red" },
+              { label: "ETH price (the market)", delta: item.change_units.eth_price, color: "yellow" },
+              { label: "Shop price (inflation)", delta: item.change_units.shop_price, color: "red" },
             ]}
             format={fmt}
             unit={display.units}

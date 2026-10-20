@@ -22,9 +22,9 @@ export default function EthTheAssetPage() {
       <Container className="flex flex-col pt-[45px] md:pt-[30px] pb-[15px] gap-y-[60px]">
         <EthHero />
         <SixThingsSection />
+        <RankingSection />
         <SupplySection />
         <ProductiveAssetSection />
-        <RankingSection />
         <BasketSection />
         <DailySection />
       </Container>
