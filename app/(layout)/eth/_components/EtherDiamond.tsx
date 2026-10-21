@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
+import { track } from "@/lib/tracking";
 import { createEtherDiamondScene, EtherDiamondScene } from "./etherDiamondScene";
 
 // iOS only sends motion events after the visitor allows it, from a tap.
@@ -14,7 +15,8 @@ const subscribeNever = () => () => {};
 
 // The hero's ETH glyph: a canvas-drawn 3D diamond that spins on its own, can be
 // dragged (with inertia), leans towards a hovering mouse and follows the device
-// gyroscope on phones and tablets. See etherDiamondScene.ts for the renderer.
+// gyroscope on phones and tablets. Spun hard enough, it turns into the steam of
+// growthepie's logo for a while. See etherDiamondScene.ts for the renderer.
 function EtherDiamond({ height = 380 }: { height?: number }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -27,6 +29,7 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
     if (!wrapperRef.current || !canvasRef.current) return;
     const scene = createEtherDiamondScene(wrapperRef.current, canvasRef.current, {
       onTiltActive: () => setTilt("on"),
+      onSteam: () => track("found ETH steam easter egg", { location: "eth hero", page: window.location.pathname }),
     });
     sceneRef.current = scene;
     return () => {
