@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
@@ -56,6 +56,12 @@ function useLiveEthPrice() {
   return price;
 }
 
+// Timespan bar, by the bar's own width rather than the screen's. The five buttons
+// with full labels need ~410px. Below that they use the short labels ("24h") and
+// tighter padding; below FILL_BELOW_PX they stretch to fill the whole bar.
+const FULL_LABELS_MIN_PX = 430;
+const FILL_BELOW_PX = 1220;
+
 // change_pct is a fraction; the card wants a percentage. Null hides the badge.
 const toPct = (fraction: number | null | undefined) =>
   fraction === null || fraction === undefined ? null : fraction * 100;
@@ -81,6 +87,18 @@ export default function EthHero() {
     : null;
 
   const isMobile = useMediaQuery("(max-width: 967px)");
+  const timespanBar = useRef<HTMLDivElement>(null);
+  const [timespanBarWidth, setTimespanBarWidth] = useState<number | null>(null);
+  useEffect(() => {
+    const el = timespanBar.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setTimespanBarWidth(entry.contentRect.width));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  // Before the first measurement, fall back to the old screen-width rule.
+  const shortTimespanLabels = timespanBarWidth === null ? isMobile : timespanBarWidth < FULL_LABELS_MIN_PX;
+  const fillTimespanBar = timespanBarWidth !== null && timespanBarWidth < FILL_BELOW_PX;
   const [timespan, setTimespan] = useState<KpiTimeframe>("7d");
   const [timespanBarWrapping, setTimespanBarWrapping] = useState(false);
 
@@ -259,7 +277,7 @@ export default function EthHero() {
           14" MacBook Pro (1512px) with the sidebar hidden, which gives a ~1321px grid. 2 columns
           from 850px: cards ≥ 420px, which still leaves the sparkline 105px between the
           label column and the value (see FILL_SPARKLINE_* in AppMetricCard). */}
-      <div className="@container flex flex-col gap-y-[10px]">
+      <div ref={timespanBar} className="@container flex flex-col gap-y-[10px]">
         {/* Same bar and buttons as the fundamentals chart timespans; every card below
             follows it, and each card's change is over the selected span. */}
         <GTPButtonContainer
@@ -267,12 +285,13 @@ export default function EthHero() {
           setIsWrapping={setTimespanBarWrapping}
           style={timespanBarWrapping ? { borderRadius: "15px" } : undefined}
         >
-          <GTPButtonRow autoFill>
+          {/* Fill is set here rather than with autoFill, which only fills past half the bar. */}
+          <GTPButtonRow className={fillTimespanBar ? "flex-auto [&>*]:flex-1 [&>*>button]:w-full" : ""}>
             {KPI_TIMEFRAMES.map((key) => (
               <GTPButton
                 key={key}
-                label={isMobile ? TIMESPANS[key].shortLabel : TIMESPANS[key].label}
-                innerStyle={isMobile ? { minWidth: 0, padding: "5px 8px" } : undefined}
+                label={shortTimespanLabels ? TIMESPANS[key].shortLabel : TIMESPANS[key].label}
+                innerStyle={shortTimespanLabels ? { minWidth: 0, padding: "5px 8px" } : undefined}
                 className="min-w-0"
                 variant="primary"
                 size="sm"
