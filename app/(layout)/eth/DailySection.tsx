@@ -30,6 +30,16 @@ const MYTHS = [
     answer:
       "Most of the fees on Ethereum today come from payments, stablecoin transfers and trading, the same things a payment network does.",
   },
+  {
+    question: "“It’s vulnerable to quantum computers.”",
+    answer:
+      "In theory, for now. The signatures that wallets and validators use today could be broken by a large enough quantum computer, though no such machine exists yet. Ethereum has a plan to switch to quantum-safe cryptography: a dedicated team is building it, test networks are already running, and the aim is a quantum-safe base layer by the end of the decade.",
+  },
+  {
+    question: "“AI is the future, not crypto.”",
+    answer:
+      "It isn't one or the other. AI agents that act on their own will need to pay for things, and banks don't open accounts for software. A wallet works for anyone, or anything, that holds a key, so agents will have wallets, not bank accounts. Ethereum already has the pieces: x402 lets an agent pay for a web request in stablecoins as part of making it, on Ethereum and its Layer 2s, and ERC-8004 gives agents an onchain identity and reputation so others can decide whether to trust them.",
+  },
 ];
 
 export default function DailySection() {

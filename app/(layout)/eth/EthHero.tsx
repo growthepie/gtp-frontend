@@ -304,6 +304,7 @@ export default function EthHero() {
         <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-3 gap-[10px]">
           {hasSeries(kpis.price) && displayedPrice ? (
             <GTPMetricCard
+              sparklineTransitionKey={timespan}
               fillSparkline
               nonInteractive
               label="ETH price"
@@ -330,6 +331,7 @@ export default function EthHero() {
           )}
           {hasSeries(kpis.supply) && (
             <GTPMetricCard
+              sparklineTransitionKey={timespan}
               fillSparkline
               nonInteractive
               label="Supply"
@@ -351,6 +353,7 @@ export default function EthHero() {
           )}
           {hasSeries(kpis.stakingYield) && (
             <GTPMetricCard
+              sparklineTransitionKey={timespan}
               fillSparkline
               nonInteractive
               label="Staking yield"
@@ -366,6 +369,7 @@ export default function EthHero() {
           )}
           {hasSeries(kpis.stakedShare) && (
             <GTPMetricCard
+              sparklineTransitionKey={timespan}
               fillSparkline
               nonInteractive
               label="Supply staked"
@@ -382,6 +386,7 @@ export default function EthHero() {
           )}
           {hasSeries(kpis.burned) && (
             <GTPMetricCard
+              sparklineTransitionKey={timespan}
               fillSparkline
               nonInteractive
               label="ETH burned"

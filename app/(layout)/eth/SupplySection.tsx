@@ -126,12 +126,15 @@ function Bathtub({
   totalSupply,
   pace = SCENARIO_PACE,
   height = 280,
+  resetKey,
 }: {
   inflow: number;
   outflow: number;
   totalSupply: number;
   pace?: Pace;
   height?: number;
+  /** When this changes (a new week or slider position), the level restarts from today's supply. */
+  resetKey?: string;
 }) {
   const burnRgb = "rgb(var(--accent-red))";
   const { weeksPerSecond, bandEth, tickEth, loopWeeks } = pace;
@@ -141,8 +144,14 @@ function Bathtub({
   const sim = useRef<Sim>({ offset: 0, centre: 0, centreTarget: 0, weeks: 0 });
   const [view, setView] = useState<Sim>({ offset: 0, centre: 0, centreTarget: 0, weeks: 0 });
   const [tick, setTick] = useState(0);
+  const lastResetKey = useRef(resetKey);
 
   useEffect(() => {
+    // New parameters: start again from today's supply. The view catches up on the next repaint.
+    if (lastResetKey.current !== resetKey) {
+      lastResetKey.current = resetKey;
+      sim.current = { offset: 0, centre: 0, centreTarget: 0, weeks: 0 };
+    }
     if (reduceMotion) return;
     let raf: number;
     let last = performance.now();
@@ -181,7 +190,7 @@ function Bathtub({
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduceMotion, net, weeksPerSecond, bandEth, loopWeeks]);
+  }, [reduceMotion, net, weeksPerSecond, bandEth, loopWeeks, resetKey]);
 
   const yFor = (offsetEth: number) => WATER_MID_Y - ((offsetEth - view.centre) / bandEth) * HALF_PX;
   const waterY = yFor(view.offset);
@@ -438,9 +447,9 @@ export default function SupplySection() {
 
       <Card padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
         <div className="p-[15px]">
-          {/* Keyed so switching pace restarts the level from today's supply. */}
+          {/* Picking a week or moving the slider restarts the level from today's supply. */}
           <Bathtub
-            key={isLastWeek ? "last-week" : "scenario"}
+            resetKey={scenarioKey ?? `demand-${demand}`}
             inflow={inflow}
             outflow={outflow}
             totalSupply={totalSupply}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import { echarts } from "@/lib/echarts-setup";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -81,6 +81,12 @@ export interface GTPMetricCardProps {
   nonInteractive?: boolean;
   /** Custom value format and an extra row for the sparkline tooltip. */
   tooltip?: SparklineTooltipOptions;
+  /**
+   * Opt-in smooth switching: when this changes (e.g. the selected timeframe), the
+   * sparkline is redrawn from the left instead of morphing point by point, and its end
+   * dot fades in once the line reaches it. Without it, the chart behaves as before.
+   */
+  sparklineTransitionKey?: string;
 }
 
 // ─── Sparkline chart ──────────────────────────────────────────────────────────
@@ -110,13 +116,18 @@ interface SparklineChartProps {
   /** dayjs format for the tooltip's date. */
   tooltipDateFormat?: string;
   tooltip?: SparklineTooltipOptions;
+  /** Draw the line in from the left on mount, and fade the end dot in once it's drawn. */
+  revealOnMount?: boolean;
 }
 
-export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip, revealOnMount = false }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  // With revealOnMount the end dot waits for the line's draw-in to finish.
+  const [lineDrawn, setLineDrawn] = useState(!revealOnMount);
+  const onEvents = useMemo(() => (revealOnMount ? { finished: () => setLineDrawn(true) } : undefined), [revealOnMount]);
 
   const [customTooltip, setCustomTooltip] = useState<{
     visible: boolean;
@@ -177,6 +188,7 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
       borderWidth: 0,
       axisPointer: { type: "line", lineStyle: { color: "#CDD8D3", width: 1, type: "solid" } },
     },
+    ...(revealOnMount ? { animationDuration: 700, animationEasing: "cubicOut" } : {}),
     series: [
       {
         data: values,
@@ -237,6 +249,7 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
         ref={chartRef}
         option={option}
         style={{ height: "100%", width: "100%" }}
+        onEvents={onEvents}
         opts={{
           renderer: "canvas",
           devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
@@ -254,7 +267,8 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
               typeof window !== "undefined"
                 ? getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "#fff"
                 : "#fff",
-            opacity: 0.6,
+            opacity: lineDrawn ? 0.6 : 0,
+            ...(revealOnMount ? { transition: "opacity 250ms ease-out" } : {}),
           }}
         />
       )}
@@ -327,6 +341,7 @@ export default function GTPMetricCard({
   fillSparkline = false,
   nonInteractive = false,
   tooltip,
+  sparklineTransitionKey,
 }: GTPMetricCardProps) {
   const computedWowChange =
     wowChangeProp !== undefined
@@ -366,6 +381,8 @@ export default function GTPMetricCard({
         <div className={FILL_SPARKLINE_AREA}>
           <div className={FILL_SPARKLINE_WIDTH}>
             <SparklineChart
+              key={sparklineTransitionKey}
+              revealOnMount={sparklineTransitionKey !== undefined}
               values={sparkline}
               timestamps={timestamps}
               color={color}
@@ -382,6 +399,8 @@ export default function GTPMetricCard({
       ) : (
         <div className="flex-1 min-w-0 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible">
           <SparklineChart
+            key={sparklineTransitionKey}
+            revealOnMount={sparklineTransitionKey !== undefined}
             values={sparkline}
             timestamps={timestamps}
             color={color}

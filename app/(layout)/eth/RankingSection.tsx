@@ -29,7 +29,7 @@ const FILTER_LABELS: Record<(typeof FILTERS)[number], string> = {
 const OFF_SCALE_KEYS = ["oil"];
 
 // ETH / BTC chart spans. The series is daily since April 2021; "Max" shows all of
-// it (the default), the shorter spans zoom in on recent days.
+// it, the shorter spans zoom in on recent days. "1 year" is the default.
 const RATIO_SPANS = [
   { key: "30d", label: "30 days", days: 30 },
   { key: "90d", label: "90 days", days: 90 },
@@ -46,7 +46,7 @@ const formatCap = (usd: number) => (usd >= 1e12 ? `$${(usd / 1e12).toFixed(2)}T`
 export default function RankingSection() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("everything");
   const [filtersWrapping, setFiltersWrapping] = useState(false);
-  const [ratioSpan, setRatioSpan] = useState<RatioSpan>("max");
+  const [ratioSpan, setRatioSpan] = useState<RatioSpan>("1y");
   const [ratioSpansWrapping, setRatioSpansWrapping] = useState(false);
   // A 1px marker right after ETH's row, at the bottom of where the row sits in the
   // list. While it's scrolled out of view, the sticky row is pinned over other rows.
