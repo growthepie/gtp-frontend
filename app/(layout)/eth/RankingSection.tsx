@@ -171,7 +171,7 @@ export default function RankingSection() {
 
       <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-5">
         <SectionTitle icon="gtp-compare" title="ETH / BTC market cap" titleSize="md" as="h2" />
-        <SectionDescription>Without commentary.</SectionDescription>
+        <SectionDescription>The value of all existing ETH vs the value of all existing BTC.</SectionDescription>
         <GTPButtonContainer style={ratioSpansWrapping ? { borderRadius: "15px" } : undefined}>
           <GTPButtonRow wrap autoFill onWrapChange={setRatioSpansWrapping}>
             {RATIO_SPANS.map((s) => (

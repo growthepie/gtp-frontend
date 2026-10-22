@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
+import { useTheme } from "next-themes";
+import { GetRankingColor } from "@/lib/chains";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
@@ -10,7 +12,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Too
 import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
 import { IllustrativeNote } from "./_components/IllustrativeTag";
-import { ACCENT_RGB, FAKE_TEXT, SHOW_FAKE_DATA, fakeColor, ifFake } from "./_components/colors";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
@@ -28,6 +29,41 @@ const LAST_WEEK_KEY = "last_week";
 // Ends of the demand scale: demand_level 0 is the quiet week's burn, 1 the highest.
 const SCALE_MIN_KEY = "quiet_week";
 const SCALE_MAX_KEY = "mania";
+
+// Each week's dot, before its button label and on the demand scale, is coloured by
+// where it sits on the scale, using the landing page's ranking colours: turquoise
+// for the quietest week through yellow to red for the highest burn. The colour
+// follows the data, so last week's dot shifts as its burn changes.
+const demandColor = (colorLevel: number, theme: string | undefined) =>
+  GetRankingColor(Math.min(1, Math.max(0, colorLevel)) * 100, false, theme === "light" ? "light" : "dark");
+
+// Two weeks close together on the scale would get near-identical colours, so the
+// colour positions are spread at least this far apart (the dots' places on the
+// scale don't move). Weeks keep their order: the busier week is always the redder.
+const MIN_COLOR_GAP = 0.15;
+
+/** A week's marker: a dot, or for last week (the real, current one) an upward
+ *  triangle so it stands out from the presets. Used on its button and on the scale. */
+function WeekMarker({ isLastWeek, color }: { isLastWeek: boolean; color: string }) {
+  if (isLastWeek)
+    return (
+      <svg width="10" height="9" viewBox="0 0 10 9" className="flex-shrink-0" aria-hidden>
+        <path d="M5 0.5 L9.5 8.5 L0.5 8.5 Z" fill={color} strokeLinejoin="round" stroke={color} strokeWidth="1" />
+      </svg>
+    );
+  return <span className="size-[8px] rounded-full flex-shrink-0" style={{ backgroundColor: color }} aria-hidden />;
+}
+
+/** Each week's colour position (0–1): its demand level, nudged apart from its neighbours. */
+function spreadColorLevels(scenarios: { key: string; demand_level: number }[]): Record<string, number> {
+  const sorted = [...scenarios].sort((a, b) => a.demand_level - b.demand_level);
+  const levels = sorted.map((sc) => Math.min(1, Math.max(0, sc.demand_level)));
+  // Push up from the quietest week, then back down from 1 so nothing passes the end.
+  for (let i = 1; i < levels.length; i++) levels[i] = Math.max(levels[i], levels[i - 1] + MIN_COLOR_GAP);
+  levels[levels.length - 1] = Math.min(levels[levels.length - 1], 1);
+  for (let i = levels.length - 2; i >= 0; i--) levels[i] = Math.min(levels[i], levels[i + 1] - MIN_COLOR_GAP);
+  return Object.fromEntries(sorted.map((sc, i) => [sc.key, Math.max(0, levels[i])]));
+}
 
 /* ── The simulation ──────────────────────────────────────────────────────────
    The water level is a STOCK: it is the running integral of the net flow, not a
@@ -90,18 +126,14 @@ function Bathtub({
   totalSupply,
   pace = SCENARIO_PACE,
   height = 280,
-  burnFake = false,
 }: {
   inflow: number;
   outflow: number;
   totalSupply: number;
   pace?: Pace;
   height?: number;
-  /** The burn comes from the illustrative demand curve: drain and burn figure turn brown. */
-  burnFake?: boolean;
 }) {
-  // Real burn colour: rgb(var(--accent-red)). Brown while it's fake data.
-  const burnRgb = burnFake && SHOW_FAKE_DATA ? ACCENT_RGB.fake : "rgb(var(--accent-red))";
+  const burnRgb = "rgb(var(--accent-red))";
   const { weeksPerSecond, bandEth, tickEth, loopWeeks } = pace;
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const net = inflow - outflow;
@@ -274,12 +306,14 @@ export default function SupplySection() {
   const [scenarioKey, setScenarioKey] = useState<string | null>("busy_week");
   const [demand, setDemand] = useState(0);
   const [controlsWrapping, setControlsWrapping] = useState(false);
+  const { resolvedTheme } = useTheme();
   const { data: flowData, isLoading: flowLoading } = useEthAssetSection("supply_flow");
   const flow = flowData?.data;
 
   const scenarios = flow?.scenarios ?? [];
   const lastWeek = scenarios.find((sc) => sc.key === LAST_WEEK_KEY);
   const presets = scenarios.filter((sc) => sc.key !== LAST_WEEK_KEY);
+  const colorLevels = spreadColorLevels(scenarios);
   const scaleMin = scenarios.find((sc) => sc.key === SCALE_MIN_KEY);
   const scaleMax = scenarios.find((sc) => sc.key === SCALE_MAX_KEY);
   const scenario = scenarios.find((sc) => sc.key === scenarioKey);
@@ -310,8 +344,8 @@ export default function SupplySection() {
   // A real week uses supply_flow's own annual figure; a slider position works it out the same way.
   const netPct = scenario ? scenario.net_annual_pct * 100 : ((netEth * 365) / 7 / totalSupply) * 100;
   const isLastWeek = scenario?.key === LAST_WEEK_KEY;
-  // Real weeks are real data; a slider position between them is an estimate from the curve.
-  const burnIsFake = !scenario;
+  // A slider position between real weeks is an estimate from the curve. It isn't marked
+  // as fake data: the note under the figures and the footnote say it's an estimate.
 
   const lastWeekTotals = lastWeek?.daily?.data?.reduce(
     (acc, [, issued, burned]) => ({ issued: acc.issued + issued, burned: acc.burned + burned, days: acc.days + 1 }),
@@ -344,15 +378,21 @@ export default function SupplySection() {
             <GTPButton
               key={sc.key}
               label={sc.name}
+              leftIconOverride={
+                <WeekMarker isLastWeek={sc.key === LAST_WEEK_KEY} color={demandColor(colorLevels[sc.key], resolvedTheme)} />
+              }
               isSelected={scenarioKey === sc.key}
               clickHandler={() => setScenarioKey(sc.key)}
               size="sm"
             />
           ))}
         </GTPButtonRow>
-        <div className="flex items-center gap-x-[10px] flex-1 min-w-[220px] h-[32px] px-[13px]">
+        {/* At least 360px (the label plus a ~210px track), so it wraps onto its own line
+            before the track gets too short to use; capped at the bar's width on phones. */}
+        <div className="flex items-center gap-x-[10px] flex-1 min-w-[min(360px,100%)] h-[32px] px-[13px]">
           <span className="heading-small-xs whitespace-nowrap">Network demand</span>
-          <div className="relative flex-1 flex items-center">
+          {/* Raised 6px so the week markers below the track fit inside the bar. */}
+          <div className="relative flex-1 flex items-center -translate-y-[6px]">
             <input
               type="range"
               min="0"
@@ -368,33 +408,35 @@ export default function SupplySection() {
               className="w-full h-[20px] cursor-pointer"
               style={{ accentColor: "rgb(var(--accent-turquoise))" }}
             />
-            {/* Where last week's actual burn sits on the demand scale. Clicking it
-                selects "Last week". */}
-            {lastWeek && (
-            <Tooltip placement="top">
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={`Last week: network demand ${Math.round(lastWeek.demand_level * 100)} of 100`}
-                  onClick={() => setScenarioKey(lastWeek.key)}
-                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[8px] h-[22px] flex justify-center cursor-pointer"
-                  style={{
-                    left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${lastWeek.demand_level})`,
-                  }}
-                >
-                  <span className="w-[2px] h-full rounded-full bg-color-accent-yellow" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
-                {fmtDay(lastWeek.period.start)} – {fmtDay(lastWeek.period.end)} · {fmtEth(lastWeek.burned_per_week)} ETH burned
-              </TooltipContent>
-            </Tooltip>
-            )}
+            {/* Where each week's burn sits on the demand scale, as the marker from its
+                button, just below the track. Clicking a marker selects that week. Last
+                week is drawn last, so its triangle sits on top if it overlaps a dot. */}
+            {[...presets, ...(lastWeek ? [lastWeek] : [])]
+              .map((sc) => (
+                <Tooltip key={sc.key} placement="top">
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`${sc.name}: network demand ${Math.round(sc.demand_level * 100)} of 100`}
+                      onClick={() => setScenarioKey(sc.key)}
+                      className="absolute top-[calc(50%+9px)] -translate-x-1/2 size-[14px] flex items-center justify-center cursor-pointer"
+                      style={{
+                        left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${sc.demand_level})`,
+                      }}
+                    >
+                      <WeekMarker isLastWeek={sc.key === LAST_WEEK_KEY} color={demandColor(colorLevels[sc.key], resolvedTheme)} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
+                    {sc.name}: {fmtDay(sc.period.start)} – {fmtDay(sc.period.end)} · {fmtEth(sc.burned_per_week)} ETH burned
+                  </TooltipContent>
+                </Tooltip>
+              ))}
           </div>
         </div>
       </GTPButtonContainer>
 
-      <Card fake={burnIsFake} padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
+      <Card padded={false} className="overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0">
         <div className="p-[15px]">
           {/* Keyed so switching pace restarts the level from today's supply. */}
           <Bathtub
@@ -403,25 +445,24 @@ export default function SupplySection() {
             outflow={outflow}
             totalSupply={totalSupply}
             pace={isLastWeek ? LAST_WEEK_PACE : SCENARIO_PACE}
-            burnFake={burnIsFake}
           />
         </div>
         <div className="p-[20px] flex flex-col gap-y-[15px] justify-center border-t md:border-t-0 md:border-l border-color-bg-medium">
           <StatPair
             label="Net change in the water level, per year"
             value={fmtPct(netPct)}
-            valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""} ${ifFake(burnIsFake, FAKE_TEXT)}`}
+            valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""}`}
           />
           <StackBar
             parts={[
-              { label: "Burned", value: outflow, color: burnIsFake ? fakeColor("red") : "red" },
-              { label: "Stays in the tub", value: Math.max(0, netEth), color: burnIsFake ? fakeColor("turquoise") : "turquoise" },
+              { label: "Burned", value: outflow, color: "red" },
+              { label: "Stays in the tub", value: Math.max(0, netEth), color: "turquoise" },
             ]}
           />
           <Legend
             items={[
-              { label: "Burned", color: burnIsFake ? fakeColor("red") : "red", value: Math.round((outflow / inflow) * 100) + "% of issuance", fake: burnIsFake },
-              { label: "Net new", color: burnIsFake ? fakeColor("turquoise") : "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH`, fake: burnIsFake },
+              { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
+              { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
             ]}
           />
           <div className="h-px bg-color-bg-medium" />
