@@ -12,6 +12,8 @@ import QuickBitesTopicBar from '@/components/quick-bites/QuickBitesTopicBar';
 import { Carousel } from '@/components/Carousel';
 import { getListedQuickBites, getQuickBiteTopicUrl } from '@/lib/quick-bites/themes';
 import { QuickBiteWithSlug } from '@/lib/types/quickBites';
+import { TRACKER_HEADLINES } from '@/lib/quick-bites/trackerHeadlines';
+import useSWR from 'swr';
 
 const LATEST_COUNT = 6;
 // On phones the tracker list stops here; the "All live trackers" link leads to the rest.
@@ -130,15 +132,52 @@ const LiveTrackerTile = ({ quickBite, className = 'flex' }: { quickBite: QuickBi
     className={`group ${className} items-center gap-x-[10px] h-full min-h-[72px] px-[15px] py-[10px] rounded-[15px] border border-color-bg-medium transition-colors duration-200 hover:bg-color-bg-medium`}
   >
     <GTPIcon icon="gtp-realtime" size="sm" className="shrink-0 animate-pulse" />
-    <div className="flex flex-col min-w-0 flex-1 gap-y-[2px]">
-      <div className="heading-small-xs truncate group-hover:underline">{quickBite.shortTitle}</div>
-      {/* Two lines: similar subtitles (the stablecoin trackers) only differ at their end. */}
-      <div className="text-xs text-color-text-secondary line-clamp-2">{quickBite.subtitle}</div>
+    {/* Small title over a large number (as on the metric cards), so the two read apart. */}
+    <div className="flex flex-col min-w-0 flex-1 gap-y-[6px]">
+      <div className="heading-small-xxs truncate group-hover:underline">{quickBite.shortTitle}</div>
+      {TRACKER_HEADLINES[quickBite.slug] ? (
+        <TrackerHeadlineLine source={TRACKER_HEADLINES[quickBite.slug]} fallback={quickBite.subtitle} />
+      ) : (
+        <div className="text-xs text-color-text-secondary line-clamp-2">{quickBite.subtitle}</div>
+      )}
     </div>
     <div className="shrink-0 size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center transition-colors duration-200 group-hover:bg-color-ui-hover">
       <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="!size-[12px]" containerClassName="!size-[12px]" />
     </div>
   </Link>
 );
+
+/**
+ * The tracker's live number ("122.15M ETH  supply · +0.79%/yr"). A placeholder bar holds
+ * the line's height while it loads; if the data can't be read, the subtitle shows instead.
+ */
+const TrackerHeadlineLine = ({
+  source,
+  fallback,
+}: {
+  source: (typeof TRACKER_HEADLINES)[string];
+  fallback: string;
+}) => {
+  const { data, error } = useSWR(source.url);
+  const headline = data ? source.read(data) : null;
+
+  if (error || (data && !headline)) {
+    return <div className="text-xs text-color-text-secondary truncate">{fallback}</div>;
+  }
+  if (!headline) {
+    return <div className="h-[20px] w-[160px] max-w-full rounded-full bg-color-bg-medium animate-pulse" aria-hidden />;
+  }
+  return (
+    <div className="flex items-baseline gap-x-[8px] min-w-0 h-[20px]">
+      <span className="numbers-xl whitespace-nowrap">{headline.value}</span>
+      {headline.change && (
+        <span className={`numbers-xs whitespace-nowrap ${headline.change.percent < 0 ? 'text-color-negative' : 'text-color-positive'}`}>
+          {headline.change.percent >= 0 ? '+' : ''}{headline.change.percent.toFixed(1)}% {headline.change.period}
+        </span>
+      )}
+      <span className="heading-small-xxxs text-color-text-secondary truncate">{headline.label}</span>
+    </div>
+  );
+};
 
 export default QuickBitesSection;
