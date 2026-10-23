@@ -178,6 +178,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
+      // Lets Next.js turn off the smooth scrolling from globals.css while it resets the
+      // scroll position on navigation; otherwise it measures mid-animation and lands wrong.
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",

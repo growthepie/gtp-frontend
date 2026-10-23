@@ -178,8 +178,11 @@ export default function Page() {
 
 
 
+  // One root element: after a navigation Next.js checks whether the page's top-level
+  // elements are already in view, and this fixed overlay (always at the very top of the
+  // viewport, under the top bar) would make it scroll the table up under the bar.
   return (
-    <>
+    <div>
       <div
         aria-hidden="true"
         className={`fixed inset-0 z-[1000] bg-color-bg-default/75 pointer-events-none transition-opacity duration-300 ${hasExpandedOverviewCard ? "opacity-100" : "opacity-0"}`}
@@ -274,7 +277,7 @@ export default function Page() {
         </div>
 
       </HorizontalScrollContainer>
-    </>
+    </div>
   )
 }
 
