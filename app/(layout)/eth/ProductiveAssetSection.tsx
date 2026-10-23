@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
+import InfoButton from "./_components/InfoButton";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
 import { AccentColor, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
@@ -168,7 +168,14 @@ export default function ProductiveAssetSection() {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <SectionTitle icon="gtp-metrics-fdv" title="ETH is a productive asset" titleSize="md" as="h2" />
+      <div className="flex items-center gap-x-[8px]">
+        <SectionTitle icon="gtp-metrics-fdv" title="ETH is a productive asset" titleSize="md" as="h2" />
+        {live?.sources?.length ? (
+          <InfoButton label="Sources">
+            Sources: {[...new Set(live.sources.map((s) => s.name))].join(", ")}.
+          </InfoButton>
+        ) : null}
+      </div>
       <SectionDescription>
         Gold sits in a vault. ETH can do three jobs, and it can do them at the same time.
       </SectionDescription>
@@ -199,20 +206,13 @@ export default function ProductiveAssetSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px]">
         <Card fallback={missing}>
-          <div className="flex items-start gap-x-[8px]">
-            <span className="heading-small-xs flex-1 min-w-0">{m.headline}</span>
-            <Tooltip placement="bottom-end">
-              <TooltipTrigger asChild>
-                <button type="button" aria-label={`About ${mode}`} className="shrink-0 inline-flex items-center justify-center">
-                  <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
-                <span>{m.info}</span>
-                {/* Lend explains its rate here; Borrow shows its stablecoin split on the card. */}
-                {mode === "Lend" && live?.rateNote && <span>{live.rateNote}</span>}
-              </TooltipContent>
-            </Tooltip>
+          <div className="flex items-center gap-x-[8px]">
+            <span className="heading-small-xs min-w-0">{m.headline}</span>
+            <InfoButton label={`About ${mode}`}>
+              <span>{m.info}</span>
+              {/* Lend explains its rate here; Borrow shows its stablecoin split on the card. */}
+              {mode === "Lend" && live?.rateNote && <span>{live.rateNote}</span>}
+            </InfoButton>
           </div>
           <div className="flex items-baseline gap-x-[5px]">
             <span
@@ -222,13 +222,17 @@ export default function ProductiveAssetSection() {
             </span>
             <span className="heading-small-xxxs pt-[1px]">{m.rateLabel}</span>
           </div>
-          {parts.length > 0 && (
-            <>
-              <StackBar parts={parts} />
-              <Legend items={parts.map((p) => ({ label: p.label, color: p.color, value: pct(p.value) }))} />
-            </>
-          )}
-          {mode === "Borrow" && live?.rateNote && <span className="text-xs text-color-text-primary/70">{live.rateNote}</span>}
+          {/* Title and rate stay at the top; the breakdown sits on the card's bottom edge,
+              so it lines up with the result in the card beside it when this one is taller than needed. */}
+          <div className="mt-auto flex flex-col gap-y-[10px]">
+            {parts.length > 0 && (
+              <>
+                <StackBar parts={parts} />
+                <Legend items={parts.map((p) => ({ label: p.label, color: p.color, value: pct(p.value) }))} />
+              </>
+            )}
+            {mode === "Borrow" && live?.rateNote && <span className="text-xs text-color-text-primary/70">{live.rateNote}</span>}
+          </div>
         </Card>
 
         <Card fallback={missing}>
@@ -250,43 +254,39 @@ export default function ProductiveAssetSection() {
             className="w-full h-[20px] cursor-pointer"
             style={{ accentColor: "rgb(var(--accent-turquoise))" }}
           />
-          <div className="h-px bg-color-bg-medium" />
-          <StatPair
-            label={mode === "Borrow" ? `Borrowing power at ${maxLtv ? pct(maxLtv, 1) : "—"} LTV` : "Per year, at today's rate"}
-            value={
-              mode === "Borrow"
-                ? borrowingPower !== null
-                  ? usd(borrowingPower)
-                  : "—"
-                : live
-                  ? (amount * live.rate).toFixed(3)
-                  : "—"
-            }
-            unit={mode === "Borrow" ? "" : "ETH"}
-            valueClassName={`numbers-2xl ${mode === "Borrow" ? "text-color-accent-yellow" : "text-color-accent-turquoise"} ${ifFallback(missing, FALLBACK_TEXT)}`}
-          />
-          <span className={`text-xs ${ifFallback(missing, FALLBACK_TEXT)}`}>
-            {mode === "Borrow" ? "Interest ≈ " : "≈ "}
-            {yearly !== null ? usd(yearly) : "—"} / yr
-          </span>
+          {/* The result sits on the card's bottom edge; the amount and slider stay at the top. */}
+          <div className="mt-auto flex flex-col gap-y-[10px]">
+            <div className="h-px bg-color-bg-medium" />
+            <StatPair
+              label={mode === "Borrow" ? `Borrowing power at ${maxLtv ? pct(maxLtv, 1) : "—"} LTV` : "Per year, at today's rate"}
+              value={
+                mode === "Borrow"
+                  ? borrowingPower !== null
+                    ? usd(borrowingPower)
+                    : "—"
+                  : live
+                    ? (amount * live.rate).toFixed(3)
+                    : "—"
+              }
+              unit={mode === "Borrow" ? "" : "ETH"}
+              valueClassName={`numbers-2xl ${mode === "Borrow" ? "text-color-accent-yellow" : "text-color-accent-turquoise"} ${ifFallback(missing, FALLBACK_TEXT)}`}
+            />
+            <span className={`text-xs ${ifFallback(missing, FALLBACK_TEXT)}`}>
+              {mode === "Borrow" ? "Interest ≈ " : "≈ "}
+              {yearly !== null ? usd(yearly) : "—"} / yr
+            </span>
+          </div>
         </Card>
 
         <Card fallback={missing}>
-          <div className="flex items-start gap-x-[8px]">
-            <span className="heading-small-xs flex-1 min-w-0">By the numbers</span>
+          <div className="flex items-center gap-x-[8px]">
+            <span className="heading-small-xs min-w-0">By the numbers</span>
             {/* The risks of this mode, on hover. */}
-            <Tooltip placement="bottom-end">
-              <TooltipTrigger asChild>
-                <button type="button" aria-label={`Risks of ${{ Stake: "staking", Lend: "lending", Borrow: "borrowing" }[mode]}`} className="shrink-0 inline-flex items-center justify-center">
-                  <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
-                {m.risk}
-              </TooltipContent>
-            </Tooltip>
+            <InfoButton label={`Risks of ${{ Stake: "staking", Lend: "lending", Borrow: "borrowing" }[mode]}`}>
+              {m.risk}
+            </InfoButton>
           </div>
-          <div className="grid grid-cols-2 gap-[10px]">
+          <div className="mt-auto grid grid-cols-2 gap-[10px]">
             {(live?.facts ?? []).map((f, i, all) => (
               // An odd last tile spans both columns.
               <div
@@ -300,14 +300,15 @@ export default function ProductiveAssetSection() {
           </div>
         </Card>
       </div>
-      {live?.sources?.length ? (
-        <div className="text-xs text-color-text-primary/70">
-          Sources: {[...new Set(live.sources.map((s) => s.name))].join(", ")}.
-        </div>
-      ) : null}
 
       <Card>
-        <span className="heading-small-xs">Yield on the asset itself: what each one pays just for holding it</span>
+        <div className="flex items-center gap-x-[8px]">
+          <span className="heading-small-xs min-w-0">Yield on the asset itself: what each one pays just for holding it</span>
+          <InfoButton label="About these rates">
+            <span>Hover a row for how it&apos;s measured.</span>
+            {yieldSources.length > 0 && <span>Sources: {yieldSources.join(", ")}.</span>}
+          </InfoButton>
+        </div>
         <div className="flex flex-col gap-y-[8px]">
           {yieldComparison.map((row) => (
             <BarRow
@@ -323,11 +324,8 @@ export default function ProductiveAssetSection() {
             />
           ))}
         </div>
-        <span className="text-xs md:text-sm">
+        <span className="text-sm">
           Nominal rates. Staking pays in ETH, so the dollar value moves with the price. A treasury does not.
-        </span>
-        <span className="text-xs text-color-text-primary/70">
-          Hover a row for how it&apos;s measured.{yieldSources.length > 0 && <> Sources: {yieldSources.join(", ")}.</>}
         </span>
       </Card>
     </div>

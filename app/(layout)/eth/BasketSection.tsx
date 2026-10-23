@@ -6,6 +6,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import Card from "./_components/Card";
+import InfoButton from "./_components/InfoButton";
 import Pictogram from "./_components/Pictogram";
 import Dumbbell from "./_components/Dumbbell";
 import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, GOLD_BAR } from "./_components/BasketIcons";
@@ -123,6 +124,17 @@ export default function BasketSection() {
                 <span className="heading-small-xs">{display.units}</span>
               </div>
             </div>
+            <InfoButton label="About these prices" className="ml-auto self-start">
+              <span>
+                {region.name}: 1 ETH = {formatPrice(region.eth_price, region.currency)} today,{" "}
+                {formatPrice(region.eth_price_year_ago, region.currency)} a year ago. {item.name} costs{" "}
+                {formatPrice(item.price, region.currency)} per {display.unit} ({formatPrice(item.price_year_ago, region.currency)} a year
+                ago), as of {formatMonth(item.price_as_of)}
+                {/* Only mention the conversion when the source priced a different unit. */}
+                {!item.source_unit.startsWith(item.unit) && <>, converted from {item.source_unit}</>}.
+              </span>
+              <span>Sources: {sources.join(", ")}.</span>
+            </InfoButton>
           </div>
           <Pictogram glyph={display.glyph} count={item.units_per_eth} unitLabel={display.units} />
         </Card>
@@ -140,19 +152,10 @@ export default function BasketSection() {
             format={fmt}
             unit={display.units}
           />
-          <div className="text-xs md:text-sm">
+          <div className="text-sm">
             Supply is not on this list: net issuance changes your share of the network, not what ETH buys.
           </div>
         </Card>
-      </div>
-
-      <div className="text-xs text-color-text-primary/70">
-        {region.name}: 1 ETH = {formatPrice(region.eth_price, region.currency)} today,{" "}
-        {formatPrice(region.eth_price_year_ago, region.currency)} a year ago. {item.name} costs{" "}
-        {formatPrice(item.price, region.currency)} per {display.unit} ({formatPrice(item.price_year_ago, region.currency)} a year
-        ago), as of {formatMonth(item.price_as_of)}
-        {/* Only mention the conversion when the source priced a different unit. */}
-        {!item.source_unit.startsWith(item.unit) && <>, converted from {item.source_unit}</>}. Sources: {sources.join(", ")}.
       </div>
     </div>
   );

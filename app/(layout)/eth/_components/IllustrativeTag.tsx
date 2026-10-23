@@ -28,7 +28,3 @@ export default function IllustrativeTag({ label = "Illustrative figure" }: { lab
   );
 }
 
-/** A section-level footnote for sections where several figures are illustrative. */
-export function IllustrativeNote({ children }: { children: React.ReactNode }) {
-  return <div className="text-xs text-color-text-primary/70">{children}</div>;
-}

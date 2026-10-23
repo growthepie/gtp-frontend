@@ -11,7 +11,7 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
-import { IllustrativeNote } from "./_components/IllustrativeTag";
+import InfoButton from "./_components/InfoButton";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
@@ -43,15 +43,15 @@ const demandColor = (colorLevel: number, theme: string | undefined) =>
 const MIN_COLOR_GAP = 0.15;
 
 /** A week's marker: a dot, or for last week (the real, current one) an upward
- *  triangle so it stands out from the presets. Used on its button and on the scale. */
-function WeekMarker({ isLastWeek, color }: { isLastWeek: boolean; color: string }) {
+ *  triangle so it stands out from the presets. Used on its button and, smaller, on the scale. */
+function WeekMarker({ isLastWeek, color, small = false }: { isLastWeek: boolean; color: string; small?: boolean }) {
   if (isLastWeek)
     return (
-      <svg width="10" height="9" viewBox="0 0 10 9" className="flex-shrink-0" aria-hidden>
+      <svg width={small ? 8 : 10} height={small ? 7 : 9} viewBox="0 0 10 9" className="flex-shrink-0" aria-hidden>
         <path d="M5 0.5 L9.5 8.5 L0.5 8.5 Z" fill={color} strokeLinejoin="round" stroke={color} strokeWidth="1" />
       </svg>
     );
-  return <span className="size-[8px] rounded-full flex-shrink-0" style={{ backgroundColor: color }} aria-hidden />;
+  return <span className={`${small ? "size-[6px]" : "size-[8px]"} rounded-full flex-shrink-0`} style={{ backgroundColor: color }} aria-hidden />;
 }
 
 /** Each week's colour position (0–1): its demand level, nudged apart from its neighbours. */
@@ -224,9 +224,15 @@ function Bathtub({
         </clipPath>
       </defs>
 
-      {/* Tap — positioned so the drips fall clear of the scale and the readout */}
-      <rect x="133" y="8" width="34" height="9" rx="4" fill="rgb(var(--bg-medium))" />
-      <rect x="146" y="14" width="8" height="14" rx="3" fill="rgb(var(--bg-medium))" />
+      {/* Tap — a wall pipe, valve body with cross handle, and a spout curving down to
+          x=150, where the drips start, clear of the scale and the readout */}
+      <g fill="rgb(var(--bg-medium))">
+        <rect x="104" y="10" width="24" height="8" rx="2" />
+        <rect x="124" y="7" width="18" height="14" rx="4" />
+        <rect x="131" y="2" width="4" height="6" />
+        <rect x="123" y="0.5" width="20" height="4" rx="2" />
+      </g>
+      <path d="M140 14 H144 Q150 14 150 20 V27" fill="none" stroke="rgb(var(--bg-medium))" strokeWidth="8" strokeLinejoin="round" />
       <text x="180" y="18" fill="rgb(var(--text-primary))" style={LABEL_STYLE}>
         Issued to stakers
       </text>
@@ -369,7 +375,18 @@ export default function SupplySection() {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
+      <div className="flex items-center gap-x-[8px]">
+        <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
+        <InfoButton label="About this picture">
+          <span>
+            Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
+            actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
+            burn, so they&apos;re estimates.
+          </span>
+          <span>The tub runs as a time-lapse so the level moves visibly. The real rate is the annual figure above.</span>
+          <span>Sources: {sources}.</span>
+        </InfoButton>
+      </div>
       <SectionDescription>Inflation and burn are abstract. A tap and a drain are not.</SectionDescription>
 
       {/* Same control bar as the fundamentals charts: presets left, slider right. The
@@ -400,8 +417,9 @@ export default function SupplySection() {
             before the track gets too short to use; capped at the bar's width on phones. */}
         <div className="flex items-center gap-x-[10px] flex-1 min-w-[min(360px,100%)] h-[32px] px-[13px]">
           <span className="heading-small-xs whitespace-nowrap">Network demand</span>
-          {/* Raised 6px so the week markers below the track fit inside the bar. */}
-          <div className="relative flex-1 flex items-center -translate-y-[6px]">
+          {/* The track is centred in the bar like the buttons; the week markers are small
+              enough to fit in the space below it (centred 9px under the track, inside 32px). */}
+          <div className="relative flex-1 flex items-center">
             <input
               type="range"
               min="0"
@@ -428,12 +446,12 @@ export default function SupplySection() {
                       type="button"
                       aria-label={`${sc.name}: network demand ${Math.round(sc.demand_level * 100)} of 100`}
                       onClick={() => setScenarioKey(sc.key)}
-                      className="absolute top-[calc(50%+9px)] -translate-x-1/2 size-[14px] flex items-center justify-center cursor-pointer"
+                      className="absolute top-[calc(50%+4px)] -translate-x-1/2 size-[10px] flex items-center justify-center cursor-pointer"
                       style={{
                         left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${sc.demand_level})`,
                       }}
                     >
-                      <WeekMarker isLastWeek={sc.key === LAST_WEEK_KEY} color={demandColor(colorLevels[sc.key], resolvedTheme)} />
+                      <WeekMarker isLastWeek={sc.key === LAST_WEEK_KEY} color={demandColor(colorLevels[sc.key], resolvedTheme)} small />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 rounded-[8px] bg-color-bg-default px-[10px] py-[6px] shadow-standard text-xs">
@@ -475,16 +493,9 @@ export default function SupplySection() {
             ]}
           />
           <div className="h-px bg-color-bg-medium" />
-          <span className="text-xs md:text-sm">{note}</span>
+          <span className="text-sm">{note}</span>
         </div>
       </Card>
-
-      <IllustrativeNote>
-        Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
-        actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
-        burn, so they&apos;re estimates. The tub runs as a time-lapse so the level moves visibly. The real rate is the
-        annual figure above. Sources: {sources}.
-      </IllustrativeNote>
     </div>
   );
 }

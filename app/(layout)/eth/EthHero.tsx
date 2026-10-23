@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
@@ -15,6 +14,7 @@ import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-t
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { ACCENT_HEX, AccentColor, FALLBACK_TEXT, FALLBACK_TILE_BG, ifFallback } from "./_components/colors";
 import EtherDiamond from "./_components/EtherDiamond";
+import InfoButton from "./_components/InfoButton";
 
 // Imperva (Thales) Bad Bot Report 2026: automated share of web traffic in 2025.
 // Static — the report is annual; update when the next edition comes out.
@@ -180,22 +180,29 @@ export default function EthHero() {
             ) : (
               <span className={`numbers-5xl text-color-text-primary/40 ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>—</span>
             )}
-            {/* Only claim "live" while the stream's price is shown, not the hourly fallback. */}
-            {isLivePrice ? (
-              <span className="heading-small-xs flex items-center gap-x-[5px]">
-                <span className="relative flex h-[6px] w-[6px]">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
-                  <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
+            {/* The i-button sits with the price label, centred on it. */}
+            <span className="inline-flex items-center gap-x-[5px]">
+              {/* Only claim "live" while the stream's price is shown, not the hourly fallback. */}
+              {isLivePrice ? (
+                <span className="heading-small-xs flex items-center gap-x-[5px]">
+                  <span className="relative flex h-[6px] w-[6px]">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
+                    <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
+                  </span>
+                  Live price
                 </span>
-                Live price
-              </span>
-            ) : (
-              displayedPrice && (
-                <span className="heading-small-xs text-color-text-primary/70">
-                  Hourly price{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
-                </span>
-              )
-            )}
+              ) : (
+                displayedPrice && (
+                  <span className="heading-small-xs text-color-text-primary/70">
+                    Hourly price{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
+                  </span>
+                )
+              )}
+              <InfoButton label="About these figures">
+                <span>Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.</span>
+                <span>Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.</span>
+              </InfoButton>
+            </span>
           </div>
           {/* The two stat pills sit on one row. They step down in size as the row narrows —
               full from 600px, compact from 500px, extra-compact below — so they still fit
@@ -217,26 +224,19 @@ export default function EthHero() {
                 <span className="numbers-xxs @[500px]:numbers-xs @[600px]:numbers-sm tabular-nums">{lifetimeWallets.toLocaleString("en-US")}</span>
                 <span className="heading-small-xxxs @[500px]:heading-small-xxs @[600px]:heading-small-xs">wallets used ETH</span>
               </span>
-              <Tooltip placement="bottom">
-                <TooltipTrigger asChild>
-                  <button type="button" aria-label="About wallets that have used ETH" className="flex items-center justify-center">
-                    <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
-                  <span>
-                    Every address that has ever been active on Ethereum Mainnet, ticking forward at today&apos;s pace
-                    of new addresses. Wallets aren&apos;t people: one person can
-                    have many, and exchanges hold ETH for millions of users in a few. Addresses that have only used Layer 2s
-                    aren&apos;t counted.
-                  </span>
-                  <span>
-                    Not every wallet is a person, either: online, {BOT_TRAFFIC_SHARE_PCT}% of web traffic is bots. That&apos;s 40%
-                    malicious and 13% benign ones like search crawlers, against 47% humans (Imperva Bad Bot Report 2026,
-                    measured across sites Imperva protects).
-                  </span>
-                </TooltipContent>
-              </Tooltip>
+              <InfoButton label="About wallets that have used ETH">
+                <span>
+                  Every address that has ever been active on Ethereum Mainnet, ticking forward at today&apos;s pace
+                  of new addresses. Wallets aren&apos;t people: one person can
+                  have many, and exchanges hold ETH for millions of users in a few. Addresses that have only used Layer 2s
+                  aren&apos;t counted.
+                </span>
+                <span>
+                  Not every wallet is a person, either: online, {BOT_TRAFFIC_SHARE_PCT}% of web traffic is bots. That&apos;s 40%
+                  malicious and 13% benign ones like search crawlers, against 47% humans (Imperva Bad Bot Report 2026,
+                  measured across sites Imperva protects).
+                </span>
+              </InfoButton>
             </div>
           )}
           {ethPerPerson !== null && (
@@ -246,25 +246,18 @@ export default function EthHero() {
                 <span className="numbers-xxs @[500px]:numbers-xs @[600px]:numbers-sm tabular-nums">{ethPerPerson?.toFixed(ETH_PER_PERSON_DECIMALS)}</span>
                 <span className="heading-small-xxxs @[500px]:heading-small-xxs @[600px]:heading-small-xs">ETH per person</span>
               </span>
-              <Tooltip placement="bottom">
-                <TooltipTrigger asChild>
-                  <button type="button" aria-label="About ETH per person" className="flex items-center justify-center">
-                    <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm flex flex-col gap-y-[8px]">
-                  <span>
-                    If all ETH were split evenly across the world&apos;s{" "}
-                    <span className="numbers-xs tabular-nums">{Math.round(worldPopulation ?? 0).toLocaleString("en-US")}</span>{" "}
-                    people, each would have {ethPerPerson?.toFixed(4)} ETH. Most people hold none, so owning even a small
-                    amount puts you in a meaningful percentile of holders.
-                  </span>
-                  <span>
-                    Both sides tick forward every second at their current pace: supply from ultrasound.money, and world
-                    population projected from World Bank data, not counted live.
-                  </span>
-                </TooltipContent>
-              </Tooltip>
+              <InfoButton label="About ETH per person">
+                <span>
+                  If all ETH were split evenly across the world&apos;s{" "}
+                  <span className="numbers-xs tabular-nums">{Math.round(worldPopulation ?? 0).toLocaleString("en-US")}</span>{" "}
+                  people, each would have {ethPerPerson?.toFixed(4)} ETH. Most people hold none, so owning even a small
+                  amount puts you in a meaningful percentile of holders.
+                </span>
+                <span>
+                  Both sides tick forward every second at their current pace: supply from ultrasound.money, and world
+                  population projected from World Bank data, not counted live.
+                </span>
+              </InfoButton>
             </div>
           )}
           </div>
@@ -413,10 +406,6 @@ export default function EthHero() {
             </span>
             <GTPIcon icon="gtp-chevronright" size="sm" className="shrink-0 transition-transform group-hover:translate-x-[3px]" />
           </Link>
-        </div>
-        <div className="text-xs text-color-text-primary/70">
-          Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.
-          Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.
         </div>
       </div>
     </div>

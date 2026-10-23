@@ -48,7 +48,7 @@ export default function Dumbbell({
           return (
             <div key={step.label} className="flex flex-col gap-y-[2px]">
               <div className="flex items-baseline justify-between gap-x-[10px]">
-                <span className="text-xs md:text-sm">{step.label}</span>
+                <span className="text-xs">{step.label}</span>
                 <span className={`numbers-xs md:numbers-sm whitespace-nowrap ${fakeText}`}>
                   {signed(step.delta)} {unit}
                 </span>

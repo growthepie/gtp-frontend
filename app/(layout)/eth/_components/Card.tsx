@@ -33,6 +33,6 @@ export function Callout({
   color?: string;
 }) {
   return (
-    <div className={`p-[15px] bg-color-bg-medium rounded-[15px] border-l-4 ${color} text-xs md:text-sm`}>{children}</div>
+    <div className={`p-[15px] bg-color-bg-medium rounded-[15px] border-l-4 ${color} text-sm`}>{children}</div>
   );
 }

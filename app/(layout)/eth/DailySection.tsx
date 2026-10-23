@@ -2,6 +2,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import { SectionTitle, SectionDescription, SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
 import Sparkline from "./_components/Sparkline";
+import InfoButton from "./_components/InfoButton";
 import FaqBlock from "@/components/quick-bites/blocks/FaqBlock";
 import { generateBlockId } from "@/lib/types/blockTypes";
 import { AccentColor } from "./_components/colors";
@@ -13,6 +14,13 @@ import { IS_PRODUCTION } from "@/lib/helpers";
 const TODAY_CARD_COUNT = 3;
 // Accent per position, so the three cards stay distinguishable.
 const TODAY_COLORS: AccentColor[] = ["turquoise", "yellow", "red"];
+
+// value_formatted can carry words after the number ("0.93M new wallets in 7 days"):
+// the number stays large and the words become its label, like "APR, paid in ETH".
+function splitValue(formatted: string): { value: string; unit: string | null } {
+  const match = formatted.match(/^([$€£]?[\d.,]+[A-Za-z%]{0,2})\s+(.+)$/);
+  return match ? { value: match[1], unit: match[2] } : { value: formatted, unit: null };
+}
 
 const MYTHS = [
   {
@@ -50,29 +58,37 @@ export default function DailySection() {
   return (
     <div className="flex flex-col gap-y-[30px]">
       <div className="flex flex-col gap-y-[15px]">
-        <SectionTitle icon="gtp-quick-bites" title="Today in ETH" titleSize="md" as="h2" />
+        <div className="flex items-center gap-x-[8px]">
+          <SectionTitle icon="gtp-quick-bites" title="Today in ETH" titleSize="md" as="h2" />
+          <InfoButton label="About Today in ETH">
+            <span>A new card each day, picked from the day&apos;s data and written up automatically.</span>
+            {todaySources.length > 0 && <span>Sources: {todaySources.join(", ")}.</span>}
+          </InfoButton>
+        </div>
         <SectionDescription>One number, one sentence.</SectionDescription>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px]">
           {todayCards.map((card, i) => {
             const color = TODAY_COLORS[i % TODAY_COLORS.length];
             const trend = card.sparkline.data.map(([, v]) => v).filter(Number.isFinite);
+            const { value, unit } = splitValue(card.value_formatted);
             return (
-              <Card key={card.date}>
+              // Each card spans four rows of a shared subgrid (value, trend, headline, sentence),
+              // so a value that wraps or a longer headline keeps the rows aligned across cards.
+              <Card key={card.date} className="grid grid-rows-subgrid row-span-4">
                 <div className="flex items-baseline justify-between gap-x-[10px]">
-                  <span className="numbers-2xl">{card.value_formatted}</span>
+                  <span className="flex flex-wrap items-baseline gap-x-[8px] min-w-0">
+                    <span className="numbers-2xl">{value}</span>
+                    {unit && <span className="heading-small-xxxs pt-[1px]">{unit}</span>}
+                  </span>
                   <span className="heading-small-xxxs pt-[1px] text-color-text-primary/70 whitespace-nowrap">{card.data_date}</span>
                 </div>
                 {/* Milestone cards have no trend; keep the space so the three cards line up. */}
                 {trend.length > 1 ? <Sparkline points={trend} color={color} height={44} /> : <div className="h-[44px]" />}
-                <span className="heading-small-xs">{card.headline}</span>
-                <span className="text-xs md:text-sm">{card.sentence}</span>
+                <span className="heading-large-xs md:heading-large-sm">{card.headline}</span>
+                <span className="text-sm">{card.sentence}</span>
               </Card>
             );
           })}
-        </div>
-        <div className="text-xs text-color-text-primary/70">
-          A new card each day, picked from the day&apos;s data and written up automatically.
-          {todaySources.length > 0 && <> Sources: {todaySources.join(", ")}.</>}
         </div>
       </div>
 
@@ -93,7 +109,7 @@ export default function DailySection() {
         {!IS_PRODUCTION && (
         <Card fake>
           <span className="heading-small-xs">Get the weekly numbers</span>
-          <span className="text-xs md:text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
+          <span className="text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
           <div className="flex gap-x-[8px]">
             <input
               placeholder="you@email.com"
@@ -107,7 +123,7 @@ export default function DailySection() {
         )}
         <Card>
           <span className="heading-small-xs">Go deeper</span>
-          <span className="text-xs md:text-sm">Community work behind these numbers.</span>
+          <span className="text-sm">Community work behind these numbers.</span>
           <div className="flex flex-wrap gap-[10px] items-start">
             <SectionButtonLink href="https://ethval.com/#valuation" newTab label="ETHval dashboard" />
             <SectionButtonLink href="https://productivemoney.xyz" newTab label="Productive Money" />
@@ -117,7 +133,7 @@ export default function DailySection() {
 
       <div className="rounded-[15px] bg-color-bg-medium p-[15px] flex items-center gap-x-[15px]">
         <span className="font-raleway font-bold text-[36px] leading-[36px] text-color-accent-yellow tracking-wide">NFA</span>
-        <span className="text-xs md:text-sm flex-1">
+        <span className="text-sm flex-1">
           Not financial advice. Public onchain data and our reading of it. ETH is volatile and you can lose money holding it.
         </span>
       </div>

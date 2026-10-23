@@ -8,6 +8,7 @@ import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPB
 import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
+import InfoButton from "./_components/InfoButton";
 import { BarRow } from "./_components/StatBar";
 import ScrollArea from "./_components/ScrollArea";
 import { ACCENT_HEX, FALLBACK_TEXT, ifFallback } from "./_components/colors";
@@ -83,6 +84,7 @@ export default function RankingSection() {
   const rows = allAssets.filter((r) => r.key === "eth" || filter === "everything" || r.kind === filter);
   const scaleOf = (assets: Asset[]) => Math.max(0, ...assets.filter((r) => !OFF_SCALE_KEYS.includes(r.key)).map((r) => r.cap));
   const max = scaleOf(rows);
+  const ethRank = rows.findIndex((r) => r.key === "eth") + 1;
 
   const sourceNames = useMemo(
     () => [...new Set(allAssets.length ? Object.values(caps!.categories).flat().flatMap((a) => a.sources.map((s) => s.name)) : [])],
@@ -109,11 +111,11 @@ export default function RankingSection() {
   const showsOffScale = rows.some((r) => OFF_SCALE_KEYS.includes(r.key));
 
   // Side by side, the two columns share one set of rows (subgrid: title,
-  // description, button bar, card, footnote), so the cards are always the same
-  // height even when one footnote wraps to two lines and the other doesn't.
+  // description, button bar, card), so the cards are always the same height even
+  // when one description wraps to two lines and the other doesn't.
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
-      <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-5">
+      <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-4">
         <SectionTitle icon="gtp-rank" title="How big is it really?" titleSize="md" as="h2" />
         <SectionDescription>ETH next to assets you already have a sense of.</SectionDescription>
         {/* Same control bar as the fundamentals charts. It sits inside this column, so
@@ -127,9 +129,23 @@ export default function RankingSection() {
             ))}
           </GTPButtonRow>
         </GTPButtonContainer>
-        {/* Fixed height whichever filter is picked; the list scrolls inside it. 342px
-            shows 12 full rows above the pinned ETH row, with no part-row peeking out. */}
-        <Card className="h-[342px]">
+        {/* Fixed height whichever filter is picked; the list scrolls inside it. 376px
+            fits the header (24px + 10px gap) and a 312px list: 12 full rows above the
+            pinned ETH row, with no part-row peeking out. */}
+        <Card className="h-[376px]">
+          {/* Same header as the ETH / BTC card beside it: big number, label, i-button. */}
+          <div className="flex items-baseline gap-x-[10px]">
+            <span className="numbers-2xl">{ethRank > 0 ? `#${ethRank}` : "—"}</span>
+            <span className="inline-flex items-center gap-x-[5px]">
+              <span className="heading-small-xxxs">ETH&apos;s rank of {rows.length} by market cap</span>
+              <InfoButton label="About this ranking">
+                <span>
+                  {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a commodity for its method).
+                </span>
+                {sourceNames.length > 0 && <span>Sources: {sourceNames.join(", ")}.</span>}
+              </InfoButton>
+            </span>
+          </div>
           <ScrollArea className="flex-1">
             {/* Rows touch (4px padding each instead of an 8px gap), so moving down the
                 list never leaves a row and the hover-coloured logos don't flicker. */}
@@ -163,13 +179,9 @@ export default function RankingSection() {
             </div>
           </ScrollArea>
         </Card>
-        <div className="text-xs text-color-text-primary/70">
-          {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a commodity for its method).
-          {sourceNames.length > 0 && <> Sources: {sourceNames.join(", ")}.</>}
-        </div>
       </div>
 
-      <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-5">
+      <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-4">
         <SectionTitle icon="gtp-compare" title="ETH / BTC market cap" titleSize="md" as="h2" />
         <SectionDescription>The value of all existing ETH vs the value of all existing BTC.</SectionDescription>
         <GTPButtonContainer style={ratioSpansWrapping ? { borderRadius: "15px" } : undefined}>
@@ -189,7 +201,15 @@ export default function RankingSection() {
         <Card className="flex-1" fallback={!isLoading && !latestRatio}>
           <div className="flex items-baseline gap-x-[10px]">
             <span className={`numbers-2xl ${ifFallback(!isLoading && !latestRatio, FALLBACK_TEXT)}`}>{latestRatio ? `${latestRatio.toFixed(1)}%` : "—"}</span>
-            <span className="heading-small-xxxs pt-[1px]">of Bitcoin&apos;s market cap</span>
+            <span className="inline-flex items-center gap-x-[5px]">
+              <span className="heading-small-xxxs">of Bitcoin&apos;s market cap</span>
+              {(!!ratioSince || !!ratio?.sources?.length) && (
+                <InfoButton label="About this chart">
+                  {ratioSince && <span>Daily, {ratioSince}.</span>}
+                  {ratio?.sources?.length ? <span>Sources: {ratio.sources.map((s) => s.name).join(", ")}.</span> : null}
+                </InfoButton>
+              )}
+            </span>
           </div>
           {/* Fixed height when stacked; grows into the card when side by side. */}
           <div className="relative h-[200px] lg:h-auto lg:flex-1 lg:min-h-[200px]">
@@ -210,9 +230,6 @@ export default function RankingSection() {
             )}
           </div>
         </Card>
-        <div className="text-xs text-color-text-primary/70">
-          {ratioSince && `Daily, ${ratioSince}.`}{ratio?.sources?.length ? ` Sources: ${ratio.sources.map((s) => s.name).join(", ")}.` : ""}
-        </div>
       </div>
     </div>
   );

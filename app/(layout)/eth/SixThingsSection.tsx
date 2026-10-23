@@ -6,12 +6,11 @@ import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { SparklineChart } from "@/components/layout/Applications/AppMetricCard";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { formatUptime } from "@/components/layout/EthAgg/helpers";
 import Card from "./_components/Card";
+import InfoButton from "./_components/InfoButton";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
-import { IllustrativeNote } from "./_components/IllustrativeTag";
 import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 
 // Fractions → "2.56%".
@@ -113,18 +112,11 @@ function PropCard({
       {/* Title truncates before the tag or info button get squeezed on narrow cards. */}
       <div className="flex items-center gap-x-[8px]">
         <GTPIcon icon={icon} size="md" className="shrink-0" />
-        <span className="heading-small-xs flex-1 min-w-0 truncate">{title}</span>
-        <span className="heading-small-xxxs shrink-0 whitespace-nowrap px-[8px] py-[3px] rounded-full bg-color-bg-medium">{tag}</span>
-        <Tooltip placement="bottom-end">
-          <TooltipTrigger asChild>
-            <button type="button" aria-label={`About ${title}`} className="shrink-0 inline-flex items-center justify-center">
-              <GTPIcon icon="gtp-info" size="sm" className="text-color-text-primary/70" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
-            {info}
-          </TooltipContent>
-        </Tooltip>
+        <span className="heading-small-xs min-w-0 truncate">{title}</span>
+        <InfoButton label={`About ${title}`}>
+          {info}
+        </InfoButton>
+        <span className="heading-small-xxxs ml-auto shrink-0 whitespace-nowrap px-[8px] py-[3px] rounded-full bg-color-bg-medium">{tag}</span>
       </div>
       {/* gap-x matches the 5px in the fit check above. */}
       <div ref={row} className="relative flex flex-wrap items-baseline gap-x-[5px] gap-y-[2px]">
@@ -136,7 +128,9 @@ function PropCard({
           </span>
         )}
       </div>
-      {children}
+      {/* Title and value stay at the top; the visual sits on the card's bottom edge, so
+          cards in the same row end on the same line whatever their content height. */}
+      {children && <div className="mt-auto flex flex-col gap-y-[10px]">{children}</div>}
     </Card>
   );
 }
@@ -152,7 +146,7 @@ function MarketHours() {
       {rows.map((r) => (
         <div key={r.label} className="flex flex-col gap-y-[4px]">
           <div className="flex items-baseline justify-between">
-            <span className="text-xs md:text-sm">{r.label}</span>
+            <span className="text-xs">{r.label}</span>
             <span className="numbers-xs">
               {r.hours}h · {r.note}
             </span>
@@ -344,7 +338,7 @@ export default function SixThingsSection() {
           unit={l2Count ? `pays for gas on L1 and ${l2Count} Layer 2s` : "pays for gas on L1 and Layer 2s"}
           info="Transactions on Ethereum Mainnet and its Layer 2s use ETH to pay for computation and blockspace. The chart shows ETH paid as gas per day across them over the last 90 days. Source: growthepie."
         >
-          <div className="mt-auto">
+          <div>
             {recentGas.length > 1 ? (
               <div className="h-[72px]">
                 <SparklineChart
@@ -372,14 +366,12 @@ export default function SixThingsSection() {
           value="24/7"
           unit={`for ${uptime.full}`}
           unitShort={`for over ${uptime.years} years`}
-          info="Ethereum has produced blocks continuously since July 2015, with no market hours, weekends or holidays, and no one can block a valid transaction from being included."
+          info="Ethereum has produced blocks continuously since July 2015, with no market hours, weekends or holidays, and no one can block a valid transaction from being included. Settlement times for card payments, wires and stock trades are typical, not exact."
         >
-          <div className="text-xs md:text-sm">Censorship-resistant and always available.</div>
+          <div className="text-sm">Censorship-resistant and always available.</div>
           <MarketHours />
         </PropCard>
       </div>
-
-      <IllustrativeNote>Settlement times for card payments, wires and stock trades are typical, not exact.</IllustrativeNote>
     </div>
   );
 }

@@ -1,0 +1,39 @@
+import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
+import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
+import type { Placement } from "@floating-ui/dom";
+
+/**
+ * The page's i-button, styled like the metric charts on /ethereum-ecosystem/metrics:
+ * method notes and sources go in its tooltip instead of a footnote. Sits right after
+ * a title (section or card).
+ */
+export default function InfoButton({
+  label,
+  children,
+  placement = "top-start",
+  className = "",
+}: {
+  /** Accessible name, e.g. "About this chart". */
+  label: string;
+  children: React.ReactNode;
+  placement?: Placement;
+  className?: string;
+}) {
+  return (
+    <GTPTooltipNew
+      placement={placement}
+      unstyled
+      trigger={
+        <button type="button" aria-label={label} className={`shrink-0 inline-flex items-center justify-center hover:cursor-pointer ${className}`}>
+          <GTPIcon icon="gtp-info-monochrome" size="sm" className="pointer-events-auto" style={{ color: "rgb(var(--text-secondary))" }} />
+        </button>
+      }
+      positionOffset={{ mainAxis: 0, crossAxis: 0 }}
+    >
+      <GTPTooltipGeneral width={350}>
+        <div className="pl-[20px] flex flex-col gap-y-[8px]">{children}</div>
+      </GTPTooltipGeneral>
+    </GTPTooltipNew>
+  );
+}

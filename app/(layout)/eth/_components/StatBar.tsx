@@ -57,7 +57,7 @@ export function BarRow({
             className={`size-[16px] flex-shrink-0 object-contain ${iconInvertDark ? "dark:invert" : ""}`}
           />
         )}
-        <div className={`text-xs md:text-sm truncate ${emphasis ? "font-semibold" : ""} ${accentLabel ? ACCENT_TEXT[color] : ""}`}>
+        <div className={`text-xs truncate ${emphasis ? "font-semibold" : ""} ${accentLabel ? ACCENT_TEXT[color] : ""}`}>
           {label}
         </div>
       </div>
@@ -79,7 +79,7 @@ export function BarRow({
   return (
     <Tooltip placement="top">
       <TooltipTrigger asChild>{row}</TooltipTrigger>
-      <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs md:text-sm">
+      <TooltipContent className="z-50 max-w-[300px] rounded-[8px] bg-color-bg-default p-[12px] shadow-standard text-xs">
         {hint}
       </TooltipContent>
     </Tooltip>
