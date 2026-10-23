@@ -17,6 +17,7 @@ import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
 import { QuickBiteData } from "@/lib/types/quickBites";
 import { TitleButtonLink } from "../TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
 import { Carousel } from "@/components/Carousel";
 import { useUIContext } from "@/contexts/UIContext";
@@ -97,8 +98,11 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
           <div className="pl-[38px] md:pl-0 select-none">
             <div className="flex items-center justify-center p-[1px] rounded-full bg-[#263130] w-fit">
               <div className="flex items-center pl-[15px] py-[4px] gap-x-[8px] bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 pr-[5px]">
+                {quickBite.kind === "tracker" && (
+                  <GTPIcon icon="gtp-realtime" size="sm" className="animate-pulse" />
+                )}
                 <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
-                  Full Article
+                  {quickBite.kind === "tracker" ? "Live Tracker" : "Full Article"}
                 </div>
                 <div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
                   <Icon icon="feather:arrow-right" className="w-4 h-4" />
