@@ -290,9 +290,24 @@ const TableBlockContent = React.memo(function TableBlockContent({
 
   const { data: jsonData, error, isLoading, isValidating } = useSWR(url, { keepPreviousData: true });
 
+  // jsonData.recordKeyColumn: row data that is an object of records becomes rows with
+  // the record key first, then each field (in order of first appearance).
+  const recordTable = useMemo(() => {
+    const keyColumn = block.jsonData?.recordKeyColumn;
+    if (!block.readFromJSON || !jsonData || !keyColumn) return null;
+    const records = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
+    if (!records || typeof records !== 'object' || Array.isArray(records)) return null;
+    const entries = Object.entries(records as Record<string, Record<string, unknown>>);
+    const fields = [...new Set(entries.flatMap(([, record]) => Object.keys(record ?? {})))];
+    return {
+      columns: [keyColumn, ...fields],
+      rows: entries.map(([key, record]) => [key, ...fields.map((field) => record?.[field])]),
+    };
+  }, [block.readFromJSON, block.jsonData?.recordKeyColumn, block.jsonData?.pathToRowData, jsonData]);
+
   const dynamicColumnKeys = useMemo(() => {
     if (!block.readFromJSON || !jsonData) return block.columnDefinitions || {};
-    const columns = getNestedValue(jsonData, block.jsonData?.pathToColumnKeys || '');
+    const columns = recordTable ? recordTable.columns : getNestedValue(jsonData, block.jsonData?.pathToColumnKeys || '');
     if (Array.isArray(columns)) {
       const keysObject: { [key: string]: { label: string; sortByValue: boolean } } = {};
       columns.forEach(key => {
@@ -301,7 +316,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
       return keysObject;
     }
     return columns || block.columnDefinitions || {};
-  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData]);
+  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData, recordTable]);
 
   const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
   const hiddenKeys = useMemo(() => {
@@ -382,7 +397,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
       }
       return [];
     }
-    const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
+    const rowsArray = recordTable ? recordTable.rows : getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
     return rowsArray.map((row, rowIndex) => columnKeyOrder.map((columnKey) => {
       const columnDef = columnDefinitions[columnKey];
@@ -443,7 +458,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
 
       return cellObject;
     }));
-  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
+  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, recordTable, columnKeyOrder, columnIndexMap, columnDefinitions]);
 
   const sortedRows = useMemo(() => {
     const dataToSort = [...processedRows];
@@ -569,7 +584,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
     const units = columnDefinitions[columnKey]?.units;
     if (units) {
       const unit = Object.values(units)[0];
-      const numericValue = typeof value === 'number' ? value : Number(value);
+      const numericValue = (typeof value === 'number' ? value : Number(value)) * (unit.multiplier ?? 1);
       if (!Number.isFinite(numericValue)) {
         return null;
       }

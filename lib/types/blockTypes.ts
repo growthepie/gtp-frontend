@@ -103,6 +103,7 @@ export interface TableBlock extends BaseBlock {
           decimals?: number;
           prefix?: string;
           suffix?: string;
+          multiplier?: number; // Applied before formatting, e.g. 100 to show a 0.52 share as 52%
         };
       };
     };
@@ -143,6 +144,9 @@ export interface TableBlock extends BaseBlock {
     url?: string;
     pathToRowData: string;
     pathToColumnKeys?: string; // Optional - if not provided, will look for columnKeys in the same parent as rowData
+    // Row data that is an object of records ({ "<key>": { field: value } }) instead of an
+    // array of rows: each entry becomes a row, its key in this column, then its fields.
+    recordKeyColumn?: string;
   }
   rowData?: {
     [key: string]: {
