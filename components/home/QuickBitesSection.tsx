@@ -16,7 +16,9 @@ import { TRACKER_HEADLINES } from '@/lib/quick-bites/trackerHeadlines';
 import useSWR from 'swr';
 
 const LATEST_COUNT = 6;
-// On phones the tracker list stops here; the "All live trackers" link leads to the rest.
+// The tracker list stops here (two full rows of three on desktop, three tiles on phones);
+// the "All live trackers" link leads to the rest.
+const TRACKERS_SHOWN = 6;
 const TRACKERS_ON_PHONE = 3;
 
 // The landing page's Quick Bites: the topic tab bar, the live trackers (always shown,
@@ -24,7 +26,7 @@ const TRACKERS_ON_PHONE = 3;
 // carousel of the newest articles and reports.
 const QuickBitesSection: React.FC = () => {
   const listed = getListedQuickBites();
-  const trackers = mixByTopic(listed.filter((quickBite) => quickBite.kind === 'tracker'));
+  const trackers = mixByTopic(listed.filter((quickBite) => quickBite.kind === 'tracker')).slice(0, TRACKERS_SHOWN);
   const latest = listed.filter((quickBite) => quickBite.kind !== 'tracker').slice(0, LATEST_COUNT);
 
   if (!listed.length) {

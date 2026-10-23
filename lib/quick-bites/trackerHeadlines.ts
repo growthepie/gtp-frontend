@@ -55,6 +55,23 @@ export const TRACKER_HEADLINES: Record<string, HeadlineSource> = {
       };
     },
   },
+  "glo-dollar": {
+    url: `${API}/glo_dollar.json`,
+    read: (json) => {
+      // Same as the Quick Bite's KPIs: latest USD market cap and its 30-day change.
+      const types: string[] = json?.chart?.types ?? [];
+      const rows: number[][] = json?.chart?.data ?? [];
+      const usd = types.indexOf("usd");
+      const latest = rows[rows.length - 1]?.[usd];
+      const monthAgo = rows[rows.length - 31]?.[usd];
+      if (!Number.isFinite(latest)) return null;
+      return {
+        value: formatNumber(latest, { decimals: 2, prefix: "$" }),
+        label: "market cap",
+        ...(Number.isFinite(monthAgo) && monthAgo ? { change: { percent: (latest / monthAgo - 1) * 100, period: "30d" } } : {}),
+      };
+    },
+  },
   "stablecoins-for-fiat": {
     url: `${API}/quick-bites/stablecoins/fiat/timeseries.json`,
     read: (json) => {
