@@ -231,26 +231,40 @@ const quickBitesGroup: NavigationItem = {
 
 export const navigationItems: NavigationItem[] = [
   {
-    name: "Ecosystem",
-    label: "Ecosystem",
+    // A group (no href): ETH the asset and the Ethereum ecosystem as two sub-items.
+    name: "Ethereum",
+    label: "Ethereum",
     icon: "gtp-ethereumlogo",
     options: [
       {
-        label: "Overview",
+        label: "ETH the Asset",
         page: {
-          title: "Overview",
+          title: "ETH the Asset",
+          description: "ETH as an asset: supply and burn, staking yield, what it buys and how it compares to other assets.",
+          icon: "gtp-metrics-marketcap",
+        },
+        icon: "gtp-metrics-marketcap",
+        key: "eth-the-asset",
+        rootKey: "eth",
+        urlKey: "eth",
+        url: "/eth",
+        showNew: true,
+      },
+      {
+        label: "Ethereum Ecosystem",
+        page: {
+          title: "Ethereum Ecosystem",
           description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
           icon: "gtp-overview",
         },
-        icon: "gtp-overview",
+        icon: "gtp-metrics-ethereum-ecosystem",
         key: "ethereum-ecosystem",
         rootKey: "ethereum-ecosystem",
         urlKey: "ethereum-ecosystem",
-        url: "/ethereum-ecosystem",
+        url: "/ethereum-ecosystem/metrics",
         showNew: false,
       },
     ],
-    href: "/ethereum-ecosystem/metrics",
   },
   {
     name: "Applications",
