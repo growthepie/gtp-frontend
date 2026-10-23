@@ -11,6 +11,7 @@ import { GTPIcon } from '@/components/layout/GTPIcon';
 import GTPButtonRow from '@/components/GTPComponents/ButtonComponents/GTPButtonRow';
 import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import fiatData from '@/public/dicts/fiat.json';
+import ChartSkeleton from '@/components/quick-bites/ChartSkeleton';
 
 /* 
 Mustache.js example for dynamic values
@@ -31,9 +32,13 @@ const getNestedValue = (obj: any, path: string) => {
 };
 
 // Dynamically import ChartWrapper to avoid SSR issues
-const ChartWrapper = dynamic(() => import('../ChartWrapper'), { 
+const loadChartWrapper = () => import('../ChartWrapper');
+const ChartWrapper = dynamic(loadChartWrapper, {
   ssr: false,
-  loading: () => <div className="w-full h-[300px] transparent"></div>
+  // Shown while the chart code downloads. The dynamic import gets no props, so it can't
+  // match the chart's height; ChartBlock starts the download on mount (below), so by the
+  // time the data is in, the code usually is too and this rarely shows.
+  loading: () => <ChartSkeleton height={400} inset />
 });
 
 interface ChartBlockProps {
@@ -71,6 +76,10 @@ const CHAIN_QUICK_BITES_TAB_CONTAINER_HEIGHT = 587;
 const CHAIN_QUICK_BITES_TAB_HEADER_HEIGHT = 81;
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTopBar, chainQuickBitesTitleSuffix }) => {
+  // Fetch the chart code alongside the data instead of after it.
+  React.useEffect(() => {
+    void loadChartWrapper();
+  }, []);
   const { sharedState } = useQuickBite();
   const isChainQuickBitesTabChart = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_BLOCK_CLASS);
   const isChainQuickBitesTabRightFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS);
@@ -162,6 +171,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
   const swrKey = dynamicSeriesConfig ? dynamicSeriesUrl : (processedUrls.length > 0 ? processedUrls : null);
   const {
     data: unProcessedData,
+    error: chartError,
     isLoading: isChartLoading,
     isValidating: isChartValidating,
   } = useSWR(swrKey, { keepPreviousData: true });
@@ -573,13 +583,9 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
           ) : null}
         </div>
       ) : null}
-      {showInitialLoadingState && !canRenderChart ? (
-        <div
-          className="w-full flex items-center justify-center rounded-[15px] bg-color-bg-default text-xs text-color-text-secondary"
-          style={{ height: block.height ?? 400 }}
-        >
-          Loading chart...
-        </div>
+      {/* Also covers the moment before the request starts, so the area is never blank. */}
+      {(showInitialLoadingState || (Boolean(swrKey) && !unProcessedData && !chartError)) && !canRenderChart ? (
+        <ChartSkeleton height={block.height || 400} inset={block.margins !== 'none' && !isChainQuickBitesTabChart} />
       ) : null}
       {canRenderChart && (
         <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'} ${isChainQuickBitesTabChart ? 'flex-1 min-h-0' : ''}`}>

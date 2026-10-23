@@ -23,7 +23,6 @@ import highchartsRoundedCorners from 'highcharts-rounded-corners';
 import highchartsPatternFill from 'highcharts/modules/pattern-fill';
 import { debounce } from 'lodash';
 import { useTheme } from 'next-themes';
-import ChartWatermark from '@/components/layout/ChartWatermark';
 import { useMaster } from '@/contexts/MasterContext';
 import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPComponents/GTPChart";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
@@ -42,6 +41,8 @@ import { format as d3Format } from "d3"
 import { getCssVarAsRgb } from "@/lib/echarts-utils";
 import { useChartReplay } from "@/hooks/useChartReplay";
 import ChartReplayButton from "@/components/GTPComponents/ChartReplayButton";
+import ChartSkeleton from "./ChartSkeleton";
+import ChartCardWatermark from "./ChartCardWatermark";
 
 let highchartsInitialized = false;
 interface ChartWrapperProps {
@@ -244,6 +245,30 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
   const [isChartReady, setIsChartReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasDrawn, setHasDrawn] = useState(false);
+  // Watches the card until the chart has drawn something (ECharts canvas or a
+  // Highcharts series); a fallback timeout drops the skeleton if nothing appears.
+  useEffect(() => {
+    if (loading || hasDrawn) return;
+    const card = chartCardRef.current;
+    if (!card) return;
+    const isDrawn = () => Boolean(card.querySelector("canvas, .highcharts-series-group path, .highcharts-series-group rect"));
+    const done = () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+      setHasDrawn(true);
+    };
+    const observer = new MutationObserver(() => {
+      if (isDrawn()) done();
+    });
+    const fallback = setTimeout(done, 15000);
+    observer.observe(card, { childList: true, subtree: true });
+    if (isDrawn()) queueMicrotask(done);
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
+  }, [loading, hasDrawn]);
   const [filteredNames, setFilteredNames] = useState<string[]>(() => {
     const deselectedSeries = jsonMeta?.meta?.filter((s) => s.deselected) ?? [];
     if (deselectedSeries.length === 0) return [];
@@ -1991,15 +2016,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
 
   
   if (loading) {
-    return (
-      <div 
-        style={{ width, height }} 
-        className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg animate-pulse"
-        aria-busy="true"
-      >
-        <p className="text-color-text-primary dark:text-forest-400">Loading chart...</p>
-      </div>
-    );
+    return <ChartSkeleton height={height} inset={margins !== "none" && !isChainQuickBitesTabChart} />;
   }
   
   if (error) {
@@ -2050,6 +2067,14 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
           chainQuickBitesTopBar ? "pt-[38px]" : "pt-[8px]"
         } relative flex flex-col ${isQuickBitePageScatter ? "gap-y-[10px]" : "gap-y-[12px]"} h-full`}
       >
+        {/* The data is in but the chart can take a moment to draw: keep the skeleton over
+            the card until a canvas or SVG series appears, then fade it out. */}
+        <div
+          className={`pointer-events-none absolute inset-0 z-[20] transition-opacity duration-300 ${hasDrawn ? "opacity-0" : "opacity-100"}`}
+          aria-hidden={hasDrawn}
+        >
+          <ChartSkeleton height="100%" chartHeight={height} />
+        </div>
         {chainQuickBitesTopBar ? (
           <div className="absolute inset-x-0 top-0 z-[30]">
             <div className="w-full bg-color-bg-medium rounded-full p-[2px]">
@@ -2612,13 +2637,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         )}
         {/* Keep the watermark above GTPChart's z-3 area/bar replay mask so it remains
             continuously visible during playback, while staying below chart controls. */}
-        <div className="absolute bottom-[27.5%] md:bottom-[18.5%] left-[40px] md:left-0 right-0 flex flex-col items-center justify-center pointer-events-none z-[4] opacity-40  "
-          style={{
-            height: typeof height === "number" ? (height - 147) + "px" : "100%"
-          }}
-        >
-          <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-        </div>
+        <ChartCardWatermark height={height} />
         {/*Footer*/}
         {legendCategories.length > 0 && (
           <div className="mb-[6px] min-h-[24px] w-full flex items-center justify-center gap-[5px] flex-wrap">
