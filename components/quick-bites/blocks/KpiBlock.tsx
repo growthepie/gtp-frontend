@@ -30,7 +30,7 @@ const KpiBlock: React.FC<KpiBlockProps> = ({ block }) => {
             <div />
             <div className="flex flex-row items-center gap-x-[8px]">
               {card.icon && (<GTPIcon icon={card.icon as GTPIconName} size="md"/>)}
-              <div className="heading-small-xxxs text-center whitespace-nowrap">{card.title}</div>
+              <div className="heading-small-xxs text-center whitespace-nowrap">{card.title}</div>
             </div>
             <div className="flex justify-end">
               {card.info && (
@@ -51,9 +51,9 @@ const KpiBlock: React.FC<KpiBlockProps> = ({ block }) => {
               )}
             </div>
           </div>
-          <div className="heading-small-lg">{card.value}</div>
+          <div className="numbers-2xl">{card.value}</div>
           {card.description && (
-            <div className="text-xxs">{card.description}</div>
+            <div className="text-xs text-color-text-secondary text-center">{card.description}</div>
           )}
         </div>
       ))}

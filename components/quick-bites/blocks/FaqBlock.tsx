@@ -50,7 +50,7 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({ block }) => {
   const description = block.description?.trim();
 
   return (
-    <section className={`my-[25px] md:my-[40px] ${block.className || ''}`}>
+    <section className={`my-8 ${block.className || ''}`}>
       <div className="flex items-center gap-x-2 mb-[15px]">
         <div className="flex items-center space-x-2">
           <GTPIcon icon="gtp-faq" size="lg" />
@@ -62,7 +62,7 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({ block }) => {
 
       {description && (
         <p
-          className="text-xs md:text-sm text-color-text-secondary mb-[20px]"
+          className="text-md text-color-text-secondary mb-[20px]"
           dangerouslySetInnerHTML={toMarkup(description)}
         />
       )}
@@ -77,7 +77,7 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({ block }) => {
             }
             className="bg-color-bg-default"
             questionClassName=""
-            answerClassName=""
+            answerClassName="text-md"
             startOpen={isListLayout}
           />
         ))}

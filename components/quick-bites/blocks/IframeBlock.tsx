@@ -36,7 +36,7 @@ export const IframeBlock: React.FC<IframeBlockProps> = ({ block }) => {
         />
       </div>
       {caption && (
-        <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
+        <figcaption className="text-center text-xs mt-[10px] text-color-text-secondary">
           {caption}
         </figcaption>
       )}

@@ -631,7 +631,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
         </div>
       )}
       {block.caption && !isChainQuickBitesTabChart && (
-        <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
+        <figcaption className="text-center text-xs mt-[10px] text-color-text-secondary">
           {resolvedCaption}
         </figcaption>
       )}
