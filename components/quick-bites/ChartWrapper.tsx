@@ -2139,6 +2139,9 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
               reverseTooltipOrder={false}
               height="100%"
               showWatermark={false}
+              // Tooltips render on the page rather than inside the chart, so one taller
+              // or wider than the chart (many series) overflows it instead of being cut off.
+              confineTooltipToChart={false}
               revealProgress={chartReplay.revealProgress}
             />
           </div>
