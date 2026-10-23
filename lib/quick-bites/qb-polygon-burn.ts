@@ -4,6 +4,8 @@ const polygonBurn: QuickBiteData = {
   title: "Polygon POL Burn Tracker",
   subtitle: "Tracking Polygon's EIP-1559 burn mechanism and the value of increased onchain activity",
   shortTitle: "Polygon POL Burn",
+  themes: ["token-economics"],
+  kind: "tracker",
   content: [
     "> Work in Progress: This quick bite is preliminary and still under construction. KPI values are static snapshots and do not update automatically yet.",
     "# Introduction",

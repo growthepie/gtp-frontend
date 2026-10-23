@@ -47,6 +47,7 @@ const ethereumQuarterlyReport2026Q3: QuickBiteData = createQuickBite({
   title: "Ethereum Mainnet Quarterly Report: Q3 2026",
   subtitle: "A data-led review of Ethereum Mainnet activity, its most active applications, and the cost of L1 blockspace from 01 July to 30 September 2026.",
   shortTitle: "Report: ETH Q3 2026",
+  kind: "report",
   summary: "Ethereum Mainnet activity held steady in Q3 2026 while fees fell 33.6% QoQ, stablecoin issuers led app activity, and Robinhood Chain launched with 793.7M transactions.",
   showInMenu: true,
   content: [

@@ -5,6 +5,7 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
   title: "Pectra: The People's Upgrade",
   subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
   shortTitle: "Pectra Upgrade",
+  themes: ["scaling"],
   content: [
     "> Fewer clicks, fewer signatures, more blobs. Pectra is an upgrade for everyday users: it makes Ethereum easier and cheaper to use.",
 

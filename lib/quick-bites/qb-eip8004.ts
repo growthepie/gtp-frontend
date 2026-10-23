@@ -27,6 +27,7 @@ export const jsonLdFaq = generateJsonLdFaq(faqItems);
 const Agents: QuickBiteData = createQuickBite({
   title: "AI Agents in the Ethereum Ecosystem (ERC-8004)",
   shortTitle: "AI Agents",
+  themes: ["developers-ai"],
   subtitle: "Exploring ERC-8004 and the role of AI agents in Ethereum",
   content: [
     "[ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) (“Trustless Agents”) gives AI agents and other onchain services an identity, a reputation and, soon, a way to prove their work, without a central gatekeeper. Since its launch in late January 2026, {{eip8004_total_agents}} services have registered.",

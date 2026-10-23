@@ -190,6 +190,7 @@ const arbitrumHyperliquidBridge: QuickBiteData = createQuickBite({
   title: "Arbitrum Hyperliquid Bridge",
   subtitle: "The Critical Infrastructure Connecting Arbitrum One to Hyperliquid's Trading Ecosystem",
   shortTitle: "Hyperliquid Bridge",
+  themes: ["stablecoins"],
   content: [
 
     "The Arbitrum Hyperliquid bridge serves as the primary infrastructure connecting USDC on Arbitrum One to Hyperliquid's Layer 1 perpetual trading platform. This bridge has become the most significant driver of stablecoin activity on Arbitrum One, with over $5.4B in USDC locked in the bridge contract at time of writing. The bridge enables seamless USDC transfers from Arbitrum One to Hyperliquid, where the stablecoin serves as the primary settlement currency for perpetual trading.",

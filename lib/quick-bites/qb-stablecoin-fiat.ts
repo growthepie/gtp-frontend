@@ -371,6 +371,8 @@ const mainContent = [
 const StablecoinFiat: QuickBiteData = {
   title: "Stablecoin Supply Breakdown by Fiat Currency",
   shortTitle: "Stablecoins by Fiat",
+  themes: ["stablecoins"],
+  kind: "tracker",
   subtitle: "Analyzing the composition and trends of stablecoins pegged to different fiat currencies.",
   content: [
     ...mainContent,

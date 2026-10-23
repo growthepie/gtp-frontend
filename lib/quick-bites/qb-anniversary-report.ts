@@ -45,6 +45,7 @@ const anniversaryReport: QuickBiteData = createQuickBite({
   title: "Building the World Ledger",
   subtitle: "This report celebrates the 10th anniversary of Ethereum, highlighting its evolution and impact.",
   shortTitle: "Report: World Ledger",
+  kind: "report",
   content: [
     "By growthepie and Onchain Foundation. Written and published in August 2025.",
     "```container",

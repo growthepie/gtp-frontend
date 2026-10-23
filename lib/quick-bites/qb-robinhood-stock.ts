@@ -6,6 +6,8 @@ const robinhoodStock: QuickBiteData = createQuickBite({
   title: "Robinhood Tokenized Stock Tracker",
   subtitle: "Tracking the adoption of Robinhood's tokenized stocks on Arbitrum One",
   shortTitle: "Robinhood Stocks",
+  themes: ["real-world"],
+  kind: "tracker",
   content: [
     "Robinhood tokenizes stocks on Arbitrum One for its EU users: each token is backed 1:1 by a real share, minted when someone buys and burned when they sell. This is phase 1 of 3, and the numbers below track it live.",
 

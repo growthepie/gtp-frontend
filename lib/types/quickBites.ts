@@ -45,6 +45,18 @@ export interface JsonLdThing {
 
   export type FaqItem = { q: string; a: string };
 
+  /** Browse topics a Quick Bite belongs to (labels, icons and intros in lib/quick-bites/themes.ts). */
+  export type QuickBiteThemeKey =
+    | "stablecoins"
+    | "scaling"
+    | "token-economics"
+    | "activity"
+    | "real-world"
+    | "developers-ai";
+
+  /** article (default): an analysis; tracker: a live dashboard meant to be revisited; report: a periodic report. */
+  export type QuickBiteKind = "article" | "tracker" | "report";
+
   export interface QuickBiteData {
     title: string;
     subtitle: string;
@@ -58,6 +70,8 @@ export interface JsonLdThing {
     related: string[];
     author?: Author[];
     topics?: Topic[];
+    themes?: QuickBiteThemeKey[];
+    kind?: QuickBiteKind;
     KpiCards?: KpiCard[];
     showInMenu?: boolean; // Optional property to control menu visibility, defaults to true
     showInChainTab?: boolean; // Optional property to control chain quick bites tab visibility, defaults to true

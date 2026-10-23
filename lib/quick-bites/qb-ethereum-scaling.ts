@@ -286,6 +286,7 @@ const ethereumScaling: QuickBiteData = createQuickBite({
   title: "Scaling Ethereum Mainnet to 10,000 TPS",
   subtitle: "The road to ~1 Ggas/s on Layer 1 and ~1 Tgas/s across Layer 2s",
   shortTitle: "Scaling Ethereum",
+  themes: ["scaling", "activity"],
   summary: "Data-driven projection of Ethereum's path to ~10,000 TPS on L1 and million-TPS with L2s—charts, assumptions, and roadmap context.",
   content: [
     "Ethereum is on a clear path to scale. Over the next six years, Ethereum Mainnet throughput is expected to surge toward 10,000 transactions per second (TPS) - roughly 1 gigagas per second - while Layer 2s collectively push the ecosystem toward million-TPS capacity.",

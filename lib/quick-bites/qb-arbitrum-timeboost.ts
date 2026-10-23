@@ -6,6 +6,7 @@ const arbitrumTimeboost: QuickBiteData = createQuickBite({
   title: "Timeboost: An Express Lane for Arbitrum",
   subtitle: "Timeboost allows to better capitalize on MEV by providing express lane access for users",
   shortTitle: "Arbitrum Timeboost",
+  themes: ["token-economics"],
   content: [
 
     "# Timeboost Usage",

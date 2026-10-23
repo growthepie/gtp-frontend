@@ -5,6 +5,7 @@ import { prefetchDNS } from 'react-dom';
 const Fusaka: QuickBiteData = {
   title: "Fusaka Upgrade: Committing to Sustained Scaling",
   shortTitle: "Fusaka Upgrade",
+  themes: ["scaling"],
   subtitle: "Expanding Ethereum’s throughput while preserving fee stability",
   content: [
     "Fusaka went live on December 3rd, 2025 with 12 EIPs. It scales both Ethereum Mainnet and blobs, and makes sure growing blob use contributes to the network's economics.",
