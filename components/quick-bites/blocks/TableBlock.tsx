@@ -144,8 +144,57 @@ function TableSkeleton({ maxHeight, className }: { maxHeight: number; className?
   );
 }
 
+type TableFilterKeys = { categoryKey: string | null; valueKey: string | null };
+const NO_FILTER_KEYS: TableFilterKeys = { categoryKey: null, valueKey: null };
+const NO_STATE: Record<string, any> = {};
+
+/**
+ * Reads the Quick Bite's shared state and passes on only what this table uses: the
+ * variables in its data URL and, with filterOnStateKey, its filter. A change elsewhere
+ * (e.g. a stock picked in a dropdown) then doesn't re-render the table, which for long
+ * tables (robinhood-stock: 2,000+ rows) is about a second of blocked page.
+ */
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
+
+  const stateKeys = useMemo(() => {
+    const url = block.readFromJSON ? block.jsonData?.url : undefined;
+    const urlVars = url?.includes("{{")
+      ? (Mustache.parse(url) || []).filter((tag) => tag[0] === "name").map((tag) => String(tag[1]))
+      : [];
+    return [...urlVars, ...(block.filterOnStateKey ? [block.filterOnStateKey.stateKey] : [])];
+  }, [block.readFromJSON, block.jsonData?.url, block.filterOnStateKey]);
+
+  // A stable object as long as the values this table reads don't change.
+  const stateSignature = JSON.stringify(stateKeys.map((key) => sharedState[key] ?? null));
+  const relevantState = useMemo(
+    () => (stateKeys.length ? Object.fromEntries(stateKeys.map((key) => [key, sharedState[key]])) : NO_STATE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recomputed when the relevant values change
+    [stateKeys, stateSignature],
+  );
+  const usesFilter = Boolean(block.filterOnStateKey);
+
+  return (
+    <TableBlockContent
+      block={block}
+      sharedState={relevantState}
+      exclusiveFilterKeys={usesFilter ? exclusiveFilterKeys : NO_FILTER_KEYS}
+      inclusiveFilterKeys={usesFilter ? inclusiveFilterKeys : NO_FILTER_KEYS}
+    />
+  );
+};
+
+const TableBlockContent = React.memo(function TableBlockContent({
+  block,
+  sharedState,
+  exclusiveFilterKeys,
+  inclusiveFilterKeys,
+}: {
+  block: TableBlockType;
+  sharedState: Record<string, any>;
+  exclusiveFilterKeys: TableFilterKeys;
+  inclusiveFilterKeys: TableFilterKeys;
+}) {
   const [sortConfig, setSortConfig] = useState<{ metric: string; sortOrder: string }>({ metric: '', sortOrder: 'desc' });
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -1258,7 +1307,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       {updatingBadge}
     </div>
   );
-};
+});
 
 const CopyButton = ({ value }: { value: string }) => {
   const [copied, setCopied] = useState(false);

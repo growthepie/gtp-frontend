@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { startTransition, useEffect, useState } from 'react';
 import { DropdownBlock as DropdownBlockType, DropdownOption } from '@/lib/types/blockTypes';
 import GTPDropdown, { GTPDropdownOption } from '@/components/GTPComponents/GTPDropdown';
 import { GTPIconName } from '@/icons/gtp-icon-names';
@@ -160,8 +160,7 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
 
 
   // Options for the platform dropdown: chain values get their chain icon (auto-detected
-  // unless jsonData.useChainIcons says otherwise), logos become images, and labels like
-  // "HUBC | Hub Cyber Security" show only the part before "|" once selected.
+  // unless jsonData.useChainIcons says otherwise) and logos become images.
   const gtpOptions = React.useMemo((): GTPDropdownOption[] => {
     const useChainIcons = block.jsonData?.useChainIcons;
     const isChainDropdown = useChainIcons === false
@@ -173,7 +172,6 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
       return {
         value: option.value,
         label: option.label,
-        ...(option.label.includes("|") ? { triggerLabel: option.label.split("|")[0].trim() } : {}),
         ...(option.logo ? { imageUrl: option.logo } : {}),
         ...(!option.logo && option.icon ? { icon: option.icon as GTPIconName } : {}),
         ...(!option.logo && !option.icon && chain
@@ -182,6 +180,20 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
       };
     });
   }, [dropdownOptions, block.jsonData?.useChainIcons, AllChainsByKeys, resolvedTheme]);
+
+  // Selecting updates the Quick Bite's shared state, which re-renders every block (on
+  // robinhood-stock that includes a 2,000-row table, about a second of work). The
+  // dropdown shows the new value at once from local state; the shared-state update
+  // starts only after the browser has painted that, so the click never looks frozen.
+  const [pending, setPending] = useState<{ value: string | null } | null>(null);
+  if (pending && pending.value === selectedValue) setPending(null);
+  const shownValue = pending ? pending.value : selectedValue;
+  const select = (value: string | null) => {
+    setPending({ value });
+    requestAnimationFrame(() => {
+      setTimeout(() => startTransition(() => handleChange(value)), 0);
+    });
+  };
 
   // Loading, error and empty states keep the dropdown's shape (disabled, with a status
   // instead of the placeholder), so nothing jumps when the options arrive.
@@ -203,10 +215,10 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
       )}
       <GTPDropdown
         options={status ? [] : gtpOptions}
-        value={selectedValue ?? undefined}
+        value={shownValue ?? undefined}
         placeholder={status ?? block.placeholder ?? "Select an option"}
-        onChange={(value) => handleChange(value)}
-        onClear={block.allowEmpty ? () => handleChange(null) : undefined}
+        onChange={(value) => select(value)}
+        onClear={block.allowEmpty ? () => select(null) : undefined}
         searchable={block.searchable ?? true}
         disabled={Boolean(status) || block.disabled}
       />
