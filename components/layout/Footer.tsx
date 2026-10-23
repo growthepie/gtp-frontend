@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import Icon from "./Icon";
 import { track } from "@/lib/tracking";
 import XIcon from "@/icons/footer/X.svg";
@@ -191,7 +192,7 @@ const FooterLink = ({ leftIcon, label, href }: { leftIcon: React.ReactNode, labe
       href={href}
       rel={href.startsWith("http") ? "noopener" : undefined}
       target={href.startsWith("http") ? "_blank" : undefined}
-      className="flex gap-x-[5px] items-center p-[3px]" onClick={() => {
+      className={`flex gap-x-[5px] items-center py-[3px] px-[8px] -mx-[5px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`} onClick={() => {
         track(`clicked ${label} Footer link`, {
           location: "desktop footer",
           page: window.location.pathname,

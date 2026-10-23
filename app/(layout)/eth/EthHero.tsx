@@ -290,7 +290,7 @@ export default function EthHero() {
           {/* Explains the timespans and the cards below, so it sits with the bar that drives them.
               self-stretch: the bar treats a child whose top is lower than the first one's as
               wrapped (and drops its full rounding), so the icon spans the bar's full height. */}
-          <InfoButton label="About these cards" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+          <InfoButton label="About these cards" className="self-stretch !m-0 px-[8px]" color="rgb(var(--text-primary))">
             <span>Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.</span>
             <span>Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.</span>
           </InfoButton>

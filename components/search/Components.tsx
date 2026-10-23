@@ -15,7 +15,7 @@ import Image from "next/image";
 import VerticalScrollContainer from "../VerticalScrollContainer";
 import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { debounce } from "lodash";
 import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
@@ -940,7 +940,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   </div>
                 </div>
                 <div
-                  className="hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                  role="button"
+                  aria-label="Clear search"
+                  className={`hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");
@@ -1007,7 +1009,9 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 </div>
                 {/* Conditionally hide X button on mobile based on prop */}
                 <div
-                  className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]`}
+                  role="button"
+                  aria-label="Clear search"
+                  className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                   onClick={(e) => {
                     setLocalQuery("");
                     debouncedUpdateSearch("");

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { validateAddressForChain } from "@openlabels/oli-sdk/validation";
 import type { AttestationRowInput, BulkOnchainSubmitResult, OnchainSubmitResult, PreparedAttestation, ProjectRecord } from "@openlabels/oli-sdk";
 import type { QueueEditableField, QueueSubmitPreview, SearchDropdownOption } from "./types";
@@ -1015,7 +1015,7 @@ export function ContractsStep({
                     <div className="overflow-hidden rounded-[10px] border border-color-ui-shadow/30 bg-color-bg-medium">
                       <button
                         type="button"
-                        className="flex w-full items-center gap-x-[10px] px-[12px] py-[10px] text-left"
+                        className={`flex w-full items-center gap-x-[10px] px-[12px] py-[10px] text-left transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                         onClick={() => setDuplicateDetailsOpen((v) => !v)}
                       >
                         <Icon icon="feather:edit-2" className="mt-[1px] size-[13px] shrink-0 text-color-text-primary" />
@@ -1035,7 +1035,7 @@ export function ContractsStep({
                   <div className="mb-[16px] overflow-hidden rounded-[10px] border border-color-negative/30 bg-color-negative/10">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-x-[6px] px-[12px] py-[8px]"
+                      className={`flex w-full items-center justify-between gap-x-[6px] px-[12px] py-[8px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                       onClick={() => setDuplicateIssueOpen((v) => !v)}
                     >
                       <div className="flex items-center gap-x-[6px]">
@@ -1398,7 +1398,7 @@ export function ContractsStep({
                 <button
                   type="button"
                   onClick={() => setErrorExpanded((v) => !v)}
-                  className="flex w-full items-center gap-x-[8px] text-left"
+                  className={`flex w-[calc(100%+8px)] -m-[4px] p-[4px] rounded-[6px] items-center gap-x-[8px] text-left transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                 >
                   <Icon icon="feather:alert-circle" className="size-[14px] text-color-negative shrink-0" />
                   <div className="font-medium text-sm text-color-negative flex-1">Transaction failed</div>

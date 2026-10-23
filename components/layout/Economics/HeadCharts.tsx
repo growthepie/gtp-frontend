@@ -31,7 +31,7 @@ import "@/app/highcharts.axis.css";
 
 import Container from "../Container";
 import { Carousel } from "@/components/Carousel";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 
@@ -604,7 +604,7 @@ export default function EconHeadCharts({
               return (
                 <div key={"slide-" + key} className="relative flex flex-col w-full overflow-hidden h-[197px] bg-color-bg-default rounded-[15px] group">
                   <div
-                    className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${link ? "cursor-pointer" : ""
+                    className={`absolute items-center text-[16px] font-bold top-[15px] left-[15px] flex gap-x-[10px]  z-10 ${link ? `cursor-pointer px-[8px] py-[4px] -mx-[8px] -my-[4px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}` : ""
                       }`}
                     onClick={() => {
                       if (link) window.location.href = link;

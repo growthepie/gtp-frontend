@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import type React from "react";
 import type { MouseEventHandler } from "react";
 import { GTPIcon } from "./GTPIcon";
@@ -164,7 +165,8 @@ export const SectionDescription = ({
         >
           <div className={`flex items-center justify-center p-[1px] rounded-full ${gradientClass} ${className}`}>
             <div
-              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px]  bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "!pr-[15px]"} ${leftIcon ? "pl-[5px]" : "!pl-[15px]"}`}
+              // Same fill and hover as GTPButton's highlight variant (and SectionButtonLink).
+              className={`flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] bg-color-bg-medium ${GTP_BUTTON_INTERACTION_CLASSES} rounded-full transition-all duration-300 ${rightIcon ? "pr-[5px]" : "!pr-[15px]"} ${leftIcon ? "pl-[5px]" : "!pl-[15px]"}`}
               style={{
                 width: width || "fit-content",
               }}

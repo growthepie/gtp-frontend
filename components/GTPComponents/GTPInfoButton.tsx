@@ -1,4 +1,5 @@
 import { GTPIcon } from "@/components/layout/GTPIcon";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import type { Placement } from "@floating-ui/dom";
@@ -28,7 +29,8 @@ export default function GTPInfoButton({
       placement={placement}
       unstyled
       trigger={
-        <button type="button" aria-label={label} className={`shrink-0 inline-flex items-center justify-center hover:cursor-pointer ${className}`}>
+        // p/-m: a small circular hover area (GTPButton's hover fill) that doesn't move the title.
+        <button type="button" aria-label={label} className={`shrink-0 inline-flex items-center justify-center hover:cursor-pointer rounded-full p-[3px] -m-[3px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} ${className}`}>
           <GTPIcon icon="gtp-info-monochrome" size="sm" className="pointer-events-auto" style={{ color }} />
         </button>
       }

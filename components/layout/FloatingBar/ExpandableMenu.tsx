@@ -1,5 +1,6 @@
 "use client";
 import { useOutsideAlerter } from "@/hooks/useOutsideAlerter";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import Link from "next/link";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -495,7 +496,8 @@ export default function ExpandableMenu({
     >
       {/* Trigger Button */}
       <div 
-        className={`absolute flex items-center justify-left bg-color-bg-default -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] cursor-pointer ${triggerClassName}`}
+        // Collapsed, the trigger is a floating-bar button: same hover/press fill as GTPButton.
+        className={`absolute flex items-center justify-left bg-color-bg-default -bottom-[22px] px-[15px] z-30 rounded-full w-full gap-x-[10px] cursor-pointer transition-colors duration-200 ${open ? "" : GTP_BUTTON_INTERACTION_CLASSES} ${triggerClassName}`}
         style={{ height: hCollapsed }}
       >
         {renderTrigger({ open, props: triggerProps })}

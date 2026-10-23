@@ -5,7 +5,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { useMaster } from "@/contexts/MasterContext";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import {
@@ -407,16 +407,18 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                           title="Copy contract address"
                           className="flex h-[34px] w-[14px] items-center justify-center"
                         >
-                          <Icon
-                            icon={copiedAddress === `${address}:${chainKey}` || justCopied === `${address}:${chainKey}` ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
-                            className={`size-[12px] transition-all ${
-                              copiedAddress === `${address}:${chainKey}`
-                                ? "opacity-100 text-color-text-primary"
-                                : justCopied === `${address}:${chainKey}`
-                                  ? "opacity-0 text-color-text-secondary"
-                                  : "opacity-0 group-hover:opacity-70 text-color-text-secondary"
-                            }`}
-                          />
+                          <span className={`flex size-[20px] shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}>
+                            <Icon
+                              icon={copiedAddress === `${address}:${chainKey}` || justCopied === `${address}:${chainKey}` ? "gtp:gtp-checkmark-checked" : "gtp:gtp-copy"}
+                              className={`size-[12px] transition-all ${
+                                copiedAddress === `${address}:${chainKey}`
+                                  ? "opacity-100 text-color-text-primary"
+                                  : justCopied === `${address}:${chainKey}`
+                                    ? "opacity-0 text-color-text-secondary"
+                                    : "opacity-0 group-hover:opacity-70 text-color-text-secondary"
+                              }`}
+                            />
+                          </span>
                         </button>
                       </div>
                     </div>

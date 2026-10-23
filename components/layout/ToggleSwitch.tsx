@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 interface ToggleValue {
@@ -174,7 +175,9 @@ export function ToggleSwitch({
         {values.map((option, index) => (
           <div
             key={option.value}
-            className={`flex-1 flex items-center justify-center relative z-10 ${config.labelPadding}`}
+            // The option you'd switch to gets GTPButton's hover fill; the selected one sits
+            // under the sliding indicator.
+            className={`flex-1 flex items-center justify-center relative z-10 rounded-full transition-colors duration-200 ${config.labelPadding} ${index !== activeIndex && !disabled ? GTP_BUTTON_INTERACTION_CLASSES : ""}`}
             onClick={!isToggle ? (e) => { e.stopPropagation(); handleSelect(option.value); } : undefined}
             role={!isToggle ? "radio" : undefined}
             aria-checked={!isToggle ? index === activeIndex : undefined}

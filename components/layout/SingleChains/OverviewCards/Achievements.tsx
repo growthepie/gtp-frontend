@@ -14,6 +14,7 @@ import { StreaksData } from "@/types/api/ChainOverviewResponse";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { GrayOverlay } from "@/components/layout/Backgrounds";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // Helper hook to get CSS variable colors for ECharts (which renders to canvas and can't read CSS vars)
 const useCssColors = () => {
@@ -550,7 +551,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     return (
                         <div className="flex flex-col flex-1 xs:flex-none items-center overflow-visible" key={key + "lifetime"}>
                             <div
-                                className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible cursor-pointer"
+                                className={`flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible cursor-pointer rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                                 onClick={() => setSelectedKey(key)}
                                 role="button"
                                 aria-label={`Enlarge ${master.metrics[key].name} achievement`}

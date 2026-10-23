@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { Icon } from "@iconify/react";
 import { GTPIcon } from "../layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -20,11 +21,11 @@ export default function CarouselArrows({
 }: CarouselArrowsProps) {
   const baseClasses = `
     absolute top-1/2 -translate-y-1/2
-    rounded-full text-forest-400 bg-white dark:bg-forest-700
+    rounded-full text-color-text-primary bg-color-bg-medium
     size-[20px] md:size-[30px] flex items-center justify-center
-    transition-opacity duration-200 z-10
+    transition-[opacity,background-color] duration-200 z-10
     disabled:opacity-0 disabled:pointer-events-none
-    hover:bg-forest-50 dark:hover:bg-forest-600
+    ${GTP_BUTTON_INTERACTION_CLASSES}
   `;
 
   return (

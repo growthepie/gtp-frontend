@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { GTP_BUTTON_INTERACTION_CLASSES } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import { useIsStaleSession } from '@/hooks/useIsStaleSession';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
 import { Badge } from './FloatingBar/Badge';
@@ -602,7 +603,7 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
                     <button
                       type="button"
-                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200`}
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                       aria-label="Work with us"
                     >
                       <GTPIcon 
@@ -634,7 +635,11 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   <GTPLogoOld />
                   <div 
                     // style={{ transform: `rotate(${rotation}deg)` }}
-                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "rotate-180" : "rotate-0"}`}
+                    // box-content + p/-m: a circular hover area around the 13px icon, same
+                    // hover fill as GTPButton, without moving the logo row.
+                    role="button"
+                    aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                    className={`relative flex box-content p-[6px] -m-[6px] rounded-full top-[1px] cursor-pointer transition-[transform,background-color] duration-sidebar ease-sidebar !size-[13.15px] ${GTP_BUTTON_INTERACTION_CLASSES} ${isSidebarOpen ? "rotate-180" : "rotate-0"}`}
                     onClick={() => {
                       track("clicked Sidebar Close", {
                         location: "desktop sidebar",

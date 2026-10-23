@@ -11,6 +11,7 @@ import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import { useTheme } from "next-themes";
 import GTPChart, { GTPChartSeries, GTPChartTooltipParams } from "@/components/GTPComponents/GTPChart";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 interface DATableChartsProps {
     selectedTimespan: string;
@@ -470,7 +471,7 @@ const YAxisScaleControls = ({
                         className="relative text-sm md:text-base font-medium"
                         onClick={() => setSelectedScale(selectedScale === "stacked" ? "percentage" : "stacked")}
                     >
-                        <div className="w-[176px] h-[28px] heading-small flex gap-x-[20px] items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-color-bg-medium">
+                        <div className={`w-[176px] h-[28px] heading-small flex gap-x-[20px] items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-color-bg-medium ${GTP_BUTTON_INTERACTION_CLASSES}`}>
                             <div className="heading-small-xxs text-color-text-primary">Stacked</div>
                             <div className="heading-small-xxs text-color-text-primary">Percentage</div>
                             <div className="absolute top-[6px] z-20 right-[5px]">

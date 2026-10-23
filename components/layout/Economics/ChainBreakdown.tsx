@@ -27,6 +27,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
 import { useTheme } from "next-themes";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 const AnimatedDiv = animated.div as any;
 
@@ -604,7 +605,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex items-center bg-color-bg-medium gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer"
+                  className={`flex items-center bg-color-bg-medium gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} has-[svg:hover]:bg-color-bg-medium`}
                   onClick={() => {
                     setEnableDASort(true);
                     if (DAIndex === allChainsDA.length - 1) {
@@ -620,7 +621,7 @@ export default function ChainBreakdown({
 
                   <Icon
                     icon={"gtp:in-button-close-monochrome"}
-                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
+                    className={` dark:text-white text-black w-[10px] h-[10px] box-content p-[3px] -my-[3px] -mr-[3px] -ml-[5px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
                       }`}
                     onClick={(e) => {
                       setDAIndex(0);
@@ -985,7 +986,7 @@ export default function ChainBreakdown({
                         )} `}
                       >
                         <div
-                          className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-color-ui-active cursor-pointer"
+                          className={`relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-color-ui-active cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                           onClick={(e) => {
                             handleClick(e, item.key);
                             e.stopPropagation();
@@ -1024,7 +1025,7 @@ export default function ChainBreakdown({
                         </div>
 
                         <div
-                          className="flex items-center bg-color-bg-medium gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px]"
+                          className={`flex items-center bg-color-bg-medium gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                           key={localDataAvail.label}
                           onClick={(e) => {
                             if (

@@ -2,6 +2,7 @@
 import { Icon } from "@iconify/react";
 import { useEffect, useRef, useState } from "react";
 import { useUIContext } from "@/contexts/UIContext";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 const ChainSectionHead = ({
   title,
@@ -102,7 +103,7 @@ const ChainSectionHead = ({
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-color-bg-medium select-none ${enableDropdown && "cursor-pointer"
+        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-color-bg-medium select-none transition-colors duration-200 ${enableDropdown && `cursor-pointer ${GTP_BUTTON_INTERACTION_CLASSES} dark:hover:bg-color-ui-hover dark:active:bg-color-ui-active`
           }`}
         style={isTitleMultiline ? { borderRadius: `${multilineCornerRadiusPx}px` } : undefined}
         onClick={() => {

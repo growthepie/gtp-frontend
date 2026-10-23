@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { ApplicationIcon } from "@/app/(layout)/applications/_components/Components";
 import { buildProjectEditHref } from "@/lib/project-edit-intent";
 import type { ProjectRecord } from "@openlabels/oli-sdk";
@@ -229,7 +229,7 @@ export function ProjectDetailsStep({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="group relative flex size-[84px] items-center justify-center overflow-hidden rounded-[8px] border border-color-ui-shadow bg-color-bg-medium"
+                  className={`group relative flex size-[84px] items-center justify-center overflow-hidden rounded-[8px] border border-color-ui-shadow bg-color-bg-medium transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                 >
                   {collapsedLogoSrc ? (
                     <Image src={collapsedLogoSrc} alt={form.owner_project || "Project logo"} fill sizes="84px" unoptimized className="object-cover" />
@@ -746,7 +746,7 @@ export function ProjectDetailsStep({
                     <div key={i} className="rounded-[10px] border border-color-ui-shadow/30 bg-color-bg-medium overflow-hidden">
                       <button
                         type="button"
-                        className="w-full flex items-center gap-x-[10px] px-[12px] py-[10px] text-left"
+                        className={`w-full flex items-center gap-x-[10px] px-[12px] py-[10px] text-left ${c.detail ? `transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}` : ""}`}
                         onClick={c.detail ? toggleDetail : undefined}
                       >
                         <Icon icon={c.icon} className="mt-[1px] size-[13px] shrink-0 text-color-text-primary" />
@@ -771,7 +771,7 @@ export function ProjectDetailsStep({
               <div className="rounded-[10px] border border-color-negative/30 bg-color-negative/10 mb-[16px] overflow-hidden">
                 <button
                   type="button"
-                  className="w-full flex items-center justify-between gap-x-[6px] px-[12px] py-[8px]"
+                  className={`w-full flex items-center justify-between gap-x-[6px] px-[12px] py-[8px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                   onClick={() => setMissingExpanded((v) => !v)}
                 >
                   <div className="flex items-center gap-x-[6px]">

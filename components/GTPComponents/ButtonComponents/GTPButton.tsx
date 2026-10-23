@@ -44,6 +44,13 @@ export interface GTPButtonProps {
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
 
+/**
+ * GTPButton's hover and press fill. Button-like controls that can't render GTPButton
+ * itself (the 44px floating-bar buttons, menu triggers, toggles, icon buttons) use
+ * the same classes, so every button on the platform reacts the same way on hover.
+ */
+export const GTP_BUTTON_INTERACTION_CLASSES = "hover:bg-color-ui-hover active:bg-color-ui-active";
+
 const FIGMA_BUTTON_SIZE = {
   xs: {
     gap: 5,
@@ -232,7 +239,7 @@ export const GTPButton = ({
         : "linear-gradient(180deg, rgb(var(--accent-red)) 0%, rgb(var(--accent-yellow)) 100%)";
 
   const interactiveFillClassName =
-    resolvedState === "default" ? "hover:bg-color-ui-hover active:bg-color-ui-active" : "";
+    resolvedState === "default" ? GTP_BUTTON_INTERACTION_CLASSES : "";
 
   const displayLeftIcon =
     iconVariant === "left" || iconVariant === "both" || (iconVariant === "alone" && Boolean(leftIcon ?? rightIcon));

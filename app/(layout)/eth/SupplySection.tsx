@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { GetRankingColor } from "@/lib/chains";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
@@ -435,7 +435,7 @@ export default function SupplySection() {
                       type="button"
                       aria-label={`${sc.name}: network demand ${Math.round(sc.demand_level * 100)} of 100`}
                       onClick={() => setScenarioKey(sc.key)}
-                      className="absolute top-[calc(50%+4px)] -translate-x-1/2 size-[10px] rounded-full flex items-center justify-center cursor-pointer"
+                      className={`absolute top-[calc(50%+4px)] -translate-x-1/2 size-[10px] rounded-full flex items-center justify-center cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                       style={{
                         left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${sc.demand_level})`,
                       }}
@@ -451,7 +451,7 @@ export default function SupplySection() {
           </div>
           {/* Explains the weeks and the slider. It ends the slider's line, so it stays at the bar's
               right end and moves with the slider when the bar wraps on phones. */}
-          <InfoButton label="About this picture" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+          <InfoButton label="About this picture" className="self-stretch !m-0 px-[8px]" color="rgb(var(--text-primary))">
             <span>
               Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
               actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest

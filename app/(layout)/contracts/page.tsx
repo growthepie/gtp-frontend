@@ -23,6 +23,7 @@ import Link from "next/link";
 import { uniq } from "lodash";
 import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // import { theme as customTheme } from "../../tailwind.config";
 
@@ -231,6 +232,7 @@ export default function ContractsPage(props: { params: Promise<any> }) {
                 <Link
                   href={getExplorerAddressUrl(master?.chains[info.row.original.origin_key].block_explorer, info.getValue() as string)}
                   target="_blank"
+                  className={`flex rounded-full p-[4px] -m-[4px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                 >
                   <Icon
                     icon="feather:link-2"
@@ -665,15 +667,15 @@ export default function ContractsPage(props: { params: Promise<any> }) {
         </div>
       </div>
       <div className="flex justify-end w-full mt-4">
-        <button
-          className="flex items-center gap-x-2 underline text-sm"
-          onClick={() => {
+        <GTPButton
+          label="Export CSV"
+          leftIcon="gtp-download-monochrome"
+          size="sm"
+          variant="no-background"
+          clickHandler={() => {
             window.open(exportCSV());
           }}
-        >
-          <Icon icon="feather:download" className="w-5 h-5" />
-          Export CSV
-        </button>
+        />
       </div>
     </div>
   );

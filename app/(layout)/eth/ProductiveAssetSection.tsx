@@ -200,7 +200,7 @@ export default function ProductiveAssetSection() {
         </GTPButtonRow>
         {/* Sources for all three modes, at the end of the bar (as in the hero). */}
         {live?.sources?.length ? (
-          <InfoButton label="Sources" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+          <InfoButton label="Sources" className="self-stretch !m-0 px-[8px]" color="rgb(var(--text-primary))">
             Sources: {[...new Set(live.sources.map((s) => s.name))].join(", ")}.
           </InfoButton>
         ) : null}

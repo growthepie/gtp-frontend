@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { GTPIcon, sizeClassMap } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { Icon } from '@iconify/react';
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 interface FloatingBarButtonProps {
   onClick?: () => void;
@@ -27,7 +28,8 @@ export const FloatingBarButton: React.FC<FloatingBarButtonProps> = ({
   title,
 }) => {
   const getBaseClasses = () => {
-    const baseClasses = "flex items-center rounded-full bg-color-bg-default";
+    // Same hover/press fill as GTPButton; the floating bar keeps its own 44px shape.
+    const baseClasses = `flex items-center rounded-full bg-color-bg-default transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`;
     
     if (!label) {
       // Icon-only buttons are circular

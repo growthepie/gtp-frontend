@@ -33,6 +33,7 @@ import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/App
 import ViewToggle from "@/components/ViewToggle";
 import { ExpandableCardContainer } from "@/components/layout/ExpandableCardContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 
 // Preload data for the overview page
@@ -236,7 +237,7 @@ export default function Page() {
             <div className="heading-lg flex items-center gap-x-[5px]">
               {showGrid ? "Top Ranked Apps" : `Top Applications ${selectedCategory ? `> ${data?.blockspace_categories.main_categories[selectedCategory]}` : ""}`}
               {selectedCategory && (
-                <button className="bg-color-bg-default rounded-full size-[26px] flex items-center justify-center" onClick={() => setClearSelectedCategory(true)}>
+                <button className={`bg-color-bg-default rounded-full size-[26px] flex items-center justify-center transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`} onClick={() => setClearSelectedCategory(true)}>
                   <Image src="/In-Button-Close.svg" alt="Close" className="relative left-[0.5px] bottom-[0.5px]"  width={16} height={16} />
                 </button>
               )}

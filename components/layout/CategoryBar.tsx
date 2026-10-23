@@ -10,6 +10,7 @@ import {
 import { Icon } from "@iconify/react";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 const CategoryBar = ({
   data,
@@ -200,13 +201,15 @@ const CategoryBar = ({
             </div>
             <div
               key={i}
-              className={`relative transition-transform duration-100 flex min-w-[24px] min-h-[24px] items-center mb-2.5 top-[8px] h-[24px] w-full ${openSub ? "rotate-180 " : "rotate-0"
+              className={`group/chevron relative transition-transform duration-100 flex min-w-[24px] min-h-[24px] items-center mb-2.5 top-[8px] h-[24px] w-full ${openSub ? "rotate-180 " : "rotate-0"
                 }`}
               onClick={() => {
                 setOpenSub(!openSub);
               }}
             >
-              <Icon icon="icon-park-outline:down" className="w-full h-full" />
+              <span className={`mx-auto -my-[2px] flex size-[28px] shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} group-hover/chevron:bg-color-ui-hover group-active/chevron:bg-color-ui-active`}>
+                <Icon icon="icon-park-outline:down" className="size-[24px]" />
+              </span>
             </div>
           </div>
         ) : (

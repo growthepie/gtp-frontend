@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, memo, useCallback } from "react";
 import Link from "next/link";
 import { navigationItems } from "@/lib/navigation";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { Icon } from "@iconify/react";
 import { SidebarMenuGroup, SidebarMenuLink } from "../SidebarMenuGroup";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -1246,7 +1247,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           href="https://www.github.com/growthepie"
           target="_blank"
           rel="noopener"
-          className="text-color-text-primary"
+          className={`rounded-full p-[5px] -m-[5px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} text-color-text-primary`}
           onClick={() => track("clicked Github link", { location: "mobile sidebar", page: pathname })}
         >
           <GTPIcon icon="github-monochrome" size="md" />
@@ -1255,6 +1256,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           href="https://twitter.com/growthepie_eth"
           target="_blank"
           rel="noopener"
+          className={`rounded-full p-[5px] -m-[5px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
           onClick={() => track("clicked Twitter link", { location: "mobile sidebar", page: pathname })}
         >
           <GTPIcon icon="twitter" size="md" />
@@ -1263,7 +1265,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
           href="https://www.linkedin.com/company/growthepie/"
           target="_blank"
           rel="noopener"
-          className="text-color-text-primary"
+          className={`rounded-full p-[5px] -m-[5px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} text-color-text-primary`}
           onClick={() => track("clicked LinkedIn link", { location: "mobile sidebar", page: pathname })}
         >
           <GTPIcon icon={"feather:linkedin" as GTPIconName} size="md" />

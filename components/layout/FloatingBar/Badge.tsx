@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
@@ -43,7 +44,7 @@ export const Badge = memo(({
   if (size === "sm") {
     return (
       <div
-        className={`${badgeClasses} pl-[5px] pr-[2px] py-[3px] gap-x-[4px] ${onClick ? 'cursor-pointer' : ''} max-w-full`}
+        className={`${badgeClasses} pl-[5px] pr-[2px] py-[3px] gap-x-[4px] ${onClick ? `cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}` : ''} max-w-full`}
         onClick={handleClick}
       >
         {leftIcon ? (
@@ -83,7 +84,7 @@ export const Badge = memo(({
 
   return (
     <div
-      className={`${badgeClasses} pl-[2px] pr-[5px] gap-x-[5px] ${onClick ? 'cursor-pointer' : ''}`}
+      className={`${badgeClasses} pl-[2px] pr-[5px] gap-x-[5px] ${onClick ? `cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}` : ''}`}
       onClick={handleClick}
     >
       {leftIcon ? (

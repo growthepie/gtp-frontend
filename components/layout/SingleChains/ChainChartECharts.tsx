@@ -13,7 +13,7 @@ import { getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChainsData, MetricData, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -2047,12 +2047,12 @@ export default function ChainChartECharts({
             }}
           >
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
+              className={`rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default ${GTP_BUTTON_INTERACTION_CLASSES} dark:hover:bg-color-ui-hover dark:active:bg-color-ui-active transition-colors duration-200 flex items-center justify-center z-[15] hover:cursor-pointer`}
               onClick={handlePrevCompChain}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
-            <div className="flex flex-1 flex-col items-center justify-self-center gap-y-[1px]" onClick={() => setCompareTo(!compareTo)}>
+            <div className={`flex flex-1 flex-col items-center justify-self-center gap-y-[1px] rounded-full ${GTP_BUTTON_INTERACTION_CLASSES} transition-colors duration-200`} onClick={() => setCompareTo(!compareTo)}>
               <div
                 className={`font-[500] leading-[150%] text-[12px] ${
                   compChain
@@ -2074,7 +2074,7 @@ export default function ChainChartECharts({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
+              className={`rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default ${GTP_BUTTON_INTERACTION_CLASSES} dark:hover:bg-color-ui-hover dark:active:bg-color-ui-active transition-colors duration-200 flex items-center justify-center z-[15] hover:cursor-pointer`}
               onClick={handleNextCompChain}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />

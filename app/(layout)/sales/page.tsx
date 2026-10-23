@@ -14,6 +14,7 @@ import type { MouseEvent } from "react";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import ImpactSection from "@/components/layout/Sales/ImpactSection";
 import PlatformUpdatesSection from "@/components/layout/Sales/PlatformUpdatesSection";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 const partners = [
   {
@@ -461,8 +462,8 @@ export default function SalesPage() {
                 key={idx}
                 aria-label={`Go to feedback ${idx + 1}`}
                 onClick={() => goToFeedback(idx)}
-                className={`w-[8px] h-[8px] rounded-full transition-colors ${
-                  idx === feedbackIndex ? "bg-color-text-primary" : "bg-color-bg-medium"
+                className={`w-[8px] h-[8px] rounded-full transition-colors duration-200 ${
+                  idx === feedbackIndex ? "bg-color-text-primary" : `bg-color-bg-medium ${GTP_BUTTON_INTERACTION_CLASSES}`
                 }`}
               />
             ))}

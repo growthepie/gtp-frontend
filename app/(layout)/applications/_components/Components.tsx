@@ -33,6 +33,7 @@ import { ApplicationsURLs } from "@/lib/urls";
 import { ApplicationDetailsResponse } from "../_contexts/ApplicationDetailsDataContext";
 import { SmartBackButton } from "@/components/SmartBackButton";
 import { ExternalLink } from "@/components/ExternalLink/ExternalLink";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { zinc } from "tailwindcss/colors";
 
 type ApplicationIconProps = {
@@ -156,7 +157,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             href="/applications/add"
             className="flex !size-[36px] bg-[linear-gradient(4.17deg,#5C44C2_-14.22%,#69ADDA_42.82%,#FF1684_93.72%)] rounded-full justify-center items-center"
           >
-            <div className="size-[34px] bg-color-bg-default rounded-full flex justify-center items-center">
+            <div className={`size-[34px] bg-color-bg-default rounded-full flex justify-center items-center transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}>
               <GTPIcon icon={"oli-open-labels-initiative" as GTPIconName} size="md" />
             </div>
           </Link>
@@ -403,13 +404,13 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
           onMouseLeave={cancelHover}
         >
           <div
-            className="rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
+            className={`rounded-[40px] w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
             onClick={handlePrev}
           >
             <GTPIcon icon="gtp-chevronright-monochrome" size="sm" className="rotate-180" />
           </div>
           <div
-            className="flex flex-1 flex-col items-center justify-center  gap-y-[1px]"
+            className={`flex flex-1 flex-col items-center justify-center  gap-y-[1px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
             onClick={() => {
               setIsOpen(!isOpen);
             }}
@@ -421,7 +422,7 @@ export const MultipleSelectTopRowChild = memo(({ handleNext, handlePrev, selecte
             </div>
           </div>
           <div
-            className="rounded-full w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer"
+            className={`rounded-full w-[54px] h-full bg-color-bg-default flex items-center justify-center z-[12] hover:cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
             onClick={handleNext}
 
           >
@@ -519,7 +520,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
       <div className="flex flex-col items-center justify-start gap-y-[10px]">
         {validLinks.map(({ key, icon, prefix }) => {
           const href = `${prefix}${projectData[key]}`;
-          const className = "flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center";
+          const className = `flex !size-[36px] bg-color-bg-default rounded-full justify-center items-center transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`;
           return (
             <ExternalLink
               key={key}
@@ -539,7 +540,7 @@ export const ProjectDetailsLinks = memo(({ owner_project, mobile }: ProjectDetai
     <div className="flex items-center gap-x-[10px]">
       {validLinks.map(({ key, icon, prefix }) => {
         const href = `${prefix}${projectData[key]}`;
-        const className = `${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center`;
+        const className = `${key === "website" ? "gap-x-[6px] px-[5px] w-fit h-[54px]" : "size-[54px]"} bg-color-bg-default rounded-full flex justify-center items-center transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`;
         const content = key === "website" ? (
           <>
             <ApplicationIcon owner_project={owner_project} size="md" />
@@ -1134,13 +1135,13 @@ export const ChainsTooltip = ({
       onOpenChange={(open) => setIsOpen(open)} // Track when tooltip opens
       trigger={
         <div
-          className="h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-color-bg-medium flex justify-center items-center cursor-pointer select-none"
+          className={`group/more h-[18px] px-[5px] py-0.5 rounded-[999px] outline outline-1 outline-offset-[-1px] outline-color-bg-medium flex justify-center items-center cursor-pointer select-none transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
           }}
         >
-          <div className="text-color-ui-hover text-[10px] font-medium leading-[15px] whitespace-nowrap">
+          <div className="text-color-ui-hover group-hover/more:text-color-text-primary transition-colors duration-200 text-[10px] font-medium leading-[15px] whitespace-nowrap">
             +{hiddenCount} more
           </div>
         </div>

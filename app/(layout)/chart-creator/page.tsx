@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 import type { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPDropdown from "@/components/GTPComponents/GTPDropdown";
 import type { GTPIconName } from "@/icons/gtp-icon-names";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
@@ -357,14 +357,18 @@ function SeriesRow({
       <div className="flex items-center gap-2 mb-2">
         <button
           onClick={() => onChange({ visible: !entry.visible })}
-          className="h-2.5 w-2.5 rounded-full flex-shrink-0 border-2 transition-opacity"
-          style={{
-            backgroundColor: entry.visible ? entry.color : "transparent",
-            borderColor: entry.color,
-            opacity: entry.visible ? 1 : 0.4,
-          }}
+          className={`flex flex-shrink-0 rounded-full p-[4px] -m-[4px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
           title={entry.visible ? "Hide series" : "Show series"}
-        />
+        >
+          <span
+            className="block h-2.5 w-2.5 rounded-full border-2 transition-opacity"
+            style={{
+              backgroundColor: entry.visible ? entry.color : "transparent",
+              borderColor: entry.color,
+              opacity: entry.visible ? 1 : 0.4,
+            }}
+          />
+        </button>
         <input
           className="flex-1 min-w-0 bg-transparent text-xs text-color-text-primary outline-none border-b border-transparent focus:border-color-ui-hover transition-colors"
           value={entry.name}

@@ -10,6 +10,7 @@ import { GTPIconName } from "@/icons/gtp-icon-names";
 import { EventIcon } from "@/components/layout/EthAgg/MetricsTop";
 import dayjs from "@/lib/dayjs";
 import { LinkButton } from '@/components/layout/LinkButton';
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPTooltipNew, TooltipBody } from "@/components/tooltip/GTPTooltip";
 import { isMobile } from "react-device-detect";
 
@@ -109,13 +110,15 @@ export default function EventsCard({ children, totalHeight, customTitleArea, min
                         return child;
                     })}
                 </div>
-                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-gradient-to-t from-color-bg-default via-color-bg-default/80 to-color-bg-default/0 flex items-center justify-center pt-[12px] z-40 cursor-pointer"
+                <div ref={toggleRef} className="absolute bottom-0 left-0 h-[50px] right-0 w-full bg-gradient-to-t from-color-bg-default via-color-bg-default/80 to-color-bg-default/0 flex items-center justify-center pt-[12px] z-40 cursor-pointer group/toggle"
                     onClick={() => {
                      
                         setExpanded(!expanded)
                     }}
                 >
-                    <GTPIcon icon="in-button-down-monochrome" size="md" className={`text-color-text-secondary transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
+                    <div className={`flex items-center justify-center size-[32px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} group-hover/toggle:bg-color-ui-hover group-active/toggle:bg-color-ui-active`}>
+                        <GTPIcon icon="in-button-down-monochrome" size="md" className={`text-color-text-secondary transition-all duration-300 ${expanded ? "rotate-180" : ""}`} />
+                    </div>
 
                     {tooltipContent && (    
                     <div className="absolute right-[15px] top-[60%] -translate-y-1/2 w-[15px] h-[15px] flex items-center justify-center">
