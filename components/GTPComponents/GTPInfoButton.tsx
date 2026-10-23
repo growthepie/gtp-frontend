@@ -4,11 +4,11 @@ import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
 import type { Placement } from "@floating-ui/dom";
 
 /**
- * The page's i-button, styled like the metric charts on /ethereum-ecosystem/metrics:
- * method notes and sources go in its tooltip instead of a footnote. Sits right after
- * a title (section or card).
+ * The platform's i-button, styled like the metric charts on /ethereum-ecosystem/metrics:
+ * method notes and sources go in its tooltip instead of a footnote. Sits right after a
+ * title (section or card) or at the end of a tab bar. Used on /eth and in Quick Bites.
  */
-export default function InfoButton({
+export default function GTPInfoButton({
   label,
   children,
   placement = "top-start",

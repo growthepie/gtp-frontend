@@ -14,7 +14,7 @@ import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-t
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { ACCENT_HEX, AccentColor, FALLBACK_TEXT, FALLBACK_TILE_BG, ifFallback } from "./_components/colors";
 import EtherDiamond from "./_components/EtherDiamond";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 
 // Imperva (Thales) Bad Bot Report 2026: automated share of web traffic in 2025.
 // Static — the report is annual; update when the next edition comes out.

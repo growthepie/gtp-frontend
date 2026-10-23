@@ -2,7 +2,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import { SectionTitle, SectionDescription, SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
 import Sparkline from "./_components/Sparkline";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import FaqBlock from "@/components/quick-bites/blocks/FaqBlock";
 import { generateBlockId } from "@/lib/types/blockTypes";
 import { AccentColor } from "./_components/colors";

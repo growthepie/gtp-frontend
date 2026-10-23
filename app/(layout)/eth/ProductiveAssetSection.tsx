@@ -9,7 +9,7 @@ import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonR
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import { StackBar, Legend, BarRow, StatPair } from "./_components/StatBar";
 import { AccentColor, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";

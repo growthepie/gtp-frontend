@@ -6,7 +6,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import Card from "./_components/Card";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import Pictogram from "./_components/Pictogram";
 import Dumbbell from "./_components/Dumbbell";
 import { BasketIcon, BasketGlyph, EGG, BREAD, COFFEE, FUEL, GOLD_BAR } from "./_components/BasketIcons";

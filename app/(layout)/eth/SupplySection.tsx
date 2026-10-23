@@ -11,7 +11,7 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Card from "./_components/Card";
 import { StackBar, Legend, StatPair } from "./_components/StatBar";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";

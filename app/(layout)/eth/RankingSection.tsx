@@ -8,7 +8,7 @@ import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPB
 import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
 import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import { BarRow } from "./_components/StatBar";
 import ScrollArea from "./_components/ScrollArea";
 import { ACCENT_HEX, FALLBACK_TEXT, ifFallback } from "./_components/colors";

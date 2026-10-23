@@ -9,7 +9,7 @@ import { SectionTitle, SectionDescription } from "@/components/layout/TextHeadin
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { formatUptime } from "@/components/layout/EthAgg/helpers";
 import Card from "./_components/Card";
-import InfoButton from "./_components/InfoButton";
+import InfoButton from "@/components/GTPComponents/GTPInfoButton";
 import { StackBar, Legend, BarRow } from "./_components/StatBar";
 import { ACCENT_HEX, AccentColor, FAKE_TEXT, ACCENT_BG, FALLBACK_TEXT, ifFallback } from "./_components/colors";
 
