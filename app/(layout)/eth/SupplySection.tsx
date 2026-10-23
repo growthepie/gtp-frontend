@@ -283,7 +283,7 @@ function Bathtub({
       </g>
 
       {/* Drain */}
-      <rect x={210 - drainW / 2} y={TUB_BASE - 12} width={drainW} height="16" rx="3" fill={burnRgb} opacity=".35" />
+      <rect x={210 - drainW / 2} y={TUB_BASE - 12} width={drainW} height="16" rx={Math.min(8, drainW / 2)} fill={burnRgb} opacity=".35" />
       {!reduceMotion &&
         embers.map((y, i) => (
           <circle
@@ -446,7 +446,7 @@ export default function SupplySection() {
                       type="button"
                       aria-label={`${sc.name}: network demand ${Math.round(sc.demand_level * 100)} of 100`}
                       onClick={() => setScenarioKey(sc.key)}
-                      className="absolute top-[calc(50%+4px)] -translate-x-1/2 size-[10px] flex items-center justify-center cursor-pointer"
+                      className="absolute top-[calc(50%+4px)] -translate-x-1/2 size-[10px] rounded-full flex items-center justify-center cursor-pointer"
                       style={{
                         left: `calc(${SLIDER_THUMB_PX / 2}px + (100% - ${SLIDER_THUMB_PX}px) * ${sc.demand_level})`,
                       }}
@@ -474,26 +474,32 @@ export default function SupplySection() {
             pace={isLastWeek ? LAST_WEEK_PACE : SCENARIO_PACE}
           />
         </div>
-        <div className="p-[20px] flex flex-col gap-y-[15px] justify-center border-t md:border-t-0 md:border-l border-color-bg-medium">
-          <StatPair
-            label="Net change in the water level, per year"
-            value={fmtPct(netPct)}
-            valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""}`}
-          />
-          <StackBar
-            parts={[
-              { label: "Burned", value: outflow, color: "red" },
-              { label: "Stays in the tub", value: Math.max(0, netEth), color: "turquoise" },
-            ]}
-          />
-          <Legend
-            items={[
-              { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
-              { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
-            ]}
-          />
-          <div className="h-px bg-color-bg-medium" />
-          <span className="text-sm">{note}</span>
+        {/* Same rule as the other cards: the reading and what it means stay at the top,
+            the breakdown sits on the bottom edge, level with the tub's bottom labels. */}
+        <div className="p-[20px] md:p-[30px] flex flex-col gap-y-[15px] border-t md:border-t-0 md:border-l border-color-bg-medium">
+          <div className="flex flex-col gap-y-[10px]">
+            <StatPair
+              label="Net change in the water level, per year"
+              value={fmtPct(netPct)}
+              valueClassName={`numbers-3xl ${netEth < 0 ? "text-color-positive" : ""}`}
+              gap="gap-y-[8px]"
+            />
+            <span className="text-sm">{note}</span>
+          </div>
+          <div className="mt-auto flex flex-col gap-y-[10px]">
+            <StackBar
+              parts={[
+                { label: "Burned", value: outflow, color: "red" },
+                { label: "Stays in the tub", value: Math.max(0, netEth), color: "turquoise" },
+              ]}
+            />
+            <Legend
+              items={[
+                { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
+                { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
+              ]}
+            />
+          </div>
         </div>
       </Card>
     </div>

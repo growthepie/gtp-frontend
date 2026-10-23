@@ -155,7 +155,7 @@ function MarketHours() {
             {Array.from({ length: 24 }, (_, h) => (
               <div
                 key={h}
-                className={`flex-1 rounded-[2px] ${
+                className={`flex-1 rounded-full ${
                   h < r.hours ? ACCENT_BG[r.color] : "bg-color-bg-medium"
                 }`}
                 style={h === Math.floor(r.hours) && r.hours % 1 > 0 ? { opacity: r.hours % 1 } : undefined}

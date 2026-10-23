@@ -4,7 +4,7 @@ import { AccentColor, ACCENT_BG, ACCENT_TEXT, TRACK_BG, FAKE_TEXT, fakeColor } f
 
 // Mark specs used across this page's bars:
 //   · bar thickness capped (never fills its slot — the leftover band is air)
-//   · 4px rounded data-end, square at the baseline
+//   · fully rounded ends (pill shapes), growthepie's visual language
 //   · 2px surface-colour gap between touching segments (no stroke around marks)
 
 /** A labelled horizontal bar: label — track+fill — value. */
@@ -61,9 +61,9 @@ export function BarRow({
           {label}
         </div>
       </div>
-      <div className={`h-[10px] rounded-[4px] ${TRACK_BG} overflow-hidden`}>
+      <div className={`h-[10px] rounded-full ${TRACK_BG} overflow-hidden`}>
         <div
-          className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-r-[4px]"} ${ACCENT_BG[fake ? fakeColor(color) : color]} transition-[width] duration-300`}
+          className={`h-full ${overflows ? "[mask-image:linear-gradient(to_right,black_80%,transparent)]" : "rounded-full"} ${ACCENT_BG[fake ? fakeColor(color) : color]} transition-[width] duration-300`}
           style={{ width: `${overflows ? 100 : Math.max(2, (value / max) * 100)}%` }}
         />
       </div>
@@ -99,17 +99,19 @@ export function StackBar({
 }) {
   const total = parts.reduce((sum, p) => sum + p.value, 0) || 1;
   return (
-    <div className="flex gap-[2px] w-full" style={{ height }}>
-      {parts.map((p, i) => (
-        <div
-          key={p.label}
-          title={`${p.label}: ${p.value}`}
-          className={`${ACCENT_BG[p.color]} transition-[width] duration-300 ${i === 0 ? "rounded-l-[4px]" : ""} ${
-            i === parts.length - 1 ? "rounded-r-[4px]" : ""
-          }`}
-          style={{ width: `${(p.value / total) * 100}%` }}
-        />
-      ))}
+    // The bar's outer ends are fully rounded; empty parts are left out so the last
+    // visible segment gets the rounded end instead of a zero-width one.
+    <div className="flex gap-[2px] w-full rounded-full overflow-hidden" style={{ height }}>
+      {parts
+        .filter((p) => p.value > 0)
+        .map((p) => (
+          <div
+            key={p.label}
+            title={`${p.label}: ${p.value}`}
+            className={`${ACCENT_BG[p.color]} transition-[width] duration-300`}
+            style={{ width: `${(p.value / total) * 100}%` }}
+          />
+        ))}
     </div>
   );
 }
@@ -141,14 +143,17 @@ export function StatPair({
   value,
   unit,
   valueClassName = "numbers-md",
+  gap = "gap-y-[2px]",
 }: {
   label: string;
   value: string;
   unit?: string;
   valueClassName?: string;
+  /** Space between label and value; larger values (numbers-3xl) want more. */
+  gap?: string;
 }) {
   return (
-    <div className="flex flex-col gap-y-[2px]">
+    <div className={`flex flex-col ${gap}`}>
       <div className="heading-small-xxxs text-color-text-primary/70">{label}</div>
       <div className="flex items-baseline gap-x-[4px]">
         <span className={valueClassName}>{value}</span>

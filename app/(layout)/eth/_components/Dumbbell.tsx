@@ -53,9 +53,9 @@ export default function Dumbbell({
                   {signed(step.delta)} {unit}
                 </span>
               </div>
-              <div className="relative h-[10px] rounded-[4px] bg-color-bg-medium">
+              <div className="relative h-[10px] rounded-full bg-color-bg-medium">
                 <div
-                  className={`absolute top-0 h-full rounded-[4px] ${ACCENT_BG[fake ? fakeColor(step.color) : step.color]}`}
+                  className={`absolute top-0 h-full rounded-full ${ACCENT_BG[fake ? fakeColor(step.color) : step.color]}`}
                   style={{ left: `${left}%`, width: `${Math.max(1.5, width)}%` }}
                 />
               </div>
