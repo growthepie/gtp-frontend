@@ -13,7 +13,7 @@ import { Carousel } from '@/components/Carousel';
 import { getListedQuickBites, getQuickBiteTopicUrl } from '@/lib/quick-bites/themes';
 import { QuickBiteWithSlug } from '@/lib/types/quickBites';
 import { TRACKER_HEADLINES } from '@/lib/quick-bites/trackerHeadlines';
-import useSWR from 'swr';
+import useSWRImmutable from 'swr/immutable';
 
 const LATEST_COUNT = 6;
 // The tracker list stops here (two full rows of three on desktop, three tiles on phones);
@@ -160,7 +160,9 @@ const TrackerHeadlineLine = ({
   source: (typeof TRACKER_HEADLINES)[string];
   fallback: string;
 }) => {
-  const { data, error } = useSWR(source.url);
+  // Fetched once per page load: no refetch on tab focus, reconnect or remount (the
+  // tracker files update daily at most, and the API is rate limited).
+  const { data, error } = useSWRImmutable(source.url);
   const headline = data ? source.read(data) : null;
 
   if (error || (data && !headline)) {
