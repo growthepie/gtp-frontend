@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
+import { getQuickBitesForTopic, getQuickBiteTopicUrl, QUICK_BITE_TOPICS } from "@/lib/quick-bites/themes";
 
 export const revalidate = 3600; // 1 hour
 
@@ -40,9 +41,21 @@ export async function GET(request: Request) {
       })
       .join("");
 
+    // Topic pages (/quick-bites/topic/<key>), last modified with their newest Quick Bite.
+    const topicEntries = QUICK_BITE_TOPICS.map((topic) => {
+      const newest = getQuickBitesForTopic(topic.key)[0];
+      return `
+  <url>
+    <loc>${origin}${getQuickBiteTopicUrl(topic.key)}</loc>
+    <lastmod>${getLastMod(newest?.date)}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>`;
+    }).join("");
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${sitemapEntries}
+${sitemapEntries}${topicEntries}
 </urlset>`;
 
     return new NextResponse(xml, {

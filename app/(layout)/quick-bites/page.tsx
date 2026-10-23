@@ -2,8 +2,8 @@
 import { PageContainer } from '@/components/layout/Container';
 import { Title } from '@/components/layout/TextHeadingComponents';
 import { Metadata } from 'next';
-import QuickBitesGrid from '@/components/quick-bites/QuickBitesGrid';
-import { getAllQuickBites } from '@/lib/quick-bites/quickBites';
+import QuickBitesBrowser from '@/components/quick-bites/QuickBitesBrowser';
+import { getListedQuickBites } from '@/lib/quick-bites/themes';
 
 export const metadata: Metadata = {
   title: 'Quick Bites - growthepie',
@@ -11,13 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function QuickBitesPage() {
-  // Get all quick bites (now with built-in caching)
-  const QuickBites = getAllQuickBites();
-
-  // Sort by date (newest first)
-  const sortedQuickBites = [...QuickBites].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  // Published Quick Bites, newest first
+  const quickBites = getListedQuickBites();
 
 
 
@@ -34,7 +29,7 @@ export default function QuickBitesPage() {
           Short and focused articles of specific topics or trends in the Ethereum ecosystem.
         </p>
         
-        <QuickBitesGrid QuickBites={sortedQuickBites} IsLanding={false} />
+        <QuickBitesBrowser quickBites={quickBites} activeTopic="all" />
       </PageContainer>
     </div>
   );
