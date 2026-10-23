@@ -168,14 +168,7 @@ export default function ProductiveAssetSection() {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <div className="flex items-center gap-x-[8px]">
-        <SectionTitle icon="gtp-metrics-fdv" title="ETH is a productive asset" titleSize="md" as="h2" />
-        {live?.sources?.length ? (
-          <InfoButton label="Sources">
-            Sources: {[...new Set(live.sources.map((s) => s.name))].join(", ")}.
-          </InfoButton>
-        ) : null}
-      </div>
+      <SectionTitle icon="gtp-metrics-fdv" title="ETH is a productive asset" titleSize="md" as="h2" />
       <SectionDescription>
         Gold sits in a vault. ETH can do three jobs, and it can do them at the same time.
       </SectionDescription>
@@ -183,12 +176,15 @@ export default function ProductiveAssetSection() {
       {/* Same control bar as the fundamentals charts. The buttons fill the bar once it's
           more than half full; on mobile they also get tighter padding (as fundamentals
           does) so all three fit on a 320px phone. */}
+      {/* flex-nowrap: the i-button stays on the buttons' line; on the narrowest phones the
+          buttons shrink a little instead of pushing it onto a second row. */}
       <GTPButtonContainer
+        className="flex-nowrap"
         isWrapping={modesWrapping}
         setIsWrapping={setModesWrapping}
         style={modesWrapping ? { borderRadius: "15px" } : undefined}
       >
-        <GTPButtonRow autoFill>
+        <GTPButtonRow autoFill className="min-w-0">
           {(Object.keys(MODES) as Mode[]).map((k) => (
             <GTPButton
               key={k}
@@ -202,6 +198,12 @@ export default function ProductiveAssetSection() {
             />
           ))}
         </GTPButtonRow>
+        {/* Sources for all three modes, at the end of the bar (as in the hero). */}
+        {live?.sources?.length ? (
+          <InfoButton label="Sources" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+            Sources: {[...new Set(live.sources.map((s) => s.name))].join(", ")}.
+          </InfoButton>
+        ) : null}
       </GTPButtonContainer>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[15px]">

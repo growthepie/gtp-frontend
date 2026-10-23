@@ -375,18 +375,7 @@ export default function SupplySection() {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <div className="flex items-center gap-x-[8px]">
-        <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
-        <InfoButton label="About this picture">
-          <span>
-            Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
-            actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
-            burn, so they&apos;re estimates.
-          </span>
-          <span>The tub runs as a time-lapse so the level moves visibly. The real rate is the annual figure above.</span>
-          <span>Sources: {sources}.</span>
-        </InfoButton>
-      </div>
+      <SectionTitle icon="gtp-metrics-economics" title="The supply, in one picture" titleSize="md" as="h2" />
       <SectionDescription>Inflation and burn are abstract. A tap and a drain are not.</SectionDescription>
 
       {/* Same control bar as the fundamentals charts: presets left, slider right. The
@@ -415,7 +404,7 @@ export default function SupplySection() {
         </GTPButtonRow>
         {/* At least 360px (the label plus a ~210px track), so it wraps onto its own line
             before the track gets too short to use; capped at the bar's width on phones. */}
-        <div className="flex items-center gap-x-[10px] flex-1 min-w-[min(360px,100%)] h-[32px] px-[13px]">
+        <div className="flex items-center gap-x-[10px] flex-1 min-w-[min(360px,100%)] h-[32px] pl-[13px]">
           <span className="heading-small-xs whitespace-nowrap">Network demand</span>
           {/* The track is centred in the bar like the buttons; the week markers are small
               enough to fit in the space below it (centred 9px under the track, inside 32px). */}
@@ -460,6 +449,17 @@ export default function SupplySection() {
                 </Tooltip>
               ))}
           </div>
+          {/* Explains the weeks and the slider. It ends the slider's line, so it stays at the bar's
+              right end and moves with the slider when the bar wraps on phones. */}
+          <InfoButton label="About this picture" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+            <span>
+              Every button is a real week&apos;s burn with today&apos;s issuance (&quot;Last week&quot; uses that week&apos;s
+              actual issuance too). Slider positions between them follow a log curve from the quietest week to the highest
+              burn, so they&apos;re estimates.
+            </span>
+            <span>The tub runs as a time-lapse so the level moves visibly. The real rate is the annual figure above.</span>
+            <span>Sources: {sources}.</span>
+          </InfoButton>
         </div>
       </GTPButtonContainer>
 

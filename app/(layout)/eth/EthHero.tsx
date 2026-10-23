@@ -57,9 +57,10 @@ function useLiveEthPrice() {
 }
 
 // Timespan bar, by the bar's own width rather than the screen's. The five buttons
-// with full labels need ~410px. Below that they use the short labels ("24h") and
-// tighter padding; below FILL_BELOW_PX they stretch to fill the whole bar.
-const FULL_LABELS_MIN_PX = 430;
+// with full labels need ~410px, plus ~32px for the i-button at the end. Below that they
+// use the short labels ("24h") and tighter padding; below FILL_BELOW_PX they stretch
+// to fill the rest of the bar.
+const FULL_LABELS_MIN_PX = 460;
 const FILL_BELOW_PX = 1220;
 
 // change_pct is a fraction; the card wants a percentage. Null hides the badge.
@@ -180,29 +181,22 @@ export default function EthHero() {
             ) : (
               <span className={`numbers-5xl text-color-text-primary/40 ${ifFallback(priceIsFallback, FALLBACK_TEXT)}`}>—</span>
             )}
-            {/* The i-button sits with the price label, centred on it. */}
-            <span className="inline-flex items-center gap-x-[5px]">
-              {/* Only claim "live" while the stream's price is shown, not the hourly fallback. */}
-              {isLivePrice ? (
-                <span className="heading-small-xs flex items-center gap-x-[5px]">
-                  <span className="relative flex h-[6px] w-[6px]">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
-                    <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
-                  </span>
-                  Live price
+            {/* Only claim "live" while the stream's price is shown, not the hourly fallback. */}
+            {isLivePrice ? (
+              <span className="heading-small-xs flex items-center gap-x-[5px]">
+                <span className="relative flex h-[6px] w-[6px]">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-color-positive opacity-75" />
+                  <span className="relative inline-flex rounded-full h-[6px] w-[6px] bg-color-positive" />
                 </span>
-              ) : (
-                displayedPrice && (
-                  <span className="heading-small-xs text-color-text-primary/70">
-                    Hourly price{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
-                  </span>
-                )
-              )}
-              <InfoButton label="About these figures">
-                <span>Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.</span>
-                <span>Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.</span>
-              </InfoButton>
-            </span>
+                Live price
+              </span>
+            ) : (
+              displayedPrice && (
+                <span className="heading-small-xs text-color-text-primary/70">
+                  Hourly price{kpisUpdated ? ` · as of ${kpisUpdated.slice(11, 16)} UTC` : ""}
+                </span>
+              )
+            )}
           </div>
           {/* The two stat pills sit on one row. They step down in size as the row narrows —
               full from 600px, compact from 500px, extra-compact below — so they still fit
@@ -293,6 +287,13 @@ export default function EthHero() {
               />
             ))}
           </GTPButtonRow>
+          {/* Explains the timespans and the cards below, so it sits with the bar that drives them.
+              self-stretch: the bar treats a child whose top is lower than the first one's as
+              wrapped (and drops its full rounding), so the icon spans the bar's full height. */}
+          <InfoButton label="About these cards" className="self-stretch px-[8px]" color="rgb(var(--text-primary))">
+            <span>Each card&apos;s change is over the selected timespan; burned compares the total with the previous equal span.</span>
+            <span>Sources: CoinGecko, ultrasound.money, ethsupply.fyi and growthepie.</span>
+          </InfoButton>
         </GTPButtonContainer>
         <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-3 gap-[10px]">
           {hasSeries(kpis.price) && displayedPrice ? (

@@ -13,12 +13,15 @@ export default function InfoButton({
   children,
   placement = "top-start",
   className = "",
+  color = "rgb(var(--text-secondary))",
 }: {
   /** Accessible name, e.g. "About this chart". */
   label: string;
   children: React.ReactNode;
   placement?: Placement;
   className?: string;
+  /** Icon colour; secondary text by default, as on the metrics page. */
+  color?: string;
 }) {
   return (
     <GTPTooltipNew
@@ -26,7 +29,7 @@ export default function InfoButton({
       unstyled
       trigger={
         <button type="button" aria-label={label} className={`shrink-0 inline-flex items-center justify-center hover:cursor-pointer ${className}`}>
-          <GTPIcon icon="gtp-info-monochrome" size="sm" className="pointer-events-auto" style={{ color: "rgb(var(--text-secondary))" }} />
+          <GTPIcon icon="gtp-info-monochrome" size="sm" className="pointer-events-auto" style={{ color }} />
         </button>
       }
       positionOffset={{ mainAxis: 0, crossAxis: 0 }}
