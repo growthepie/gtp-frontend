@@ -10,6 +10,8 @@ import Block from '@/components/quick-bites/Block';
 import { formatDate } from '@/lib/utils/formatters';
 import { processMarkdownContent } from '@/lib/utils/markdownParser';
 import RelatedQuickBites from '@/components/RelatedQuickBites';
+import { getQuickBiteTopicUrl, getTopicsForQuickBite } from '@/lib/quick-bites/themes';
+import { GTP_BUTTON_INTERACTION_CLASSES } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import { Author, QuickBiteData, QuickBiteWithSlug, Topic } from '@/lib/types/quickBites';
 import Link from 'next/link';
 import QuickBiteClientContent from '@/components/quick-bites/QuickBiteClientContent';
@@ -287,6 +289,12 @@ export default function ClientQuickBitePage({
       topics: updatedTopics,
     };
   }, [QuickBite, contentBlocks, AllChainsByKeys]);
+
+  // The browse topics this Quick Bite is listed under, linked as "More on …".
+  const browseTopics = useMemo(
+    () => (quickBiteWithChartTopics ? getTopicsForQuickBite(quickBiteWithChartTopics) : []),
+    [quickBiteWithChartTopics],
+  );
 
   const resolvedTopics = useMemo(
     () =>
@@ -633,6 +641,22 @@ export default function ClientQuickBitePage({
               </div>
             </div>
           </div>
+          )}
+
+          {browseTopics.length > 0 && (
+            <nav aria-label="More Quick Bites on these topics" className="flex flex-wrap items-center gap-[5px]">
+              <span className="text-xxs text-color-text-secondary mr-[5px]">More on</span>
+              {browseTopics.map((topic) => (
+                <Link
+                  key={topic.key}
+                  href={getQuickBiteTopicUrl(topic.key)}
+                  className={`flex items-center gap-x-[5px] h-[26px] pl-[5px] pr-[10px] rounded-full bg-color-bg-medium text-xs transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
+                >
+                  <GTPIcon icon={topic.icon} size="sm" />
+                  {topic.label}
+                </Link>
+              ))}
+            </nav>
           )}
 
           <RelatedQuickBites slug={params.slug} />

@@ -10,6 +10,7 @@ import SupplySection from "./SupplySection";
 import BasketSection from "./BasketSection";
 import RankingSection from "./RankingSection";
 import DailySection from "./DailySection";
+import QuickBitesShelf from "@/components/quick-bites/QuickBitesShelf";
 import { IS_PRODUCTION } from "@/lib/helpers";
 
 export default function EthTheAssetPage() {
@@ -28,6 +29,11 @@ export default function EthTheAssetPage() {
         <ProductiveAssetSection />
         {/* Hidden in production for now; shown on local, dev and preview. */}
         {!IS_PRODUCTION && <BasketSection />}
+        <QuickBitesShelf
+          slugs={["eth-supply", "fusaka", "ethereum-scaling"]}
+          topic="token-economics"
+          description="Deeper dives on ETH's supply and the upgrades that shape it, backed by live data."
+        />
         <DailySection />
       </Container>
     </>

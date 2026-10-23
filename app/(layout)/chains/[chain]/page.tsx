@@ -34,6 +34,7 @@ import { processDynamicContent } from "@/lib/utils/dynamicContent";
 import { processMarkdownContent } from "@/lib/utils/markdownParser";
 import { ContentBlock } from "@/lib/types/blockTypes";
 import Block from "@/components/quick-bites/Block";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
@@ -609,6 +610,15 @@ const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, c
   return (
     <>
           <ChainsOverview chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
+          {/* Quick Bites whose topics link to this chain (/chains/<url_key>). */}
+          <div className="flex flex-col gap-y-[15px] pt-[45px]">
+            <MetricRelatedQuickBites
+              metricKey={chainData.url_key}
+              metricType="chains"
+              title={`Quick Bites on ${chainData.name}`}
+              description={`Data stories and trackers that cover ${chainData.name}, backed by live data.`}
+            />
+          </div>
     </>
   );
 });
