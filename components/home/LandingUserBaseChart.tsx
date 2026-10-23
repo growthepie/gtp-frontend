@@ -27,7 +27,6 @@ import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
 import { IS_PRODUCTION } from "@/lib/helpers";
-import LandingEventsChart from "./LandingEventsChart";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -248,13 +247,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
       {landing && master && AllChainsByKeys ? (
         <>
-
-          <Container className="w-full">
-           
-
-            <LandingEventsChart />
-         
-          </Container>
           <Container className="flex flex-col flex-1 w-full mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
