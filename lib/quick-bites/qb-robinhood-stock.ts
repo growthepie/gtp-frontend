@@ -7,11 +7,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
   subtitle: "Tracking the adoption of Robinhood's tokenized stocks on Arbitrum One",
   shortTitle: "Robinhood Stocks",
   content: [
-    "# Phase 1 (of 3):",
-    "Robinhood's first step toward self-custodial stocks and the integration of stocks into DeFi (Decentralized Finance) began with their “To Catch A Token” announcement on June 30th ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. Phase 1 includes the launch of non-custodial tokenized stocks within the EU, with plans to expand to further countries soon. On launch day, Robinhood began with 204 stocks, each has a unique token which is 1 to 1 backed by the shares held in each stock. When a user buys or sells a share within the Robinhood app the supply of the corresponding token changes to reflect this (buying = token minting and selling = token burning). This is the first of three phases, initially launching on Arbitrum One. Robinhood also plans to launch its own Layer 2, built on the Arbitrum Orbit Stack. We explore this phase and future phases in further detail at the end of this quick bite. ",
-    "> Publicly listed shares are held by a US-licensed broker-dealer, currently the amount of tokenized shares seems to update daily, meaning changes in token supply reflect a net change rather than individual trades.. We have excluded $1.5M of privately listed shares (Space X and OpenAI), which were given away to Robinhood users, these shares are not yet tradable and are awaiting further regulatory clarity. The tokens relating to these private stocks have been burned (destroyed) while the shares are said to be held by a “Special Purpose Vehicle” ([2])[https://www.youtube.com/watch?v=yhFN6LcV6PQ].",
-    
-    "# Robinhood Tokenized Stocks Metrics:",
+    "Robinhood tokenizes stocks on Arbitrum One for its EU users: each token is backed 1:1 by a real share, minted when someone buys and burned when they sell. This is phase 1 of 3, and the numbers below track it live.",
 
     "```kpi-cards",JSON.stringify(
       [
@@ -66,6 +62,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
       caption: "Outstanding tokenized stock USD value by Robinhood on Arbitrum One.",
     }),
     "```",
+    "> Shares are held by a US-licensed broker-dealer. We exclude $1.5M of privately listed shares (SpaceX and OpenAI) that were given away to users: they aren't tradable yet and their tokens have been burned while the shares sit in a “Special Purpose Vehicle” ([2](https://www.youtube.com/watch?v=yhFN6LcV6PQ)).",
 
     "# Overview of All Tokenized Stocks",
     "All the stocks Robinhood has tokenized on Arbitrum One to date excluding the privately listed shares (mentioned above) which have been burned.",
@@ -236,8 +233,9 @@ const robinhoodStock: QuickBiteData = createQuickBite({
     "```",
   
     "# To Catch A Token - Robinhood's presentation",
-    "## Phase 1 - Continued",
-    "Vlad Tenev (Robinhood CEO) outlines the first phase of the tokenization process live in Cannes, France ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]. In this example, we can see a user buying an Apple share → Which is received by Robinhood’s backend → Instructions are sent to a US Broker, which buys and custodies the share from a TradFi market → This then gets sent to Robinhood's “Tokenization Engine” → Once the token has been minted Robinhoods backend logs this and the user can see that they have bought a share. This is live and tradable 24 hours and 5 days a week",
+    "## Phase 1",
+    "Robinhood announced its first step toward self-custodial stocks and stocks in DeFi with “To Catch A Token” on June 30th ([1](https://www.youtube.com/watch?v=FBHmAq5lmZQ)). It launched in the EU with 204 stocks, each its own token, initially on Arbitrum One. Robinhood also plans its own Layer 2, built on the Arbitrum Orbit stack.",
+    "Vlad Tenev (Robinhood CEO) outlines the first phase of the tokenization process live in Cannes, France ([1](https://www.youtube.com/watch?v=FBHmAq5lmZQ)). In this example, we can see a user buying an Apple share → Which is received by Robinhood’s backend → Instructions are sent to a US Broker, which buys and custodies the share from a TradFi market → This then gets sent to Robinhood's “Tokenization Engine” → Once the token has been minted Robinhoods backend logs this and the user can see that they have bought a share. This is live and tradable 24 hours and 5 days a week",
     
     "```image",
     JSON.stringify({
@@ -245,7 +243,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
       alt: "Phase 1 by Vlad Tenev",
       width: "1344",
       height: "644",
-      caption: "Phase 1 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+      caption: "Phase 1 - To Catch A Token - Vlad Tenev ([1](https://www.youtube.com/watch?v=FBHmAq5lmZQ))",
     }),
     "```",
     "> Currently, the amount of tokenized shares seems to update daily, meaning changes in token supply reflect a net change rather than individual trades. When this changes we will explore tracking trade volume",
@@ -259,7 +257,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
       alt: "Phase 2 by Vlad Tenev",
       width: "1344",
       height: "644",
-      caption: "Phase 2 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+      caption: "Phase 2 - To Catch A Token - Vlad Tenev ([1](https://www.youtube.com/watch?v=FBHmAq5lmZQ))",
     }),
     "```",
 
@@ -271,7 +269,7 @@ const robinhoodStock: QuickBiteData = createQuickBite({
       alt: "Phase 3 by Vlad Tenev",
       width: "1344",
       height: "644",
-      caption: "Phase 3 - To Catch A Token - Vlad Tenev ([1])[https://www.youtube.com/watch?v=FBHmAq5lmZQ]",
+      caption: "Phase 3 - To Catch A Token - Vlad Tenev ([1](https://www.youtube.com/watch?v=FBHmAq5lmZQ))",
     }),
     "```",
     "> This page is a data tracker for informational and educational purposes only. It is not investment advice or a recommendation to buy or sell any security or token. It does not consider your objectives, financial situation, or needs. Data may be incomplete, delayed, or inaccurate. Do your own research.",

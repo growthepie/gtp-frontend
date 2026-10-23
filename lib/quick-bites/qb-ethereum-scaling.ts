@@ -293,7 +293,7 @@ const ethereumScaling: QuickBiteData = createQuickBite({
     ...MainKPIs,
 
     "# How far we've come",
-    "Since launch, Ethereum Mainnet has methodically improved efficiency and capacity without compromising decentralization or security. It went through several key upgrades, each contributing to incremental improvements in efficiency and capacity. You can read more about these on our [ecosystem](https://www.growthepie.com/ethereum-ecosystem/metrics) page.",
+    "Since launch, a series of upgrades has raised Ethereum Mainnet's capacity step by step, without giving up decentralization or security. More on our [ecosystem](https://www.growthepie.com/ethereum-ecosystem/metrics) page.",
     "> From 2015 to today, Ethereum scaled from ~0.71 TPS to {{ethereumCurrentTPS}} TPS, a {{ethereumHistoricalScale}}x increase.",
 
     ...HistoricalScaling,
@@ -305,9 +305,9 @@ const ethereumScaling: QuickBiteData = createQuickBite({
 
     "## How Ethereum Mainnet scales from here",
     "Ethereum's strategy combines multiple approaches to sustainably increase capacity while preserving its core principles:",
-    "- **EIP-7938 (Dankrad Feist)** - proposes a **default, exponential gas-limit growth schedule** where clients vote automatically to increase L1 capacity over time (subject to coordination and override). Read the spec (here)[https://eips.ethereum.org/EIPS/eip-7938].",
-    "- **Lean Ethereum (Justin Drake)** - a design philosophy to streamline consensus, data, and execution, leveraging **DAS** and **real-time zkVMs** for “beast mode” performance while staying verifiable. (More)[https://blog.ethereum.org/2025/07/31/lean-ethereum].",
-    "- **More EIPs** - parallel efforts improve execution, networking, and data availability. (Slide overview)[https://docs.google.com/presentation/d/1vDkFlUXJ6S94hOGjMkeIO-SP3ZB4ysKPNgu1mskf1No/edit#slide=id.g36e7baa00a1_0_1116].",
+    "- **EIP-7938 (Dankrad Feist)** - proposes a **default, exponential gas-limit growth schedule** where clients vote automatically to increase L1 capacity over time (subject to coordination and override). Read the spec [here](https://eips.ethereum.org/EIPS/eip-7938).",
+    "- **Lean Ethereum (Justin Drake)** - a design philosophy to streamline consensus, data, and execution, leveraging **DAS** and **real-time zkVMs** for “beast mode” performance while staying verifiable. [More](https://blog.ethereum.org/2025/07/31/lean-ethereum).",
+    "- **More EIPs** - parallel efforts improve execution, networking, and data availability. [Slide overview](https://docs.google.com/presentation/d/1vDkFlUXJ6S94hOGjMkeIO-SP3ZB4ysKPNgu1mskf1No/edit#slide=id.g36e7baa00a1_0_1116).",
 
     "```image",
     JSON.stringify({
