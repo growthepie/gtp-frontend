@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect, startTransition } from 'react';
 import { TableBlock as TableBlockType } from "@/lib/types/blockTypes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -101,6 +101,48 @@ const BadgeLink = ({ badge, uniqueKey }: { badge: { label: string; color: string
 
 /** Fixed-content column types that should never flex. */
 const FIXED_COLUMN_TYPES = new Set(["image", "chain", "boolean", "metric"]);
+
+// "3 days ago" under a date. formatTimeAgo falls back to the plain date after 30 days,
+// which would repeat the date above it, so that case shows nothing.
+const relativeDate = (rawDate: string) => {
+  const timeAgo = formatTimeAgo(rawDate);
+  return timeAgo === formatDate(rawDate) ? null : timeAgo;
+};
+
+const INITIAL_RENDERED_ROWS = 40;
+
+/** Placeholder in the table's shape (header + pulsing rows) while its data loads. */
+function TableSkeleton({ maxHeight, className }: { maxHeight: number; className?: string }) {
+  // Rows are 34px with a 5px gap; fill the same height the loaded table will take.
+  const rowCount = Math.max(3, Math.min(12, Math.floor((maxHeight - 39) / 39)));
+  const barWidths = ["w-[30%]", "w-[18%]", "w-[12%]", "w-[15%]"];
+  return (
+    <div className={`my-8 ${className || ''}`} role="status" aria-live="polite">
+      <span className="sr-only">Loading table data…</span>
+      <div className="flex items-end gap-x-[15px] h-[34px] px-[20px] pb-[8px]" aria-hidden>
+        {barWidths.map((w, i) => (
+          <div key={i} className={`h-[10px] rounded-full bg-color-bg-medium animate-pulse ${w}`} />
+        ))}
+      </div>
+      <div className="flex flex-col gap-y-[5px] mt-[5px]" aria-hidden>
+        {Array.from({ length: rowCount }, (_, row) => (
+          <div
+            key={row}
+            className="h-[34px] rounded-full border-[0.5px] border-color-ui-hover flex items-center gap-x-[15px] px-[20px]"
+          >
+            {barWidths.map((w, i) => (
+              <div
+                key={i}
+                className={`h-[10px] rounded-full bg-color-bg-medium animate-pulse ${w}`}
+                style={{ animationDelay: `${row * 60}ms` }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
@@ -428,6 +470,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     return result;
   }, [sortedRows, columnKeyOrder, columnDefinitions, block.rowBar]);
 
+  // Long tables (e.g. 2,000+ stocks) render in two steps: the first rows fill the visible
+  // area right away, the rest follow in one transition, which React renders in small
+  // slices so the page stays responsive. (Several smaller batches would re-render the
+  // rows already shown each time.) Every row still ends up in the DOM for crawlers.
+  const [renderedRowCount, setRenderedRowCount] = useState(INITIAL_RENDERED_ROWS);
+  useEffect(() => {
+    if (renderedRowCount >= sortedRows.length) return;
+    const timeout = setTimeout(() => {
+      startTransition(() => setRenderedRowCount(Number.POSITIVE_INFINITY));
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [renderedRowCount, sortedRows.length]);
+  const visibleRows = renderedRowCount >= sortedRows.length ? sortedRows : sortedRows.slice(0, renderedRowCount);
+
   const resolveBarColor = (rowData: any[], colorColumn?: string, explicitColor?: string) => {
     if (explicitColor) return explicitColor;
     if (colorColumn) {
@@ -447,7 +503,11 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     </div>
   ) : null;
 
-  if (showInitialLoadingState) return <div className="my-8 text-center">Loading table data...</div>;
+  // From the first render until the data arrives (including before the request starts),
+  // show the table's shape instead of a blank space or a line of text.
+  if (showInitialLoadingState || (block.readFromJSON && !jsonData && !error)) {
+    return <TableSkeleton maxHeight={block.maxHeight ?? 500} className={block.className} />;
+  }
   if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
 
@@ -553,7 +613,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!rawDate) return <EmptyCell />;
       const colDef = columnDefinitions?.[columnKey];
       const dateStr = formatDate(rawDate, colDef?.dateFormat ?? 'medium');
-      const timeAgo = colDef?.showTimeAgo ? formatTimeAgo(rawDate) : null;
+      const timeAgo = colDef?.showTimeAgo ? relativeDate(rawDate) : null;
       return (
         <div className={`flex flex-col gap-y-[2px] ${timeAgo && "-mt-[5px]"}`}>
           <span className="text-xs">{dateStr}</span>
@@ -646,7 +706,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const isScrollable = block.scrollable !== false;
     const cardGrid = (
       <div className="grid grid-cols-1 gap-[10px]">
-        {sortedRows.map((rowData, rowIndex) => {
+        {visibleRows.map((rowData, rowIndex) => {
           const titleCell = titleColIndex >= 0 ? rowData[titleColIndex] : null;
           const imageCell = imageColIndex >= 0 ? rowData[imageColIndex] : null;
           const imageSrc = typeof imageCell?.value === "string" ? imageCell.value.trim() : "";
@@ -826,7 +886,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           );
           const tableRows = (
             <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
-            {sortedRows.map((rowData, rowIndex) => (
+            {visibleRows.map((rowData, rowIndex) => (
               // content-visibility: off-screen rows stay in the DOM (crawlers and search
               // see every row) but the browser skips their layout and paint, which keeps
               // long tables (2,000+ rows) fast to scroll and resize.
@@ -937,7 +997,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     } else {
                       const colDef = columnDefinitions?.[columnKey];
                       const dateStr = formatDate(rawDate, colDef?.dateFormat ?? 'medium');
-                      const timeAgo = colDef?.showTimeAgo ? formatTimeAgo(rawDate) : null;
+                      const timeAgo = colDef?.showTimeAgo ? relativeDate(rawDate) : null;
                       cellMainContent = (
                         <div className={`flex flex-col gap-y-[0px] ${colDef.isNumeric && "items-end"}  ${timeAgo && "-mt-[5px]"}`}>
                           <div className="text-xs">{dateStr}</div>
