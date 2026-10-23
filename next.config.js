@@ -203,6 +203,12 @@ const nextConfig = {
         permanent: true,
       },
       {
+        // The Glo Dollar tracker is now a Quick Bite.
+        source: "/trackers/glodollar",
+        destination: "/quick-bites/glo-dollar",
+        permanent: true,
+      },
+      {
         source: "/new-apps/:slug",
         destination: "/applications/:slug",
         permanent: true,

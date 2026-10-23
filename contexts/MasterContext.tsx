@@ -1,6 +1,6 @@
 "use client";
 import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
-import { GloHolderURL, MasterURL } from "@/lib/urls";
+import { MasterURL } from "@/lib/urls";
 import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains, ChainInfo } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";

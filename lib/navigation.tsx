@@ -89,11 +89,6 @@ export const navigationCategories = {
     icon: "transaction-costs",
     group: "fundamentals",
   },
-  "public-goods-funding": {
-    label: "Public Goods Funding",
-    icon: "feather:sun",
-    group: "trackers",
-  },
   gtpmetrics: {
     label: "More from growthepie",
     icon: "gtp-pie-monochrome",
@@ -232,15 +227,6 @@ const quickBitesGroup: NavigationItem = {
       // Listed in the Quick Bites sitemap already.
       excludeFromSitemap: true,
     })),
-    {
-      label: "Glo Dollar",
-      icon: "glo-dollar-monochrome",
-      category: "public-goods-funding",
-      key: "glodollar",
-      rootKey: "glodollar",
-      urlKey: "glodollar",
-      url: "/trackers/glodollar",
-    },
   ],
 };
 
