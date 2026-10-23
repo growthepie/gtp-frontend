@@ -21,6 +21,7 @@ export default function GTPButtonRow({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [filled, setFilled] = useState(false);
+  const [isWrapped, setIsWrapped] = useState(false);
 
   useEffect(() => {
     const row = ref.current;
@@ -45,32 +46,34 @@ export default function GTPButtonRow({
     return () => observer.disconnect();
   }, [autoFill]);
 
+  // A wrapping row tracks whether it actually spans several lines: its outline then
+  // drops the full rounding (see className below), and onWrapChange is told.
   useEffect(() => {
     const container = ref.current;
-    if (!container || !onWrapChange) return;
+    if (!container || (!wrap && !onWrapChange)) return;
 
     const checkWrap = () => {
       const children = Array.from(container.children) as HTMLElement[];
-      if (children.length < 2) {
-        onWrapChange(false);
-        return;
-      }
-      const firstTop = children[0].offsetTop;
-      onWrapChange(children.some((child) => child.offsetTop > firstTop));
+      const firstTop = children[0]?.offsetTop ?? 0;
+      const wrapped = children.length > 1 && children.some((child) => child.offsetTop > firstTop);
+      setIsWrapped(wrapped);
+      onWrapChange?.(wrapped);
     };
 
+    // The observer also fires once right after observe(), so no separate initial call.
     const observer = new ResizeObserver(checkWrap);
     observer.observe(container);
-    checkWrap();
 
     return () => observer.disconnect();
-  }, [onWrapChange]);
+  }, [wrap, onWrapChange]);
 
   return (
     <GTPTabButtonSet
       ref={ref}
       data-fill={autoFill && filled ? "true" : "false"}
-      className={`${wrap ? "flex-wrap" : ""} data-[fill=true]:flex-auto [&[data-fill=true]>*]:flex-1 [&[data-fill=true]>*>button]:w-full ${className ?? ""}`}
+      // Wrapped over several lines, a fully rounded outline looks wrong: 13px fits inside
+      // GTPButtonContainer's 15px corners with its 2px padding.
+      className={`${wrap ? "flex-wrap" : ""} ${wrap && isWrapped ? "!rounded-[13px]" : ""} data-[fill=true]:flex-auto [&[data-fill=true]>*]:flex-1 [&[data-fill=true]>*>button]:w-full ${className ?? ""}`}
       style={style}
     >
       {children}
