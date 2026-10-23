@@ -77,6 +77,15 @@ const TRIGGER_PANEL_GAP_BY_BUTTON_SIZE: Record<NonNullable<GTPButtonProps["size"
   lg: 8,
 };
 
+// Right edge of the clear button: the trigger's 1px wrapper, its right padding, the
+// chevron and the icon gap (see FIGMA_BUTTON_SIZE in GTPButton).
+const CLEAR_BUTTON_RIGHT_BY_BUTTON_SIZE: Record<NonNullable<GTPButtonProps["size"]>, number> = {
+  xs: 1 + 3 + 12 + 2,
+  sm: 1 + 5 + 16 + 4,
+  md: 1 + 5 + 24 + 4,
+  lg: 1 + 5 + 28 + 6,
+};
+
 const getFirstEnabledIndex = (options: GTPDropdownOption[]) => options.findIndex((option) => !option.disabled);
 
 const getNextEnabledIndex = (
@@ -109,7 +118,11 @@ const getNextEnabledIndex = (
 export interface GTPDropdownOption {
   value: string;
   label: string;
+  /** Shorter label for the closed trigger when this option is selected (defaults to `label`). */
+  triggerLabel?: string;
   icon?: GTPIconName;
+  /** Image (e.g. a project logo) shown instead of an icon. */
+  imageUrl?: string;
   disabled?: boolean;
   keywords?: string[];
   iconClassName?: string;
@@ -137,6 +150,8 @@ export interface GTPDropdownProps {
   size?: NonNullable<GTPButtonProps["size"]>;
   searchSize?: GTPDropdownContentSize;
   optionSize?: GTPDropdownContentSize;
+  /** Shows a clear (×) button on the trigger while a value is selected. */
+  onClear?: () => void;
 }
 
 export default function GTPDropdown({
@@ -158,6 +173,7 @@ export default function GTPDropdown({
   size = "md",
   searchSize = "sm",
   optionSize,
+  onClear,
 }: GTPDropdownProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [searchValue, setSearchValue] = useState("");
@@ -209,7 +225,7 @@ export default function GTPDropdown({
   }, [options, searchValue]);
 
   const hasOptionIcons = useMemo(
-    () => options.some((option) => Boolean(option.icon)),
+    () => options.some((option) => Boolean(option.icon || option.imageUrl)),
     [options],
   );
 
@@ -318,9 +334,13 @@ export default function GTPDropdown({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [filteredOptions, highlightedIndex, isOpen, selectOption, setOpen]);
 
-  const triggerLabel = selectedOption?.label ?? placeholder;
+  const triggerLabel = selectedOption?.triggerLabel ?? selectedOption?.label ?? placeholder;
+  const showClear = Boolean(onClear && selectedOption && !disabled && !isOpen);
   const triggerLeftIconOverride =
-    selectedOption?.icon && hasOptionIcons ? (
+    selectedOption?.imageUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={selectedOption.imageUrl} alt="" className={joinClassNames("shrink-0 rounded-full object-contain", triggerIconClassName)} />
+    ) : selectedOption?.icon && hasOptionIcons ? (
       <GTPIcon
         icon={selectedOption.icon}
         size="sm"
@@ -331,7 +351,7 @@ export default function GTPDropdown({
     ) : undefined;
 
   return (
-    <div className={joinClassNames("w-full", className)}>
+    <div className={joinClassNames("relative w-full", className)}>
       <GTPButtonDropdown
         className="w-full"
         dropdownClassName={joinClassNames("bg-color-bg-default", dropdownClassName)}
@@ -352,7 +372,8 @@ export default function GTPDropdown({
           variant: "primary",
           disabled,
           className: buttonClassName,
-          textClassName: "text-left",
+          // Room for the clear button, which sits just left of the chevron.
+          textClassName: joinClassNames("text-left", showClear && "pr-[24px]"),
           rightIconContainerClassName: joinClassNames("ml-auto transition-transform duration-200", isOpen && "rotate-180"),
           innerStyle: {
             justifyContent: "flex-start",
@@ -430,7 +451,8 @@ export default function GTPDropdown({
 
                       return (
                         <button
-                          key={option.value}
+                          // Values can repeat in data (e.g. two stocks with the same ticker).
+                          key={`${option.value}-${index}`}
                           ref={(node) => {
                             optionRefs.current[index] = node;
                           }}
@@ -451,7 +473,14 @@ export default function GTPDropdown({
                             (isHighlighted || isSelected) && "bg-color-bg-medium",
                           )}
                         >
-                          {option.icon ? (
+                          {option.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={option.imageUrl}
+                              alt=""
+                              className={joinClassNames("shrink-0 rounded-full object-contain", optionSizeStyles.iconClassName)}
+                            />
+                          ) : option.icon ? (
                             <GTPIcon
                               icon={option.icon}
                               size="sm"
@@ -480,6 +509,27 @@ export default function GTPDropdown({
           </div>
         )}
       />
+      {/* z-[11]: above GTPButtonDropdown's trigger (z-10). */}
+      {showClear ? (
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onClear?.();
+          }}
+          className="absolute z-[11] top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full p-[3px] transition-opacity hover:opacity-80"
+          style={{ right: CLEAR_BUTTON_RIGHT_BY_BUTTON_SIZE[size] }}
+        >
+          <GTPIcon
+            icon={"in-button-close-monochrome" as GTPIconName}
+            size="sm"
+            className="!w-[12px] !h-[12px] text-color-text-secondary"
+            containerClassName="!w-[12px] !h-[12px]"
+          />
+        </button>
+      ) : null}
     </div>
   );
 }

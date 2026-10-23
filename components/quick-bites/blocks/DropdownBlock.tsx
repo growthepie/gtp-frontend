@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { DropdownBlock as DropdownBlockType } from '@/lib/types/blockTypes';
-import Dropdown, { DropdownOption } from '@/components/quick-bites/Dropdown';
+import { DropdownBlock as DropdownBlockType, DropdownOption } from '@/lib/types/blockTypes';
+import GTPDropdown, { GTPDropdownOption } from '@/components/GTPComponents/GTPDropdown';
+import { GTPIconName } from '@/icons/gtp-icon-names';
+import { useMaster } from '@/contexts/MasterContext';
+import { useTheme } from 'next-themes';
 import { useQuickBite } from '@/contexts/QuickBiteContext';
 import useSWR from 'swr';
 import fiatData from '@/public/dicts/fiat.json';
@@ -16,6 +19,8 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
   const stateKey = block.stateKey || 'defaultDropdown';
   const selectedValue = stateKey in sharedState ? sharedState[stateKey] : block.defaultValue || null;
   const { data: jsonData, error, isLoading } = useSWR(block.readFromJSON ? block.jsonData?.url : null);
+  const { AllChainsByKeys } = useMaster();
+  const { resolvedTheme } = useTheme();
 
   // on mount, set the shared state to the default value if it's not already set
   useEffect(() => {
@@ -154,80 +159,58 @@ export const DropdownBlock: React.FC<DropdownBlockProps> = ({ block }) => {
 
 
 
-  // Show loading state
-  if (block.readFromJSON && isLoading) {
-    return (
-      <div className="my-6">
-        {block.label && (
-          <label className="block text-sm font-medium mb-2">
-            {block.label}
-          </label>
-        )}
-        <div className="w-full">
-          <div className="flex items-center justify-center p-4 text-color-text-secondary border rounded-lg">
-            Loading options...
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Options for the platform dropdown: chain values get their chain icon (auto-detected
+  // unless jsonData.useChainIcons says otherwise), logos become images, and labels like
+  // "HUBC | Hub Cyber Security" show only the part before "|" once selected.
+  const gtpOptions = React.useMemo((): GTPDropdownOption[] => {
+    const useChainIcons = block.jsonData?.useChainIcons;
+    const isChainDropdown = useChainIcons === false
+      ? false
+      : useChainIcons === true || (dropdownOptions.length > 0 && dropdownOptions.every((option) => Boolean(AllChainsByKeys?.[option.value])));
+    return dropdownOptions.map((option) => {
+      const chain = isChainDropdown ? AllChainsByKeys?.[option.value] : undefined;
+      const chainColor = chain ? chain.colors[resolvedTheme === "light" ? "light" : "dark"][0] : undefined;
+      return {
+        value: option.value,
+        label: option.label,
+        ...(option.label.includes("|") ? { triggerLabel: option.label.split("|")[0].trim() } : {}),
+        ...(option.logo ? { imageUrl: option.logo } : {}),
+        ...(!option.logo && option.icon ? { icon: option.icon as GTPIconName } : {}),
+        ...(!option.logo && !option.icon && chain
+          ? { icon: `gtp:${chain.urlKey}-logo-monochrome` as GTPIconName, iconStyle: { color: chainColor } }
+          : {}),
+      };
+    });
+  }, [dropdownOptions, block.jsonData?.useChainIcons, AllChainsByKeys, resolvedTheme]);
 
-  // Show error state
-  if (block.readFromJSON && error) {
-    return (
-      <div className="my-6">
-        {block.label && (
-          <label className="block text-sm font-medium mb-2">
-            {block.label}
-          </label>
-        )}
-        <div className="w-full">
-          <div className="flex items-center justify-center p-4 text-red-600 dark:text-red-400 border border-red-300 rounded-lg">
-            Error loading options: {error.message}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show empty state if no options and not loading
-  if (dropdownOptions.length === 0 && !isLoading) {
-    return (
-      <div className="my-6">
-        {block.label && (
-          <label className="block text-sm font-medium mb-2">
-            {block.label}
-          </label>
-        )}
-        <div className="w-full">
-          <div className="flex items-center justify-center p-4 text-forest-600 dark:text-forest-400 border rounded-lg">
-            No options available
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Loading, error and empty states keep the dropdown's shape (disabled, with a status
+  // instead of the placeholder), so nothing jumps when the options arrive.
+  const status =
+    block.readFromJSON && isLoading
+      ? "Loading options…"
+      : block.readFromJSON && error
+        ? "Couldn't load options"
+        : dropdownOptions.length === 0
+          ? "No options available"
+          : null;
 
   return (
     <div className="my-6">
       {block.label && (
-        <label className="block heading-xxs mb-2">
+        <label className="block heading-small-xs mb-[10px]">
           {block.label}
         </label>
       )}
-      
-      <div className="w-full">
-        <Dropdown
-          options={dropdownOptions}
-          allowEmpty={block.allowEmpty}
-          value={selectedValue}
-          placeholder={block.placeholder}
-          onChange={handleChange}
-          searchable={block.searchable}
-          disabled={block.disabled}
-          useChainIcons={block.jsonData?.useChainIcons}
-        />
-      </div>
+      <GTPDropdown
+        options={status ? [] : gtpOptions}
+        value={selectedValue ?? undefined}
+        placeholder={status ?? block.placeholder ?? "Select an option"}
+        onChange={(value) => handleChange(value)}
+        onClear={block.allowEmpty ? () => handleChange(null) : undefined}
+        searchable={block.searchable ?? true}
+        disabled={Boolean(status) || block.disabled}
+      />
     </div>
   );
 };
+

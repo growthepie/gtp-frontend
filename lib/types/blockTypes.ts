@@ -435,7 +435,13 @@ export interface FaqBlock extends BaseBlock {
   items: FaqBlockItem[];
 }
 
-import { DropdownOption } from '@/components/quick-bites/Dropdown';
+/** An option of a dropdown block (inline or mapped from JSON). */
+export interface DropdownOption {
+  value: string;
+  label: string;
+  logo?: string; // Optional image URL rendered as icon
+  icon?: string; // Optional GTP icon name rendered as icon
+}
 export interface DropdownBlock extends BaseBlock {
   type: 'dropdown';
   label?: string;
