@@ -42,7 +42,7 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({
                 <Title
                     title={title}
                     icon="gtp-quick-bites"
-                    as="h1"
+                    as="h2"
                     titleSize="md"
                 />
                 <SectionButtonLink href="/quick-bites" label="See all Quick Bites" shortLabel="More Bites" />
