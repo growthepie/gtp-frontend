@@ -2,6 +2,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "./helpers";
 import { MasterURL } from "./urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import QUICK_BITES_DATA from "@/lib/quick-bites/index";
+import { QUICK_BITE_TOPICS, getListedQuickBites, getQuickBiteTopicUrl } from "@/lib/quick-bites/themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { metricPagesByKey, type MetricItem } from "@/lib/metrics";
 
@@ -103,6 +104,11 @@ export const navigationCategories = {
     icon: "feather:clock",
     group: "quick-bites",
   },
+  topics: {
+    label: "Topics",
+    icon: "gtp-categories",
+    group: "quick-bites",
+  },
   "public-funding": {
     label: "Public Funding",
     icon: "feather:sun",
@@ -202,21 +208,30 @@ const quickBitesGroup: NavigationItem = {
       urlKey: "quick-bites",
       url: "/quick-bites",
     },
-    ...Object.entries(QUICK_BITES_DATA)
-      .reverse()
-      .filter(([slug]) => QUICK_BITES_DATA[slug].showInMenu === true)
-      .slice(0, 5)
-      .map(([slug, data], index) => ({
-        label: data.shortTitle,
+    // The three newest by date, then the topic pages, so Quick Bites can be browsed
+    // from the menu.
+    ...getListedQuickBites()
+      .slice(0, 3)
+      .map((quickBite) => ({
+        label: quickBite.shortTitle,
         icon: "gtp-chevronright" as GTPIconName,
         category: "latest",
-        key: slug,
-        rootKey: slug,
-        urlKey: slug,
-        url: `/quick-bites/${slug}`,
-        group: "latest",
-        // showNew: index === 0,
+        key: quickBite.slug,
+        rootKey: quickBite.slug,
+        urlKey: quickBite.slug,
+        url: `/quick-bites/${quickBite.slug}`,
       })),
+    ...QUICK_BITE_TOPICS.map((topic) => ({
+      label: topic.label,
+      icon: topic.icon,
+      category: "topics",
+      key: `quick-bites-topic-${topic.key}`,
+      rootKey: "quick-bites",
+      urlKey: "quick-bites",
+      url: getQuickBiteTopicUrl(topic.key),
+      // Listed in the Quick Bites sitemap already.
+      excludeFromSitemap: true,
+    })),
     {
       label: "Glo Dollar",
       icon: "glo-dollar-monochrome",
