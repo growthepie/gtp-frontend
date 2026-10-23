@@ -16,7 +16,7 @@ export const IframeBlock: React.FC<IframeBlockProps> = ({ block }) => {
   return (
     <figure className={`my-8 px-[35px] mx-auto ${block.className || ''}`}>
       <div 
-        className="relative w-full overflow-hidden rounded-2xl shadow-lg shadow-forest-black "
+        className="relative w-full overflow-hidden rounded-[15px] shadow-standard"
         style={{ 
           maxWidth: typeof width === 'string' ? width : `${width}px`, 
           width: '100%',

@@ -206,7 +206,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       trigger={
         <button
           type="button"
-          className="inline-flex items-center justify-center text-[#5A6462] hover:text-color-text-primary cursor-pointer z-"
+          className="inline-flex items-center justify-center text-color-text-secondary hover:text-color-text-primary cursor-pointer"
           aria-label="Show info"
           onClick={(e) => e.preventDefault()}
         >
@@ -508,7 +508,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   if (showInitialLoadingState || (block.readFromJSON && !jsonData && !error)) {
     return <TableSkeleton maxHeight={block.maxHeight ?? 500} className={block.className} />;
   }
-  if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
+  if (block.readFromJSON && error) return <div className="my-8 text-center text-xs text-color-negative">Couldn&apos;t load table data: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
 
   const formatValue = (value: any, columnKey: string) => {
@@ -539,10 +539,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const EmptyCell = ({ centered = false }: { centered?: boolean }) => (
     centered ? (
       <div className="flex items-center justify-center w-full">
-        <span className="text-[#5A6462] text-xs">—</span>
+        <span className="text-color-text-secondary text-xs">—</span>
       </div>
     ) : (
-      <span className="text-[#5A6462] text-xs">—</span>
+      <span className="text-color-text-secondary text-xs">—</span>
     )
   );
 
@@ -595,7 +595,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!info) return <span className="text-xs">{cellData.value}</span>;
       return (
         <div className="flex items-center gap-x-[8px] w-full min-w-0">
-          <span className="inline-flex items-center justify-center flex-shrink-0 min-w-[22px] px-[4px] h-[18px] rounded-[4px] bg-forest-500/10 numbers-xs leading-none">
+          <span className="inline-flex items-center justify-center flex-shrink-0 min-w-[22px] px-[4px] h-[18px] rounded-full bg-forest-500/10 numbers-xs leading-none">
             {info.symbol}
           </span>
           <span className="text-xs truncate">{info.name}</span>
@@ -626,7 +626,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (normalized === null) return <EmptyCell centered />;
       return (
         <div className="flex items-center justify-center w-full">
-          <GTPIcon icon={(normalized ? "feather:check" : "feather:x") as GTPIconName} className={`!w-[14px] !h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`} containerClassName="!w-[14px] !h-[14px]" />
+          <GTPIcon icon={(normalized ? "feather:check" : "feather:x") as GTPIconName} className={`!w-[14px] !h-[14px] ${normalized ? "text-color-positive" : "text-color-text-secondary"}`} containerClassName="!w-[14px] !h-[14px]" />
         </div>
       );
     } else if (columnType === "link") {
@@ -634,8 +634,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!linkValue) return <EmptyCell />;
       return (
         <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
-          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-[#5A6462] flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
-          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-color-text-secondary flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
+          <span className="truncate text-color-text-secondary">{getHostname(linkValue)}</span>
         </div>
       );
     } else if (columnType === "badges") {
@@ -806,7 +806,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     return (
       <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
-        {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
+        {block.content && <div className="mb-4 text-md">{block.content}</div>}
         <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
           {isScrollable ? (
             <VerticalScrollContainer
@@ -851,7 +851,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     return (
     <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
-      {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
+      {block.content && <div className="mb-4 text-md">{block.content}</div>}
 
       <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
         <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
@@ -1019,7 +1019,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         <div className="flex items-center justify-center w-full">
                           <GTPIcon
                             icon={(normalized ? "feather:check" : "feather:x") as GTPIconName}
-                            className={`!w-[14px] !h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`}
+                            className={`!w-[14px] !h-[14px] ${normalized ? "text-color-positive" : "text-color-text-secondary"}`}
                             containerClassName="!w-[14px] !h-[14px]"
                           />
                         </div>
@@ -1030,8 +1030,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     if (linkValue) {
                       cellMainContent = (
                         <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
-                          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-[#5A6462] flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
-                          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+                          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-color-text-secondary flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
+                          <span className="truncate text-color-text-secondary">{getHostname(linkValue)}</span>
                         </div>
                       );
                     } else {
@@ -1109,7 +1109,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       ) : (
                         <>
                           {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-green-500' : cellData.value < 0 ? 'text-red-500' : '') : ''}`}>
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-color-positive' : cellData.value < 0 ? 'text-color-negative' : '') : ''}`}>
                             {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
                           </span>
                         </>
@@ -1201,7 +1201,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   const isNumeric = columnDefinitions?.[columnKey]?.isNumeric;
                   if (cellBarDef && typeof cellData?.value === "number" && barMaxValues.cellBarMaxes[columnKey] > 0) {
                     const barWidth = Math.abs(cellData.value) / barMaxValues.cellBarMaxes[columnKey];
-                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "#5A6462";
+                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "rgb(var(--ui-hover))";
                     cellMainContent = (
                       <div className={`relative flex flex-col w-full gap-y-[4px] ${isNumeric ? 'items-end' : 'items-start'}`}>
                         <div className={`w-full flex items-center ${isNumeric ? 'justify-end' : ''}`}>

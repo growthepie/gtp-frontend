@@ -400,11 +400,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
     return (
       <div className={emptyStateWrapperClassName}>
         <div
-          className="w-full flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg"
+          className="w-full flex flex-col items-center justify-center gap-y-[5px] bg-color-bg-default rounded-[18px]"
           style={{ height: block.height ?? 400 }}
         >
-          <h3 className="text-lg font-bold text-forest-900 dark:text-forest-100">{title}</h3>
-          <p className="text-forest-700 dark:text-forest-400">Please make a selection to view the chart.</p>
+          <h3 className="heading-small-sm text-color-text-primary">{title}</h3>
+          <p className="text-xs text-color-text-secondary">Please make a selection to view the chart.</p>
         </div>
       </div>
     );

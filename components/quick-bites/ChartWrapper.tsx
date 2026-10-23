@@ -1344,7 +1344,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
       });
 
       const percentageStr = showPiePercentage
-        ? `<div class="text-right numbers-xs text-forest-400">${percentage.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</div>`
+        ? `<div class="text-right numbers-xs text-color-text-secondary">${percentage.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</div>`
         : '';
 
       return `<div class="mt-3 mr-3 mb-3 text-xs font-raleway">
@@ -2023,12 +2023,12 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
     return (
       <div 
         style={{ width, height }} 
-        className="flex items-center justify-center bg-forest-50 dark:bg-forest-900 rounded-lg"
+        className="flex items-center justify-center bg-color-bg-default rounded-[18px]"
         role="alert"
       >
-        <div className="text-center p-4">
-          <p className="text-red-500 mb-2">Failed to load chart</p>
-          <p className="text-sm text-forest-700 dark:text-forest-300">{error}</p>
+        <div className="text-center p-[15px] flex flex-col gap-y-[5px]">
+          <p className="heading-small-xs text-color-negative">Failed to load chart</p>
+          <p className="text-xs text-color-text-secondary">{error}</p>
         </div>
       </div>
     );
