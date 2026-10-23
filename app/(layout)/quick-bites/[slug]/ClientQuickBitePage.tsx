@@ -266,7 +266,6 @@ export default function ClientQuickBitePage({
   const [showNotFound, setShowNotFound] = useState(false);
   const [isLoading, setIsLoading] = useState(!hasServerBlocks);
   const [visibleTopicCount, setVisibleTopicCount] = useState(0);
-  const [topicViewportWidth, setTopicViewportWidth] = useState(0);
   const { theme } = useTheme();
   const topicViewportRef = useRef<HTMLDivElement | null>(null);
   const topicMeasureRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -322,72 +321,77 @@ export default function ClientQuickBitePage({
     [resolvedTopics, visibleTopicCount],
   );
 
+  // Fits the topic chips to the bar's width. The width is read inside the resize
+  // callback rather than kept in state: only the chip count is stored, so resizing
+  // the window doesn't re-render the whole page (and every block) on each pixel.
   useEffect(() => {
     const viewport = topicViewportRef.current;
     if (!viewport || typeof window === "undefined") {
       return;
     }
 
-    const updateWidth = () => {
-      setTopicViewportWidth(viewport.clientWidth);
+    /** How many topic chips fit in `topicViewportWidth`, or null while the chips are unmeasured. */
+    function countVisibleTopics(topicViewportWidth: number): number | null {
+      const totalTopics = resolvedTopics.length;
+
+      if (totalTopics === 0) {
+        return 0;
+      }
+
+      if (topicViewportWidth <= 0) {
+        return totalTopics;
+      }
+
+      const chipWidths = resolvedTopics.map((topic) => topicMeasureRefs.current[topic.key]?.offsetWidth || 0);
+      if (chipWidths.some((width) => width === 0)) {
+        return null;
+      }
+
+      let nextVisibleCount = 0;
+
+      for (let visibleCount = totalTopics; visibleCount >= 0; visibleCount -= 1) {
+        const hiddenCount = totalTopics - visibleCount;
+        const morePillWidth = hiddenCount > 0 ? morePillMeasureRefs.current[hiddenCount]?.offsetWidth || 0 : 0;
+
+        if (hiddenCount > 0 && morePillWidth === 0) {
+          continue;
+        }
+
+        const visibleTopicsWidth = chipWidths.slice(0, visibleCount).reduce((sum, width) => sum + width, 0);
+        const itemCount = visibleCount + (hiddenCount > 0 ? 1 : 0);
+        const totalGapWidth =
+          hiddenCount > 0
+            ? 0
+            : itemCount > 1
+              ? (itemCount - 1) * TOPIC_GAP_PX
+              : 0;
+        const totalWidth = visibleTopicsWidth + morePillWidth + totalGapWidth;
+
+        if (totalWidth <= topicViewportWidth) {
+          nextVisibleCount = visibleCount;
+          break;
+        }
+      }
+
+      return nextVisibleCount;
+    }
+
+    const fitTopics = () => {
+      const nextVisibleCount = countVisibleTopics(viewport.clientWidth);
+      if (nextVisibleCount === null) return;
+      setVisibleTopicCount((currentCount) =>
+        currentCount === nextVisibleCount ? currentCount : nextVisibleCount,
+      );
     };
 
-    updateWidth();
+    fitTopics();
 
-    const observer = new ResizeObserver(() => updateWidth());
+    const observer = new ResizeObserver(() => fitTopics());
     observer.observe(viewport);
 
     return () => observer.disconnect();
-  }, [resolvedTopics.length]);
+  }, [resolvedTopics, TOPIC_GAP_PX]);
 
-  useEffect(() => {
-    const totalTopics = resolvedTopics.length;
-
-    if (totalTopics === 0) {
-      setVisibleTopicCount(0);
-      return;
-    }
-
-    if (topicViewportWidth <= 0) {
-      setVisibleTopicCount(totalTopics);
-      return;
-    }
-
-    const chipWidths = resolvedTopics.map((topic) => topicMeasureRefs.current[topic.key]?.offsetWidth || 0);
-    if (chipWidths.some((width) => width === 0)) {
-      return;
-    }
-
-    let nextVisibleCount = 0;
-
-    for (let visibleCount = totalTopics; visibleCount >= 0; visibleCount -= 1) {
-      const hiddenCount = totalTopics - visibleCount;
-      const morePillWidth = hiddenCount > 0 ? morePillMeasureRefs.current[hiddenCount]?.offsetWidth || 0 : 0;
-
-      if (hiddenCount > 0 && morePillWidth === 0) {
-        continue;
-      }
-
-      const visibleTopicsWidth = chipWidths.slice(0, visibleCount).reduce((sum, width) => sum + width, 0);
-      const itemCount = visibleCount + (hiddenCount > 0 ? 1 : 0);
-      const totalGapWidth =
-        hiddenCount > 0
-          ? 0
-          : itemCount > 1
-            ? (itemCount - 1) * TOPIC_GAP_PX
-            : 0;
-      const totalWidth = visibleTopicsWidth + morePillWidth + totalGapWidth;
-
-      if (totalWidth <= topicViewportWidth) {
-        nextVisibleCount = visibleCount;
-        break;
-      }
-    }
-
-    setVisibleTopicCount((currentCount) =>
-      currentCount === nextVisibleCount ? currentCount : nextVisibleCount,
-    );
-  }, [resolvedTopics, topicViewportWidth, TOPIC_GAP_PX]);
 
   useEffect(() => {
     const quickBite = getQuickBiteBySlug(params.slug);

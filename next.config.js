@@ -305,6 +305,8 @@ const nextConfig = {
   },
   images: {
     dangerouslyAllowSVG: true,
+    // 90 for Quick Bite images (ImageBlock), 75 is the default everywhere else.
+    qualities: [75, 90],
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
       {

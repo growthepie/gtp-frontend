@@ -659,7 +659,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           const titleInfoTooltipText = getCellInfoTooltipText(titleCell);
 
           return (
-            <div key={`card-${rowIndex}`} className="flex flex-col gap-y-[10px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] py-[10px] hover:bg-forest-500/10">
+            <div key={`card-${rowIndex}`} className="flex flex-col gap-y-[10px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] py-[10px] hover:bg-forest-500/10 [content-visibility:auto] [contain-intrinsic-height:auto_120px]">
               {/* Header: image/icon + title + info tooltip + arrow link */}
               <div className="flex items-center gap-x-[8px]">
                 {imageColumn && (
@@ -827,7 +827,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           const tableRows = (
             <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
             {sortedRows.map((rowData, rowIndex) => (
-              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0`}
+              // content-visibility: off-screen rows stay in the DOM (crawlers and search
+              // see every row) but the browser skips their layout and paint, which keeps
+              // long tables (2,000+ rows) fast to scroll and resize.
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0 [content-visibility:auto] [contain-intrinsic-height:auto_34px]`}
                 bar={block.rowBar && barMaxValues.rowBarMax > 0 ? {
                   origin_key: block.rowBar.colorColumn
                     ? rowData[columnKeyOrder.indexOf(block.rowBar.colorColumn)]?.value

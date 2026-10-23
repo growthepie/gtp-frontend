@@ -39,6 +39,15 @@ const Dropdown: React.FC<DropdownProps> = ({
 }) => {
   const { AllChainsByKeys } = useMaster();
   const [isOpen, setIsOpen] = useState(false);
+  // Options are only rendered while the menu is open (and through its 300ms close
+  // animation), so a long list (2,000+ stocks) isn't in the page the rest of the time.
+  const [renderOptions, setRenderOptions] = useState(false);
+  if (isOpen && !renderOptions) setRenderOptions(true);
+  useEffect(() => {
+    if (isOpen) return;
+    const timeout = setTimeout(() => setRenderOptions(false), 300);
+    return () => clearTimeout(timeout);
+  }, [isOpen]);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -232,7 +241,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               scrollbarPosition='right'
              
             >
-              {filteredOptions.length === 0 ? (
+              {!renderOptions ? null : filteredOptions.length === 0 ? (
                 <div className="px-[15px] py-[5px] text-xs text-color-text-primary opacity-60 text-center">
                   No options found
                 </div>
@@ -243,7 +252,8 @@ const Dropdown: React.FC<DropdownProps> = ({
 
                     return (
                       <div
-                        key={option.value}
+                        // Values can repeat in the data (e.g. two stocks with ticker GORO).
+                        key={`${option.value}-${index}`}
                         onClick={() => handleSelect(option.value)}
                         onMouseEnter={() => setHighlightedIndex(index)}
                         className={`
