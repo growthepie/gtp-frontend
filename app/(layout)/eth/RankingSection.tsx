@@ -42,6 +42,13 @@ type RatioSpan = (typeof RATIO_SPANS)[number]["key"];
 // Logos that are plain black, flipped to white in dark mode so they show on the dark card.
 const BLACK_LOGO_KEYS = ["aapl", "amzn", "spcx", "oil"];
 
+// "Oil is 412.3 times bigger than ETH" / "ETH is 2.1 times bigger than Tesla".
+const comparison = (asset: Asset, ethCap: number) => {
+  const [big, small] = asset.cap >= ethCap ? [asset.name, "ETH"] : ["ETH", asset.name];
+  const times = Math.max(asset.cap, ethCap) / Math.min(asset.cap, ethCap);
+  return `${big} is ${times.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} times bigger than ${small}`;
+};
+
 const formatCap = (usd: number) => (usd >= 1e12 ? `$${(usd / 1e12).toFixed(2)}T` : `$${Math.round(usd / 1e9)}B`);
 
 export default function RankingSection() {
@@ -85,6 +92,7 @@ export default function RankingSection() {
   const scaleOf = (assets: Asset[]) => Math.max(0, ...assets.filter((r) => !OFF_SCALE_KEYS.includes(r.key)).map((r) => r.cap));
   const max = scaleOf(rows);
   const ethRank = rows.findIndex((r) => r.key === "eth") + 1;
+  const ethCap = allAssets.find((r) => r.key === "eth")?.cap;
 
   const sourceNames = useMemo(
     () => [...new Set(allAssets.length ? Object.values(caps!.categories).flat().flatMap((a) => a.sources.map((s) => s.name)) : [])],
@@ -137,7 +145,7 @@ export default function RankingSection() {
           <div className="flex items-baseline gap-x-[10px]">
             <span className="numbers-2xl">{ethRank > 0 ? `#${ethRank}` : "—"}</span>
             <span className="inline-flex items-center gap-x-[5px]">
-              <span className="heading-small-xxxs">ETH&apos;s rank of {rows.length} by market cap</span>
+              <span className="heading-small-xxxs">ETH&apos;s rank by market cap</span>
               <InfoButton label="About this ranking">
                 <span>
                   {showsOffScale && "Oil runs off the scale. "}Commodity caps are estimates (hover a commodity for its method).
@@ -150,9 +158,10 @@ export default function RankingSection() {
             {/* Rows touch (4px padding each instead of an 8px gap), so moving down the
                 list never leaves a row and the hover-coloured logos don't flicker. */}
             <div className="flex flex-col">
-              {rows.map((r) => (
+              {rows.map((r, i) => (
                 <Fragment key={r.key}>
                 <BarRow
+                  rank={i + 1}
                   label={r.name}
                   value={r.cap}
                   display={formatCap(r.cap)}
@@ -160,7 +169,16 @@ export default function RankingSection() {
                   color={r.key === "eth" ? "turquoise" : "neutral"}
                   emphasis={r.key === "eth"}
                   accentLabel={r.key === "eth"}
-                  hint={r.method}
+                  hint={
+                    r.key !== "eth" ? (
+                      <span className="flex flex-col gap-y-[5px]">
+                        {ethCap && <span className="font-semibold">{comparison(r, ethCap)}</span>}
+                        {r.method && <span>{r.method}</span>}
+                      </span>
+                    ) : (
+                      r.method
+                    )
+                  }
                   icon={r.logo}
                   iconInvertDark={BLACK_LOGO_KEYS.includes(r.key)}
                   // ETH stays in view: while its row is below the fold it sticks to the

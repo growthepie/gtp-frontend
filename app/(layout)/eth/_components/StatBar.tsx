@@ -1,6 +1,16 @@
+import type { ReactNode } from "react";
 import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import { AccentColor, ACCENT_BG, ACCENT_TEXT, TRACK_BG, FAKE_TEXT, fakeColor } from "./colors";
+
+// Label column widths, wider with a logo and/or a rank in front of the label.
+// Full class names so Tailwind picks them up.
+const LABEL_COLS = {
+  plain: "grid-cols-[minmax(96px,140px)_1fr_64px]",
+  icon: "grid-cols-[minmax(118px,162px)_1fr_64px]",
+  rank: "grid-cols-[minmax(118px,162px)_1fr_64px]",
+  iconRank: "grid-cols-[minmax(140px,184px)_1fr_64px]",
+};
 
 // Mark specs used across this page's bars:
 //   · bar thickness capped (never fills its slot — the leftover band is air)
@@ -20,6 +30,7 @@ export function BarRow({
   accentLabel = false,
   icon,
   iconInvertDark = false,
+  rank,
   className = "",
 }: {
   label: string;
@@ -30,7 +41,7 @@ export function BarRow({
   /** The row the story is about — everything else stays recessive. */
   emphasis?: boolean;
   /** Shown in the site's tooltip on hover, e.g. how the value is estimated. */
-  hint?: string;
+  hint?: ReactNode;
   /** Fake (not-from-JSON) value: brown bar and number while SHOW_FAKE_DATA is on. */
   fake?: boolean;
   /** Colour the label and value like the bar. */
@@ -39,15 +50,24 @@ export function BarRow({
   icon?: string;
   /** Logo is plain black, so flip it to white in dark mode. */
   iconInvertDark?: boolean;
+  /** Position in a ranked list, shown small before the logo and label. */
+  rank?: number;
   className?: string;
 }) {
   // A value past `max` fills the track and fades out at the end, to show it runs off the scale.
   const overflows = value > max;
   const row = (
     <div
-      className={`grid ${icon ? "grid-cols-[minmax(118px,162px)_1fr_64px]" : "grid-cols-[minmax(96px,140px)_1fr_64px]"} gap-x-[10px] items-center ${className}`}
+      className={`grid ${LABEL_COLS[icon ? (rank ? "iconRank" : "icon") : rank ? "rank" : "plain"]} gap-x-[10px] items-center ${className}`}
     >
       <div className="flex items-center gap-x-[6px] min-w-0">
+        {rank !== undefined && (
+          <span
+            className={`numbers-xxs w-[16px] flex-shrink-0 text-right tabular-nums ${accentLabel ? ACCENT_TEXT[color] : "text-color-text-primary/50"}`}
+          >
+            {rank}
+          </span>
+        )}
         {icon && (
           <Image
             src={icon}

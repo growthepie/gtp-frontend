@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { SectionTitle, SectionDescription, SectionButtonLink } from "@/components/layout/TextHeadingComponents";
 import Card from "./_components/Card";
@@ -50,7 +51,8 @@ const MYTHS = [
   },
 ];
 
-export default function DailySection() {
+/** `children` sits between "Today in ETH" and the FAQ (the page puts Quick Bites there). */
+export default function DailySection({ children }: { children?: ReactNode }) {
   const { data: todayData } = useEthAssetSection("today");
   const todayCards = (todayData?.data?.cards ?? []).slice(0, TODAY_CARD_COUNT);
   const todaySources = [...new Set(todayCards.flatMap((c) => c.sources.map((s) => s.name)))];
@@ -91,6 +93,8 @@ export default function DailySection() {
           })}
         </div>
       </div>
+
+      {children}
 
       <FaqBlock
         block={{
