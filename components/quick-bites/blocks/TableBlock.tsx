@@ -591,7 +591,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
       return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
     }
     if (typeof value === 'number') {
-      return value.toLocaleString();
+      return value.toLocaleString("en-GB");
     }
     if (typeof value === 'string') {
       return String(value || '');

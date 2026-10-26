@@ -635,7 +635,7 @@ function TreemapTooltip({
           <div className="heading-small-xxxs">
             {getMetricLabel(selectedMetric, showUsd)}
             {contractCount > 0 && (
-              <> · <span className="numbers-xs">{contractCount.toLocaleString()}</span> contract{contractCount !== 1 ? "s" : ""}</>
+              <> · <span className="numbers-xs">{contractCount.toLocaleString("en-GB")}</span> contract{contractCount !== 1 ? "s" : ""}</>
             )}
           </div>
         </div>
