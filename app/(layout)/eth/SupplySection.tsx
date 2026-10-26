@@ -83,8 +83,9 @@ type Pace = {
   loopWeeks?: number; // replay from the start after this long
 };
 
-// Scenarios run as a time-lapse so the level moves visibly.
-const SCENARIO_PACE: Pace = { weeksPerSecond: 4, bandEth: 400_000, tickEth: 200_000, label: "1s ≈ 1 month" };
+// Scenarios run as a time-lapse so the level moves visibly. The window is sized so a quiet
+// week (~+21k ETH) moves about as fast as "Last week" does at 1 day per second.
+const SCENARIO_PACE: Pace = { weeksPerSecond: 1, bandEth: 200_000, tickEth: 100_000, label: "1s ≈ 1 week" };
 // Last week plays at 1 day per second and replays, with a tighter window so a
 // single week's change is still visible without the window stepping.
 const LAST_WEEK_PACE: Pace = { weeksPerSecond: 1 / 7, bandEth: 25_000, tickEth: 10_000, label: "1s ≈ 1 day", loopWeeks: 1 };
