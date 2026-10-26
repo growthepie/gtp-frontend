@@ -2,15 +2,17 @@
 import Icon from "@/components/layout/Icon";
 import { track } from "@/lib/tracking";
 import { useEffect, useState, useMemo, useRef } from "react";
-import SwiperItem from "@/components/layout/Landing/LandingSwiperItems";
 import useSWR from "swr";
+import dynamic from "next/dynamic";
 import { LandingURL } from "@/lib/urls";
-import FeesChart from "./FeesChart";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { useResizeObserver, useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { MasterResponse } from "@/types/api/MasterResponse";
+
+// Highcharts only downloads once the chart drawer is first opened
+const FeesChart = dynamic(() => import("./FeesChart"), { ssr: false });
 
 type SlidingFooterContainerProps = {
   // children: React.ReactNode;
@@ -43,8 +45,13 @@ export default function ChartContainer({
   showCents,
   master,
 }: SlidingFooterContainerProps) {
+  // The chart, and its data, load the first time the drawer opens, then stay loaded so
+  // closing it still animates the chart out
+  const [hasBeenOpen, setHasBeenOpen] = useState(isOpen);
+  if (isOpen && !hasBeenOpen) setHasBeenOpen(true);
+
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
-    "https://api.growthepie.com/v1/fees/linechart.json",
+    hasBeenOpen ? "https://api.growthepie.com/v1/fees/linechart.json" : null,
   );
 
   const [metricIndex, setMetricIndex] = useState(0);
@@ -293,7 +300,7 @@ export default function ChartContainer({
                 className="relative border border-[#5A6462] rounded-[15px] h-[146px] md:h-[279px] w-full overflow-hidden"
                 ref={chartContainerRef}
               >
-                <FeesChart
+                {hasBeenOpen && <FeesChart
                   selectedMetric={metrics[metricIndex]}
                   selectedTimeframe={timeFrames[timeFrameIndex]}
                   selectedChains={selectedChains}
@@ -301,7 +308,7 @@ export default function ChartContainer({
                   chartWidth={chartContainerWidth}
                   showCents={showCents}
                   master={master}
-                />
+                />}
                 {/* </div> */}
                 <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
                   <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-color-text-secondary mix-blend-darken dark:mix-blend-lighten" />
