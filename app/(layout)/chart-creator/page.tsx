@@ -462,7 +462,7 @@ function ScaleToggle({ value, onChange }: { value: Scale; onChange: (s: Scale) =
         <button
           key={opt.key}
           onClick={() => onChange(opt.key)}
-          className={`px-3 py-1 text-xs font-medium transition-colors ${
+          className={`px-3 py-1 text-xs transition-colors ${
             value === opt.key
               ? "bg-color-text-primary text-color-bg-default"
               : "text-color-text-secondary hover:text-color-text-primary"
@@ -805,7 +805,7 @@ export default function ChartCreatorPage() {
           <h1 className="text-[24px] md:text-[30px] font-bold leading-tight text-color-text-primary">
             Chart Creator
           </h1>
-          <span className="rounded-full border border-color-ui-hover/40 px-2.5 py-0.5 text-xs font-medium text-color-text-secondary">
+          <span className="rounded-full border border-color-ui-hover/40 px-2.5 py-0.5 text-xs text-color-text-secondary">
             Internal
           </span>
         </div>
@@ -922,7 +922,7 @@ export default function ChartCreatorPage() {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                 />
               </svg>
-              <p className="text-xs font-medium text-color-text-primary text-center">
+              <p className="text-xs text-color-text-primary text-center">
                 Drag & drop or click to upload
               </p>
               <p className="text-[10px] text-color-text-secondary mt-0.5">
@@ -936,7 +936,7 @@ export default function ChartCreatorPage() {
             {uploadState && (
               <div className="space-y-[10px]">
                 <div className="flex items-baseline justify-between">
-                  <p className="text-xs font-medium text-color-text-primary truncate max-w-[200px]">
+                  <p className="text-xs text-color-text-primary truncate max-w-[200px]">
                     {uploadState.filename}
                   </p>
                   <p className="text-[10px] text-color-text-secondary flex-shrink-0 ml-2">
@@ -1080,7 +1080,7 @@ export default function ChartCreatorPage() {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              <p className="text-sm font-medium text-color-text-primary">
+              <p className="text-sm text-color-text-primary">
                 No data yet
               </p>
               <p className="text-xs mt-1 text-color-text-secondary text-center max-w-[220px]">

@@ -465,7 +465,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
             : "xl:grid-cols-[auto_200px_199px_94px_215px_46px] grid-cols-[auto_200px_199px_94px_215px_46px]"
             } min-w-[970px] `}
         >
-          <div className="heading-small-xxs font-bold flex items-center cursor-pointer" onClick={() => {
+          <div className="heading-small-xxs flex items-center cursor-pointer" onClick={() => {
             if (selectedCategory !== "name") {
               setSortOrder(true);
               setSelectedCategory("name");
@@ -488,7 +488,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                 } `}
             />
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer" onClick={() => {
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer" onClick={() => {
             if (selectedCategory !== "size") {
               setSortOrder(true);
               setSelectedCategory("size");
@@ -524,7 +524,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "fees") {
                 setSortOrder(true);
@@ -562,7 +562,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "fees_per_mb") {
                 setSortOrder(true);
@@ -600,7 +600,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "da_consumers") {
                 setSortOrder(true);
@@ -670,7 +670,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </TooltipContent>
                   </Tooltip>
                 </div>  */}
-          <div className="heading-small-xxs flex font-bold items-center pl-0.5 ">
+          <div className="heading-small-xxs flex items-center pl-0.5 ">
 
           </div>
         </div>

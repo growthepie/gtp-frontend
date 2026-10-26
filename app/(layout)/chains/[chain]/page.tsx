@@ -966,7 +966,7 @@ const EconomicsContent = memo(({ chainKey, master }: { chainKey: string, master:
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Economics</h2>
+      <h2 className="text-xl">Economics</h2>
       <div className="p-8 text-center text-gray-500">
         Economics content will be implemented here
       </div>

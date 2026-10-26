@@ -169,7 +169,7 @@ function SettingsDropdown({
         onClick={() => {
           if (!disabled) onOpenChange(!isOpen);
         }}
-        className={`relative w-full h-[24px] rounded-full  heading-small-xxs font-semibold pl-[10px] pr-[24px] text-left transition-colors ${
+        className={`relative w-full h-[24px] rounded-full  heading-small-xxs pl-[10px] pr-[24px] text-left transition-colors ${
           disabled
             ? "cursor-default opacity-50 bg-color-bg-medium text-color-text-primary"
             : "bg-color-bg-medium hover:bg-color-ui-hover text-color-text-primary"
@@ -205,7 +205,7 @@ function SettingsDropdown({
                 onChange(option.value);
                 onOpenChange(false);
               }}
-              className={`block w-full h-[30px] shrink-0 px-[10px] text-left heading-small-xxs font-semibold transition-colors ${
+              className={`block w-full h-[30px] shrink-0 px-[10px] text-left heading-small-xxs transition-colors ${
                 index > 0 ? "" : ""
               } ${
                 isSelected
@@ -643,7 +643,7 @@ function TreemapTooltip({
         {/* C) Share (single denominator) */}
         <div className="flex flex-col gap-y-[3px]">
           <div className="flex items-end justify-between gap-x-[10px]">
-            <div className="text-xxs font-semibold text-color-text-primary/90">Share {`of ${primaryShare.denominator}`}</div>
+            <div className="text-xxs text-color-text-primary/90">Share {`of ${primaryShare.denominator}`}</div>
             <div className="numbers-xs">{primaryShare.pct.toFixed(2)}%</div>
           </div>
           <div className="h-[3px] rounded-full bg-color-bg-medium mt-[2px]">

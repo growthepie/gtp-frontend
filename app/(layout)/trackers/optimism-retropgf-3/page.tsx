@@ -440,7 +440,7 @@ export default function Page() {
               </div>
             )}
           </div>
-          <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+          <div className="relative bottom-[8px] left-0 right-0 text-xs text-right h-[2px]">
             <BoxPlot
               {...{
                 ...listAmountsByProjectId.listQuartiles[info.row.original.id],
@@ -535,7 +535,7 @@ export default function Page() {
               <div className="w-4"></div>
             </div>
           </div>
-          <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+          <div className="relative -bottom-[2px] left-0 right-0 text-xs text-right h-[2px]">
             <div
               className="absolute"
               style={{
@@ -796,7 +796,7 @@ export default function Page() {
                             info.row.original.id
                           ].awarded.toLocaleString("en-GB")}
                         </div>
-                        <div className="text-left opacity-60 text-xs font-normal">
+                        <div className="text-left opacity-60 text-xs">
                           OP
                         </div>
                       </div>
@@ -830,7 +830,7 @@ export default function Page() {
                     </div>
                   </TooltipContent>
                 </Tooltip>
-                <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+                <div className="relative -bottom-[2px] left-0 right-0 text-xs text-right h-[2px]">
                   <div
                     className="absolute"
                     style={{
@@ -1005,7 +1005,7 @@ export default function Page() {
                     />
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center">
-                    <div className="-mr-3.5 px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="-mr-3.5 px-3 py-1.5 w-64 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="flex flex-col text-xs space-y-1">
                         <div className="font-light">
                           Total{" "}
@@ -1149,7 +1149,7 @@ export default function Page() {
                         ))}
                     </div>
                   </div>
-                  <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
+                  <div className="absolute -bottom-1 left-0 right-0 text-xs text-right">
                     <div
                       className="relative z-10"
                       style={{
@@ -1311,7 +1311,7 @@ export default function Page() {
                   <Icon icon="feather:info" className="w-4 h-4 " />
                 </TooltipTrigger>
                 <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                  <div className="px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                  <div className="px-3 py-1.5 w-64 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                     <div className="flex flex-col text-xs space-y-1">
                       <div className="font-light">
                         <span className="font-semibold">VC Funding</span>{" "}
@@ -1430,7 +1430,7 @@ export default function Page() {
               <Icon icon={"bx:coin"} className="w-6 h-6" />
             </TooltipTrigger>
             <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-              <div className="px-3 py-1.5 w-64 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+              <div className="px-3 py-1.5 w-64 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                 <div className="flex flex-col text-xs space-y-1">
                   <div className="">
                     <span className="font-bold">Has Token</span>{" "}
@@ -1499,7 +1499,7 @@ export default function Page() {
                     />
                   </TooltipTrigger>
                   <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                    <div className="px-3 py-1.5 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="px-3 py-1.5 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="text-xs space-x-1">
                         <span className="font-light">
                           This project has a{" "}
@@ -1780,7 +1780,7 @@ export default function Page() {
 
             <div className="relative flex flex-1">
               <input
-                className="block rounded-full pl-10 pr-3 py-1.5 w-full font-medium text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-10 pr-3 py-1.5 w-full text-xs text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Project Filter"
                 value={displayNameFilter}
                 onChange={(e) => {
@@ -1796,7 +1796,7 @@ export default function Page() {
               />
               {displayNameFilter.length > 0 && (
                 <div
-                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-color-text-primary text-xs font-light leading-[1.2]"
+                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-color-text-primary text-xs leading-[1.2]"
                   onClick={() => {
                     setDisplayNameFilter("");
                   }}
@@ -1808,7 +1808,7 @@ export default function Page() {
                 </div>
               )}
             </div>
-            <div className="flex flex-col justify-end items-center text-xs font-normal space-y-1">
+            <div className="flex flex-col justify-end items-center text-xs space-y-1">
               {canDownloadCSV && (
                 <div
                   onClick={handleExportCSV}

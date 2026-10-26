@@ -130,7 +130,7 @@ export default function RowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs font-medium text-white dark:text-color-text-primary`}
+            className={`flex flex-row flex-grow h-full pl-[2px] items-center rounded-full text-xs text-white dark:text-color-text-primary`}
             style={{
               backgroundColor: lightenHexColor(
                 AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
@@ -176,7 +176,7 @@ export default function RowParent({ chainKey, index }) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                    <div className="px-3 text-sm font-medium bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                    <div className="px-3 text-sm bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
                       {DisabledStates[selectedMode][chainKey].reason}
                     </div>
                   </TooltipContent>
@@ -187,7 +187,7 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row relative  flex-grow h-full pl-[134px] items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
+          className={`flex flex-row relative  flex-grow h-full pl-[134px] items-center rounded-full text-xs ${AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
             }`}

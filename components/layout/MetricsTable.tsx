@@ -613,7 +613,7 @@ const MetricsTable = ({
                     /> */}
                     <div className="flex-1 break-inside-avoid">
                       <div className="flex-1 flex flex-col">
-                        <div className="flex w-full items-baseline text-sm font-bold leading-snug">
+                        <div className="flex w-full items-baseline text-sm leading-snug">
                           {getDisplayValue(item).prefix && (
                             <div className="text-[13px] font-normal mr-[1px] leading-snug">
                               {getDisplayValue(item).prefix}

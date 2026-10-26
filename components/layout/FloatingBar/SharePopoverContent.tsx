@@ -359,7 +359,7 @@ export default function SharePopoverContent({ onClose }: SharePopoverContentProp
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-global-search-tooltip flex items-center justify-center pr-[3px]">
-                  <div className="flex flex-col px-3 py-4 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
+                  <div className="flex flex-col px-3 py-4 text-xs bg-color-bg-default dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md">
                     <div className="font-semibold">
                       Snapshot Timeframe
                     </div>

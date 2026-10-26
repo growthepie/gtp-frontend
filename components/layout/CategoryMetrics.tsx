@@ -1062,7 +1062,7 @@ export default function CategoryMetrics({
                         <div></div>
                         <div></div>
                         <div></div>
-                        <div className="text-xxs pt-[3px] text-end font-normal">Select all</div>
+                        <div className="text-xxs pt-[3px] text-end">Select all</div>
                   
                       </GridTableHeader>
                       
@@ -1196,7 +1196,7 @@ export default function CategoryMetrics({
                   )}
                 </div>
                 <div className="mt-8 flex w-[100%] flex-wrap items-center gap-y-2 lg:hidden">
-                  <div className="pl-2 pr-2 text-sm font-bold">
+                  <div className="pl-2 pr-2 text-sm">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 
@@ -1237,7 +1237,7 @@ export default function CategoryMetrics({
               <div>
                 {" "}
                 <div className="mx-auto hidden w-[98%] items-center gap-y-2 lg:flex lg:flex-row">
-                  <div className="pl-2 pr-2 text-sm font-bold">
+                  <div className="pl-2 pr-2 text-sm">
                     {formatSubcategories(selectedCategory)}:{" "}
                   </div>
 

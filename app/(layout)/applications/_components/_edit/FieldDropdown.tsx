@@ -81,7 +81,7 @@ export const FieldDropdown = (props: FieldDropdownProps) => {
                   <ApplicationIcon owner_project={asString(project.owner_project)} size="sm" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="text-xs font-medium truncate">{toDisplayName(project)}</div>
+                  <div className="text-xs truncate">{toDisplayName(project)}</div>
                   <div className="text-xxs text-color-text-secondary truncate leading-tight">
                     {asString(project.owner_project)}
                   </div>
@@ -102,7 +102,7 @@ export const FieldDropdown = (props: FieldDropdownProps) => {
                   </div>
                 )}
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="text-xs font-medium truncate">{option.label}</div>
+                  <div className="text-xs truncate">{option.label}</div>
                   {(props as OptionFieldDropdownProps).showSecondaryValue && (
                     <div className="text-xxs text-color-text-secondary truncate leading-tight">
                       {option.value}

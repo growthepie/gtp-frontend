@@ -177,7 +177,7 @@ export default function ChainAnimations({
               event.currentTarget.click();
             }
           }}
-          className={`relative z-0 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-color-text-primary flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs font-medium transition-all duration-500 ${
+          className={`relative z-0 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-color-text-primary flex h-[34px] cursor-pointer select-none flex-row items-center justify-between rounded-full pl-[2px] pr-[2px] text-xs transition-all duration-500 ${
             chainInfo?.darkTextOnBackground === true
               ? "text-white dark:text-black"
               : "text-white"

@@ -25,7 +25,7 @@ export default function Banner() {
         }
         target="_blank"
         rel="noopener"
-        className={`hidden overflow-hidden xl:flex absolute top-[50px] hard-shine items-center p-1 justify-between rounded-full text-sm font-semibold mr-auto text-white bg-[#FF0420] dark:bg-[#FF0420]`}
+        className={`hidden overflow-hidden xl:flex absolute top-[50px] hard-shine items-center p-1 justify-between rounded-full text-sm mr-auto text-white bg-[#FF0420] dark:bg-[#FF0420]`}
       >
         <Icon
           icon="fluent:megaphone-loud-32-filled"

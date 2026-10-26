@@ -2633,7 +2633,7 @@ const ChartWrapper: React.FC<ChartWrapperProps> = ({
         )}
         {chartType === 'pie' && centerName && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="text-xxxs font-bold leading-[120%] text-center max-w-[80px]">
+            <div className="text-xxxs leading-[120%] text-center max-w-[80px]">
               {centerName}
             </div>
           </div>

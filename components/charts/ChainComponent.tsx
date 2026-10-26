@@ -1323,7 +1323,7 @@ const ChainComponent = function ChainComponent({
               containerClassName='!size-[15px] flex items-center justify-center bg-color-bg-medium rounded-full' 
             />
           </Link>
-          <div className="numbers-lg leading-snug h-[20px] font-medium flex items-center">
+          <div className="numbers-lg leading-snug h-[20px] flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">

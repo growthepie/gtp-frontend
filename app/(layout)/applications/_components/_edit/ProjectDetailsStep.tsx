@@ -163,7 +163,7 @@ export function ProjectDetailsStep({
             className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 1 ? "rotate-180" : ""}`}
           />
         </div>
-        <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+        <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs transition-colors ${
           isMetadataSubmitted
             ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
             : activeStep === 1
@@ -179,7 +179,7 @@ export function ProjectDetailsStep({
         ) : (
           <GTPIcon icon="gtp-project-monochrome" size="sm" className="shrink-0" />
         )}
-        <div className="text-sm font-medium min-w-0 truncate flex-1">
+        <div className="text-sm min-w-0 truncate flex-1">
           {form.display_name || (isAddMode ? "Add project details" : "Edit project details")}
         </div>
         {activeStep !== 1 && (
@@ -215,7 +215,7 @@ export function ProjectDetailsStep({
       {activeStep === 1 && (
         <div className="border-t border-color-ui-shadow/40">
           <div className="px-[20px] pb-[20px] pt-[16px]">
-            <div className="mb-[14px] text-sm font-medium">Project identity</div>
+            <div className="mb-[14px] text-sm">Project identity</div>
             <div className="flex gap-x-[16px]">
               {/* Logo column */}
               <div className="flex shrink-0 flex-col items-center gap-y-[8px]">
@@ -249,7 +249,7 @@ export function ProjectDetailsStep({
               <div className="min-w-0 flex-1 grid grid-cols-1 gap-[12px] sm:grid-cols-2">
                 {/* Website */}
                 <div className="sm:col-span-2">
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Website</label>
+                  <label className="mb-[6px] block text-xs text-color-text-primary">Website</label>
                   <div className="relative focus-within:z-50">
                     {(() => {
                       const abs = ensureAbsoluteUrl(form.website.trim());
@@ -346,7 +346,7 @@ export function ProjectDetailsStep({
 
                 {/* Owner project key */}
                 <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Owner project key</label>
+                  <label className="mb-[6px] block text-xs text-color-text-primary">Owner project key</label>
                   {isAddMode ? (
                     <div className="relative focus-within:z-50">
                       <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
@@ -378,7 +378,7 @@ export function ProjectDetailsStep({
 
                 {/* Display name */}
                 <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">Display name</label>
+                  <label className="mb-[6px] block text-xs text-color-text-primary">Display name</label>
                   <div className="relative focus-within:z-50">
                     <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
                       <input
@@ -401,7 +401,7 @@ export function ProjectDetailsStep({
 
                 {/* GitHub */}
                 <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">GitHub</label>
+                  <label className="mb-[6px] block text-xs text-color-text-primary">GitHub</label>
                   <div className="relative focus-within:z-50">
                     <div className="relative z-10 flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] pl-[14px] pr-[4px]">
                       <input
@@ -465,7 +465,7 @@ export function ProjectDetailsStep({
 
                 {/* Twitter */}
                 <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">
+                  <label className="mb-[6px] block text-xs text-color-text-primary">
                     Twitter / X <span className="font-normal text-color-text-secondary">(optional)</span>
                   </label>
                   <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
@@ -483,7 +483,7 @@ export function ProjectDetailsStep({
 
                 {/* Telegram */}
                 <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">
+                  <label className="mb-[6px] block text-xs text-color-text-primary">
                     Telegram <span className="font-normal text-color-text-secondary">(optional)</span>
                   </label>
                   <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
@@ -504,7 +504,7 @@ export function ProjectDetailsStep({
             {/* Description */}
             <div className="mt-[12px]">
               <div className="mb-[6px]">
-                <label className="text-xs font-medium text-color-text-primary">Description</label>
+                <label className="text-xs text-color-text-primary">Description</label>
               </div>
               <div className="relative">
                 <textarea
@@ -534,7 +534,7 @@ export function ProjectDetailsStep({
               <div className="mt-[14px] rounded-[10px] border border-color-data-yellow/40 bg-color-data-yellow/10 p-[12px]">
                 <div className="flex items-center gap-x-[8px]">
                   <Icon icon="feather:alert-triangle" className="size-[14px] text-color-data-yellow shrink-0" />
-                  <div className="font-medium text-sm text-color-data-yellow">Similar projects already exist</div>
+                  <div className="text-sm text-color-data-yellow">Similar projects already exist</div>
                 </div>
                 <p className="mt-[4px] text-xs text-color-text-primary">Check if your project is already listed before adding.</p>
                 <div className="mt-[8px] flex flex-col gap-y-[6px]">
@@ -542,7 +542,7 @@ export function ProjectDetailsStep({
                     <div key={match.owner_project} className="flex items-center justify-between gap-x-[8px]">
                       <div className="flex items-center gap-x-[6px] min-w-0">
                         <ApplicationIcon owner_project={match.owner_project} size="sm" />
-                        <span className="text-xs font-medium truncate">{match.display_name}</span>
+                        <span className="text-xs truncate">{match.display_name}</span>
                         <span className="text-xxs text-color-text-secondary shrink-0">({match.owner_project})</span>
                         <span className={`shrink-0 rounded-full px-[6px] py-[1px] text-xxs border ${match.confidence === "exact" ? "border-color-negative/40 bg-color-negative/10 text-color-negative" : "border-color-data-yellow/40 bg-color-data-yellow/10 text-color-data-yellow"}`}>
                           {match.confidence}
@@ -570,7 +570,7 @@ export function ProjectDetailsStep({
               <div className="mt-[14px] rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
                 <div className="flex items-center gap-x-[8px]">
                   <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
-                  <div className="font-medium text-sm text-color-positive">Changes submitted — awaiting approval</div>
+                  <div className="text-sm text-color-positive">Changes submitted — awaiting approval</div>
                 </div>
                 <p className="mt-[4px] text-xs text-color-text-primary">{successMessage}</p>
                 <div className="mt-[8px] flex flex-wrap gap-[6px]">
@@ -715,7 +715,7 @@ export function ProjectDetailsStep({
             {/* Header */}
             <div className="flex items-center gap-x-[8px] mb-[4px]">
               <Icon icon="feather:git-pull-request" className="size-[16px] text-color-text-primary shrink-0" />
-              <div className="text-sm font-semibold">Ready to create a pull request?</div>
+              <div className="text-sm">Ready to create a pull request?</div>
             </div>
 
             <p className="text-sm text-color-text-secondary mb-[12px]">
@@ -782,7 +782,7 @@ export function ProjectDetailsStep({
                 >
                   <div className="flex items-center gap-x-[6px]">
                     <Icon icon="feather:alert-circle" className="size-[12px] text-color-negative shrink-0" />
-                    <span className="text-xs font-medium text-color-negative">
+                    <span className="text-xs text-color-negative">
                       Still missing <span className="font-normal opacity-70">({totalMissing} item{totalMissing !== 1 ? "s" : ""})</span>
                     </span>
                   </div>
