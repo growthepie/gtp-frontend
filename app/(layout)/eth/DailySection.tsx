@@ -57,8 +57,9 @@ export default function DailySection({ children }: { children?: ReactNode }) {
   const todayCards = (todayData?.data?.cards ?? []).slice(0, TODAY_CARD_COUNT);
   const todaySources = [...new Set(todayCards.flatMap((c) => c.sources.map((s) => s.name)))];
 
+  // Every block here is its own section, so they're spaced like the rest of the page.
   return (
-    <div className="flex flex-col gap-y-[30px]">
+    <div className="flex flex-col gap-y-[60px]">
       <div className="flex flex-col gap-y-[15px]">
         <div className="flex items-center gap-x-[8px]">
           <SectionTitle icon="gtp-quick-bites" title="Today in ETH" titleSize="md" as="h2" />
@@ -103,43 +104,48 @@ export default function DailySection({ children }: { children?: ReactNode }) {
           title: "Things you have probably heard",
           description: "Fair objections, answered plainly.",
           items: MYTHS,
+          // the section gap above spaces it, not the block's own margin
+          className: "!my-0",
         }}
       />
 
-      {/* "Go deeper" fills the row on its own when the newsletter card is hidden. */}
-      <div className={`grid grid-cols-1 ${IS_PRODUCTION ? "" : "md:grid-cols-2"} gap-[15px] items-start`}>
-        {/* Placeholder: there's no newsletter behind this yet (input and button are disabled),
-            so it's marked like the fake data, and hidden in production. */}
-        {!IS_PRODUCTION && (
-        <Card fake>
-          <span className="heading-small-xs">Get the weekly numbers</span>
-          <span className="text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
-          <div className="flex gap-x-[8px]">
-            <input
-              placeholder="you@email.com"
-              disabled
-              aria-label="Email address"
-              className="flex-1 min-w-0 h-[36px] rounded-full border-none bg-color-bg-medium px-[15px] text-color-text-primary font-raleway text-sm outline-none"
-            />
-            <GTPButton label="Subscribe" leftIcon="gtp-email" variant="highlight" disabled size="sm" />
-          </div>
-        </Card>
-        )}
-        <Card>
-          <span className="heading-small-xs">Go deeper</span>
-          <span className="text-sm">Community work behind these numbers.</span>
-          <div className="flex flex-wrap gap-[10px] items-start">
-            <SectionButtonLink href="https://ethval.com/#valuation" newTab label="ETHval dashboard" />
-            <SectionButtonLink href="https://productivemoney.xyz" newTab label="Productive Money" />
-          </div>
-        </Card>
-      </div>
+      {/* The closing cards, 15px apart like the cards in every section. */}
+      <div className="flex flex-col gap-y-[15px]">
+        {/* "Go deeper" fills the row on its own when the newsletter card is hidden. */}
+        <div className={`grid grid-cols-1 ${IS_PRODUCTION ? "" : "md:grid-cols-2"} gap-[15px] items-start`}>
+          {/* Placeholder: there's no newsletter behind this yet (input and button are disabled),
+              so it's marked like the fake data, and hidden in production. */}
+          {!IS_PRODUCTION && (
+          <Card fake>
+            <span className="heading-small-xs">Get the weekly numbers</span>
+            <span className="text-sm">Supply, yield and usage in one email each week. No price predictions.</span>
+            <div className="flex gap-x-[8px]">
+              <input
+                placeholder="you@email.com"
+                disabled
+                aria-label="Email address"
+                className="flex-1 min-w-0 h-[36px] rounded-full border-none bg-color-bg-medium px-[15px] text-color-text-primary font-raleway text-sm outline-none"
+              />
+              <GTPButton label="Subscribe" leftIcon="gtp-email" variant="highlight" disabled size="sm" />
+            </div>
+          </Card>
+          )}
+          <Card>
+            <span className="heading-small-xs">Go deeper</span>
+            <span className="text-sm">Community work behind these numbers.</span>
+            <div className="flex flex-wrap gap-[10px] items-start">
+              <SectionButtonLink href="https://ethval.com/#valuation" newTab label="ETHval dashboard" />
+              <SectionButtonLink href="https://productivemoney.xyz" newTab label="Productive Money" />
+            </div>
+          </Card>
+        </div>
 
-      <div className="rounded-[15px] bg-color-bg-medium p-[15px] flex items-center gap-x-[15px]">
-        <span className="font-raleway font-bold text-[36px] leading-[36px] text-color-accent-yellow tracking-wide">NFA</span>
-        <span className="text-sm flex-1">
-          Not financial advice. Public onchain data and our reading of it. ETH is volatile and you can lose money holding it.
-        </span>
+        <div className="rounded-[15px] bg-color-bg-medium p-[15px] flex items-center gap-x-[15px]">
+          <span className="font-raleway font-bold text-[36px] leading-[36px] text-color-accent-yellow tracking-wide">NFA</span>
+          <span className="text-sm flex-1">
+            Not financial advice. Public onchain data and our reading of it. ETH is volatile and you can lose money holding it.
+          </span>
+        </div>
       </div>
     </div>
   );
