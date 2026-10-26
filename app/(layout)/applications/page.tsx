@@ -28,7 +28,6 @@ import { MetricInfo } from "@/types/api/MasterResponse";
 import { useTimespan } from "./_contexts/TimespanContext";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import AppCountByChain from "./_components/AppCountByChain";
-import { Switch } from "@/components/Switch";
 import ApplicationsGrid from "@/components/layout/SingleChains/OverviewCards/ApplicationsGrid";
 import ViewToggle from "@/components/ViewToggle";
 import { ExpandableCardContainer } from "@/components/layout/ExpandableCardContainer";
