@@ -813,12 +813,13 @@ const MetricChart = memo(
           hideDelay: isTouchPrimaryDevice ? 3000 : 50,
           enterable: false, // Don't need to enter tooltip, improves responsiveness
           transitionDuration: 0, // Disable animation for snappier feel
-          // Render the tooltip INSIDE the chart (not on document.body) and confine
-          // it to the chart bounds — on touch it rides the chart's scroll container
-          // instead of drifting in page space onto a neighbor; on desktop it stays
-          // clamped inside the plot rather than following the cursor past the edges.
-          appendToBody: false,
-          confine: true,
+          // Mouse: render the tooltip on the page and let it overflow the chart, placed
+          // beside the cursor (see `position`), so it never covers the hovered point, its
+          // line or its date the way a tooltip squeezed inside a 224px chart would.
+          // Touch: render it inside the chart, confined to it, so it rides the chart's
+          // scroll container instead of drifting onto a neighbor in the grid.
+          appendToBody: !isTouchPrimaryDevice,
+          confine: isTouchPrimaryDevice,
           backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
           borderWidth: 0,
           borderRadius: 17,
@@ -840,20 +841,18 @@ const MetricChart = memo(
             },
             handle: { show: false },
           },
-          // Touch: contain the tooltip inside the touched chart — the
-          // fundamentals grid stacks charts directly above/below each other,
-          // and the ECharts default follow-pointer placement drifts over
-          // neighbors. Mouse keeps the ECharts default: returning undefined
-          // falls through to it (TooltipView._updatePosition).
+          // Touch: contain the tooltip inside the touched chart — the fundamentals
+          // grid stacks charts directly above/below each other, and a tooltip
+          // drifting over a neighbor reads as that chart's. Mouse: beside the cursor,
+          // flipped to its other side at the screen edge, kept on screen.
           position: ((point: number[], _params: unknown, _el: unknown, _rect: unknown, size?: { contentSize?: number[] }) => {
-            if (!(isTouchPrimaryDevice || isTouchSession())) return undefined;
             return getViewportAwareTooltipLocalPosition({
               anchorLocalX: Number(point?.[0] ?? 0),
               anchorLocalY: Number(point?.[1] ?? 0),
               contentWidth: Number(size?.contentSize?.[0] ?? 0),
               contentHeight: Number(size?.contentSize?.[1] ?? 0),
               hostRect: touchHostRef.current?.getBoundingClientRect(),
-              isTouch: true,
+              isTouch: isTouchPrimaryDevice || isTouchSession(),
             });
           }) as any,
           formatter: (params: any) => {
@@ -1366,19 +1365,32 @@ const MetricChart = memo(
       };
     }, [drawLastPointLines, lineType]);
 
-    // On touch devices, hide this chart's tooltip as soon as the page scrolls:
-    // the body-appended tooltip does not travel with the chart, and once
-    // Safari claims a drag as a scroll gesture it stops delivering touch
-    // events, so the tooltip would strand over neighboring charts. Capture
-    // phase catches inner scroll containers too; mouse-primary devices are
-    // untouched.
+    // Hide this chart's tooltip as soon as the page scrolls. On touch, once Safari
+    // claims a drag as a scroll gesture it stops delivering touch events, so the
+    // tooltip would strand over neighboring charts. With a mouse the tooltip lives on
+    // the page and would stay put while the chart scrolls away under it; its pointer
+    // line goes too, and the next mouse move brings both back. Capture phase catches
+    // inner scroll containers too.
     useEffect(() => {
-      if (!isTouchPrimaryDevice) return;
+      // with a mouse, only a showing tooltip needs hiding: skip the work on every other scroll
+      const instance = chartRef.current?.getEchartsInstance();
+      let tooltipShown = false;
+      const onShowTip = () => { tooltipShown = true; };
+      const onHideTip = () => { tooltipShown = false; };
+      instance?.on("showtip", onShowTip);
+      instance?.on("hidetip", onHideTip);
       const onDocumentScroll = () => {
-        chartRef.current?.getEchartsInstance()?.dispatchAction({ type: "hideTip" });
+        if (!isTouchPrimaryDevice && !tooltipShown) return;
+        const current = chartRef.current?.getEchartsInstance();
+        current?.dispatchAction({ type: "hideTip" });
+        if (!isTouchPrimaryDevice) current?.dispatchAction({ type: "updateAxisPointer", currTrigger: "leave" });
       };
       document.addEventListener("scroll", onDocumentScroll, { capture: true, passive: true });
-      return () => document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+      return () => {
+        document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+        instance?.off("showtip", onShowTip);
+        instance?.off("hidetip", onHideTip);
+      };
     }, []);
 
     // Touch: reliably auto-hide the tooltip AND the connect-shared axis-pointer

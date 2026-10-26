@@ -20,6 +20,13 @@ export const DEFAULT_TOOLTIP_TOUCH_OFFSET = 56;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+// From md up the floating top bar covers the top of the screen. Page-level tooltips render above
+// everything, so they stay below it: the --gtp-sticky-top line (globals.css), 0 on mobile.
+const getTopInset = () => {
+  if (typeof document === "undefined") return 0;
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--gtp-sticky-top")) || 0;
+};
+
 export const getGTPTooltipContainerClass = (
   size: GTPTooltipSize,
   extraClassName?: string,
@@ -132,8 +139,9 @@ export const getViewportAwareTooltipLocalPosition = ({
   }
   xAbs = clamp(xAbs, viewportPadding, maxX);
 
+  const minY = Math.max(viewportPadding, getTopInset());
   const spaceBelow = viewportHeight - viewportPadding - (anchorAbsY + cursorOffset);
-  const spaceAbove = anchorAbsY - cursorOffset - viewportPadding;
+  const spaceAbove = anchorAbsY - cursorOffset - minY;
   let yAbs = anchorAbsY + cursorOffset;
 
   if (contentHeight > spaceBelow && contentHeight <= spaceAbove) {
@@ -142,7 +150,7 @@ export const getViewportAwareTooltipLocalPosition = ({
     yAbs = anchorAbsY - contentHeight / 2;
   }
 
-  yAbs = clamp(yAbs, viewportPadding, maxY);
+  yAbs = clamp(yAbs, minY, Math.max(maxY, minY));
 
   if (boundsRect) {
     // Keep the tooltip inside the element that owns the chart (e.g. the card a
