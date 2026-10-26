@@ -227,7 +227,7 @@ export default function GTPResizeDivider({
         className="cursor-col-resize mt-[1px]"
         onPointerDown={onDragStart}
       >
-        <GTPButton size="xs" variant="primary" leftIcon={handleIcon} />
+        <GTPButton size="xs" variant="primary" leftIcon={handleIcon} ariaLabel="Drag to resize" />
       </div>
       {showScrollbar ? (
         <div

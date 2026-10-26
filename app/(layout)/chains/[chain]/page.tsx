@@ -907,6 +907,7 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
                   variant="primary"
                   visualState="active"
                   leftIcon="in-button-right-monochrome"
+                  ariaLabel="Open Quick Bite"
                   clickHandler={() => router.push(`/quick-bites/${group.slug}`)}
                   className="cursor-pointer"
                 />

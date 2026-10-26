@@ -743,6 +743,8 @@ const MetricTable = ({
                     variant="primary"
                     visualState="default"
                     size="xs"
+                    ariaLabel="Show all chains in chart"
+                    isSelected={chainSelectToggleState === "all"}
                     clickHandler={onChainSelectToggle}
                   />
                 </div>
@@ -787,6 +789,8 @@ const MetricTable = ({
                   variant="primary"
                   visualState="default"
                   size="xs"
+                  ariaLabel="Show all chains in chart"
+                  isSelected={chainSelectToggleState === "all"}
                   clickHandler={onChainSelectToggle}
                 />
               </div>

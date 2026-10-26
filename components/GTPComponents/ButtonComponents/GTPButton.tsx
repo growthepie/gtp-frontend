@@ -14,8 +14,11 @@ export interface GTPButtonProps {
   children?: React.ReactNode;
   label?: string;
   labelDisplay?: "always" | "active" | "hover";
+  /** Accessible name; required for icon-only buttons, which have no visible label. */
+  ariaLabel?: string;
   rightIcon?: GTPIconName;
   leftIcon?: GTPIconName;
+  /** When passed, it is also exposed to assistive tech as `aria-pressed`. */
   isSelected?: boolean;
   disabled?: boolean;
   gradientOutline?: boolean;
@@ -165,9 +168,10 @@ export const GTPButton = ({
   children,
   label,
   labelDisplay = "always",
+  ariaLabel,
   rightIcon,
   leftIcon,
-  isSelected = false,
+  isSelected,
   disabled = false,
   gradientOutline = false,
   variant,
@@ -281,7 +285,8 @@ export const GTPButton = ({
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
         }`}
-        aria-label={isAnimatedLabelMode && !shouldShowLabel ? label : undefined}
+        aria-label={ariaLabel ?? (isAnimatedLabelMode && !shouldShowLabel ? label : undefined)}
+        aria-pressed={isSelected}
         onClick={clickHandler}
         onMouseEnter={(e) => {
           if (labelDisplay === "hover") setIsHovered(true);

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -158,10 +158,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const {
-    data: ethAgg,
-  } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
-
 
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
@@ -171,6 +167,15 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
+  // The grid view fetches its data and mounts its cards the first time it is opened
+  const [gridOpened, setGridOpened] = useState(false);
+  useEffect(() => {
+    if (!showTable) setGridOpened(true);
+  }, [showTable]);
+
+  const {
+    data: ethAgg,
+  } = useSWR<EthereumEcosystemOverviewResponse>(gridOpened ? EthAggURL : null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [isWrapping, setIsWrapping] = useState(false);
 
@@ -301,14 +306,16 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               </TableRankingProvider>
             </div>
             <div className="rounded-[15px] pr-[10px] mt-[15px] -ml-[5px]" style={{ display: showTable ? "none" : "block" }}>
-              <ProjectsMetadataProvider>
-                <MeetL2sMapCards
-                  meetL2sData={ethAgg?.data.meet_l2s}
-                  tableVisual={landing.data.metrics.table_visual}
-                  chainKeys={tableChainKeys}
-                  chainAges={chainAges}
-                />
-              </ProjectsMetadataProvider>
+              {gridOpened && (
+                <ProjectsMetadataProvider>
+                  <MeetL2sMapCards
+                    meetL2sData={ethAgg?.data.meet_l2s}
+                    tableVisual={landing.data.metrics.table_visual}
+                    chainKeys={tableChainKeys}
+                    chainAges={chainAges}
+                  />
+                </ProjectsMetadataProvider>
+              )}
             </div>
           </HorizontalScrollContainer>
         </>

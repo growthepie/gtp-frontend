@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
-import ReactECharts from 'echarts-for-react';
-import { EChartsOption } from 'echarts';
+import ReactECharts from 'echarts-for-react/lib/core';
+import type { EChartsOption } from 'echarts';
+import { echarts } from '@/lib/echarts-setup';
 import { throttle } from 'lodash';
 import ChartWatermark, { ChartWatermarkWithMetricName } from '../ChartWatermark';
 import { useTheme } from 'next-themes';
@@ -234,6 +235,7 @@ export const TPSChart = React.memo(({ data, overrideColor, chainName, centerWate
   return (
     <div ref={containerRef} className="relative w-full h-[58px] -mt-[5px]">
       <ReactECharts
+        echarts={echarts}
         ref={chartRef}
         opts={{
           devicePixelRatio: window.devicePixelRatio || 1,

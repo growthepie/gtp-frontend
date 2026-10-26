@@ -930,6 +930,7 @@ export function ContractsStep({
                                 variant="primary"
                                 size="sm"
                                 leftIcon="in-button-close"
+                                ariaLabel="Remove row"
                                 clickHandler={() => removeQueueRow(rowIndex)}
                               />
                             </div>

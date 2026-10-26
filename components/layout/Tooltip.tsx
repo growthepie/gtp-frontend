@@ -144,10 +144,10 @@ export const TooltipTrigger = React.forwardRef<
   return (
     <button
       ref={ref}
+      type="button"
       // The user can style the trigger based on the state
       data-state={context.open ? "open" : "closed"}
       {...context.getReferenceProps(props)}
-      title={"Tooltip Trigger"}
     >
       {/* <motion.div whileHover={{ size: 1.02 }} whileTap={{ size: 1.0 }}> */}
       {children}

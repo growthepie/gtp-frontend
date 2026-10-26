@@ -17,7 +17,6 @@ import Link from "next/link";
 import { HeaderButton } from "../layout/HeaderButton";
 import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { debounce } from "lodash";
-import { numberFormat } from "highcharts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { getAllQuickBites } from "@/lib/quick-bites/quickBites";
 import type { InputHTMLAttributes } from 'react';

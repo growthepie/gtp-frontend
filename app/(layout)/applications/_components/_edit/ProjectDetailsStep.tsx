@@ -318,6 +318,7 @@ export function ProjectDetailsStep({
                         variant="highlight"
                         size="sm"
                         leftIcon="in-button-up"
+                        ariaLabel="Make primary website"
                         clickHandler={() => {
                           const newPrimary = form.additional_websites[index];
                           const newAdditional = [form.website, ...form.additional_websites.filter((_, i) => i !== index)].filter(Boolean);
@@ -328,6 +329,7 @@ export function ProjectDetailsStep({
                         variant="primary"
                         size="sm"
                         leftIcon="in-button-close"
+                        ariaLabel="Remove website"
                         clickHandler={() => removeAdditionalUrlField("additional_websites", index)}
                       />
                     </div>
@@ -336,6 +338,7 @@ export function ProjectDetailsStep({
                     variant="primary"
                     size="sm"
                     leftIcon="in-button-plus"
+                    ariaLabel="Add website"
                     clickHandler={() => addAdditionalUrlField("additional_websites")}
                     className="mt-[6px]"
                   />
@@ -434,6 +437,7 @@ export function ProjectDetailsStep({
                         variant="highlight"
                         size="sm"
                         leftIcon="in-button-up"
+                        ariaLabel="Make main GitHub repository"
                         clickHandler={() => {
                           const newPrimary = form.additional_github[index];
                           const newAdditional = [form.main_github, ...form.additional_github.filter((_, i) => i !== index)].filter(Boolean);
@@ -444,6 +448,7 @@ export function ProjectDetailsStep({
                         variant="primary"
                         size="sm"
                         leftIcon="in-button-close"
+                        ariaLabel="Remove GitHub repository"
                         clickHandler={() => removeAdditionalUrlField("additional_github", index)}
                       />
                     </div>
@@ -452,6 +457,7 @@ export function ProjectDetailsStep({
                     variant="primary"
                     size="sm"
                     leftIcon="in-button-plus"
+                    ariaLabel="Add GitHub repository"
                     clickHandler={() => addAdditionalUrlField("additional_github")}
                     className="mt-[6px]"
                   />

@@ -205,6 +205,8 @@ export default function ChainMetricTableRow({
           variant="primary"
           visualState={isRowHovered ? "hover" : "default"}
           size="xs"
+          ariaLabel={`Show ${label} in chart`}
+          isSelected={selected}
           clickHandler={() => onToggle(id)}
         />
       </div>

@@ -11,7 +11,6 @@ import DABreakdownCharts from "@/components/layout/DA-Overview/DATableCharts";
 import useSWR from "swr";
 import { DATimeseriesResponse } from "@/types/api/DATimeseriesResponse";
 import { DATimeseriesURL } from "@/lib/urls";
-import { chart } from "highcharts";
 // import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";

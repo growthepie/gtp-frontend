@@ -202,15 +202,15 @@ html {
   }
 }
 
-*:focus:not(.focus-visible) {
+*:focus:not(:focus-visible) {
   outline: none;
 }
 
 *:focus-visible {
-  /* remove default focus style */
-  outline: none;
-  /* custom focus styles */
-  box-shadow: 0px 0px 0px 2px #ffffff66;
+  /* keyboard focus ring: follows the theme text colour, so it shows in light and dark mode,
+     and as an outline it isn't replaced by shadow utilities */
+  outline: 2px solid rgb(var(--text-primary) / 0.6);
+  outline-offset: 2px;
 }
 
 input:focus-visible {
