@@ -196,6 +196,24 @@ html {
   }
 }
 
+/* Where sticky elements stick: at the top of the screen on mobile (the floating bar is at
+   the bottom there), and 10px below the floating top bar (which ends at 84px) from md up. */
+:root {
+  --gtp-sticky-top: 0px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gtp-sticky-top: 94px;
+  }
+}
+
+/* StickyHeader's backdrop: solid page background from the top of the screen down to the
+   stuck element, fading out over the 20px below it. */
+.sticky-header-backdrop {
+  mask-image: linear-gradient(to bottom, white calc(100% - 20px), transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -35,7 +35,7 @@ export function EditSidebar({
 }: EditSidebarProps) {
   return (
     <aside
-      className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px] xl:pt-[var(--edit-sidebar-offset-top)]"
+      className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[var(--gtp-sticky-top)] xl:pt-[var(--edit-sidebar-offset-top)]"
       style={{ "--edit-sidebar-offset-top": `${activeStepOffsetTop}px` } as CSSProperties}
     >
       {/* Tips card */}

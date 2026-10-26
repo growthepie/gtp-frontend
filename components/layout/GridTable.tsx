@@ -473,7 +473,7 @@ export function GridTableContainer(
       >
 
         <div className="px-[20px] md:px-[60px] relative">
-          <div className="sticky h-[54px] top-[0px] md:top-[0px] z-[1]">
+          <div className="relative h-[54px] z-[1]">
             <div className="relative z-50">
               {header}
               <div className={`absolute pl-[60px] pr-[60px] top-[0px] md:top-[0px] h-[40px] z-[1]`}>
