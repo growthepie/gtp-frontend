@@ -579,7 +579,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
               {/*  */}
               {chainData.technology && <MetricTab title="Type"><div>{chainData.technology}</div></MetricTab>}
               {chainData.raas && chainData.raas !== 'Self-hosted' && <MetricTab title="Rollup as a service"><div>{chainData.raas}</div></MetricTab>}
-              {chainData.launch_date && <MetricTab title="Launch Date"><div>{chainData.launch_date ? new Date(chainData.launch_date).toLocaleDateString(undefined, { year: "numeric", month: "long", }) : "N/A"}</div></MetricTab>}
+              {chainData.launch_date && <MetricTab title="Launch Date"><div>{chainData.launch_date ? new Date(chainData.launch_date).toLocaleDateString("en-GB", { year: "numeric", month: "long", }) : "N/A"}</div></MetricTab>}
               {/* */}
               {chainData["gas_token"] && <MetricTab title="Gas Token"><div>{chainData["gas_token"]}</div></MetricTab>}
               {chainData["caip2"] && <MetricTab title="Chain ID"><div>{chainData["caip2"] ? chainData["caip2"] : "N/A"}</div></MetricTab>}

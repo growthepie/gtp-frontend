@@ -237,7 +237,7 @@ function Bathtub({
         Issued to stakers
       </text>
       <text x="180" y="38" fill="rgb(var(--accent-turquoise))" style={VALUE_STYLE}>
-        +{Math.round(inflow).toLocaleString()} ETH/wk
+        +{Math.round(inflow).toLocaleString("en-GB")} ETH/wk
       </text>
 
       {/* Tub interior + water, both clipped to the column */}
@@ -299,7 +299,7 @@ function Bathtub({
         Burned by fees
       </text>
       <text x="250" y={TUB_BASE + 52} fill={burnRgb} style={VALUE_STYLE}>
-        −{Math.round(outflow).toLocaleString()} ETH/wk
+        −{Math.round(outflow).toLocaleString("en-GB")} ETH/wk
       </text>
 
       {/* The exaggeration, stated rather than implied */}
@@ -309,7 +309,7 @@ function Bathtub({
       {!reduceMotion && (
         <text x={TUB_LEFT} y={TUB_BASE + 50} fill="rgb(var(--text-primary))" opacity=".7" style={TICK_STYLE}>
           {view.offset >= 0 ? "+" : "−"}
-          {Math.abs(Math.round(view.offset)).toLocaleString()} ETH over {describeWeeks(view.weeks)}
+          {Math.abs(Math.round(view.offset)).toLocaleString("en-GB")} ETH over {describeWeeks(view.weeks)}
         </text>
       )}
     </svg>
@@ -496,7 +496,7 @@ export default function SupplySection() {
             <Legend
               items={[
                 { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
-                { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
+                { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString("en-GB")} ETH` },
               ]}
             />
           </div>

@@ -438,7 +438,7 @@ function SeriesRow({
       </div>
 
       <p className="text-[10px] text-color-text-secondary mt-1.5">
-        {entry.data.length.toLocaleString()} pts ·{" "}
+        {entry.data.length.toLocaleString("en-GB")} pts ·{" "}
         {entry.source === "gtp" ? "growthepie" : entry.sourceLabel}
       </p>
     </div>
@@ -940,7 +940,7 @@ export default function ChartCreatorPage() {
                     {uploadState.filename}
                   </p>
                   <p className="text-[10px] text-color-text-secondary flex-shrink-0 ml-2">
-                    {uploadState.rows.length.toLocaleString()} rows
+                    {uploadState.rows.length.toLocaleString("en-GB")} rows
                   </p>
                 </div>
 
@@ -1001,7 +1001,7 @@ export default function ChartCreatorPage() {
                       {uploadState.rows.length > 5 && (
                         <tr>
                           <td colSpan={2} className="px-2 py-1 text-center text-color-text-secondary">
-                            +{(uploadState.rows.length - 5).toLocaleString()} more rows
+                            +{(uploadState.rows.length - 5).toLocaleString("en-GB")} more rows
                           </td>
                         </tr>
                       )}
@@ -1015,7 +1015,7 @@ export default function ChartCreatorPage() {
 
                 <div className="flex gap-2">
                   <GTPButton
-                    label={`Add${previewData.length > 0 ? ` (${uploadState.rows.length.toLocaleString()} pts)` : ""}`}
+                    label={`Add${previewData.length > 0 ? ` (${uploadState.rows.length.toLocaleString("en-GB")} pts)` : ""}`}
                     clickHandler={addUploadedSeries}
                     variant="primary"
                     size="sm"
@@ -1240,7 +1240,7 @@ export default function ChartCreatorPage() {
                             </div>
                           </td>
                           <td className="px-4 py-2 text-right text-color-text-secondary">
-                            {s.data.length.toLocaleString()}
+                            {s.data.length.toLocaleString("en-GB")}
                           </td>
                           <td className="px-4 py-2 text-right text-color-text-secondary hidden sm:table-cell">
                             {fmtDate(s.data[0][0])}

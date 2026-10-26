@@ -22,7 +22,7 @@ const BAR_MIN_SEG = 500;
 const AboutApp = memo(({ data, owner_project, projectMetadata, defaultOpen = true }: { data: ApplicationDetailsData, owner_project: string, projectMetadata: ProjectMetadata, defaultOpen?: boolean }) => {
 
     const isMobile = useMediaQuery("(max-width: 1024px)");
-    const activeSinceDateFormatter = new Intl.DateTimeFormat(undefined, {
+    const activeSinceDateFormatter = new Intl.DateTimeFormat("en-GB", {
         month: "short",
         year: "numeric",
     });
