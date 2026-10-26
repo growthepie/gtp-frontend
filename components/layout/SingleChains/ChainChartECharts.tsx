@@ -1715,6 +1715,15 @@ export default function ChainChartECharts({
     return metricItems.map((item) => item.key ?? "");
   }, []);
 
+  // The metrics this chain has, per master.json: the charts that will show, so their space can be
+  // reserved before the data arrives
+  const supportedMetricKeys = useMemo(
+    () => new Set<string>(master.chains[chainKey[0]]?.supported_metrics ?? []),
+    [master, chainKey],
+  );
+  // false until the chain's metric files have first arrived (or failed)
+  const [hasLoadedMetrics, setHasLoadedMetrics] = useState(false);
+
   // Available intervals
   const availableIntervals = useMemo(() => {
     const intervals = new Set<string>();
@@ -1788,6 +1797,8 @@ export default function ChainChartECharts({
       setData(responseData);
     } catch (error) {
       console.error("Error fetching chain data:", error);
+    } finally {
+      setHasLoadedMetrics(true);
     }
   }, [chainKey, cache, mutate, enabledFundamentalsKeys, master]);
 
@@ -2169,6 +2180,10 @@ export default function ChainChartECharts({
       <div className={`flex flex-col gap-y-[15px] transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>
         {Object.keys(metricCategories)
           .filter((group) => group !== "gtpmetrics" && group !== "public-goods-funding" && group !== "developer")
+          // skip categories this chain has no metrics in, instead of showing an empty section
+          .filter((categoryKey) =>
+            enabledFundamentalsKeys.some((key) => getFundamentalsByKey[key]?.category === categoryKey && supportedMetricKeys.has(key)),
+          )
           .map((categoryKey) => (
             <ChainSectionHead
               title={metricCategories[categoryKey].label}
@@ -2189,7 +2204,13 @@ export default function ChainChartECharts({
                     .map((key) => {
                       const metricData = data[0]?.metrics?.[key];
                       const intervalData = metricData?.[selectedTimeInterval as keyof typeof metricData] as IntervalData | undefined;
-                      if (!intervalData?.data?.length) return null;
+                      if (!intervalData?.data?.length) {
+                        // hold the chart's place while the metric files load, like LazyMount does
+                        // until a chart scrolls near
+                        return !hasLoadedMetrics && supportedMetricKeys.has(key) ? (
+                          <div key={key} className="w-full rounded-2xl bg-color-bg-default motion-safe:animate-pulse" style={{ height: 224 }} />
+                        ) : null;
+                      }
 
                       return (
                         <LazyMount key={key} minHeight={224}>
