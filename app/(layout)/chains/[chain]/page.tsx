@@ -5,7 +5,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
 import { useState, useMemo, memo, useEffect, use, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChartECharts from "@/components/layout/SingleChains/ChainChartECharts";
@@ -1168,6 +1168,10 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
         : "",
     );
+
+    // A chain that isn't in master.json gets the 404 page instead of an empty page that
+    // requests /chains//… for every section
+    if (!chainKey) notFound();
 
     // Disable the global ETH/USD switch while on the Quick Bites tab — quick bites
     // are USD-only by default, matching the standalone /quick-bites pages. Cleanup
