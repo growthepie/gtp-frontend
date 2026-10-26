@@ -183,7 +183,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             </div>
           </div>
 
-          <div className="flex-1 text-sm font-medium">
+          <div className="flex-1 text-sm">
             <ApplicationDescription owner_project={urlOwnerProject} />
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
@@ -825,7 +825,7 @@ export const TopGainersAndLosersTooltip = ({ metric, scopeLabel }: { metric: str
   const medianScopeText = scopeLabel ? "within this chain view" : "across all applications";
   return (
     <div
-      className="w-[400px] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
+      className="w-[400px] max-w-[calc(100vw-40px)] bg-color-bg-default rounded-[15px] flex flex-col gap-y-[5px] px-[20px] py-[15px] transition-opacity duration-300 shadow-standard"
       onClick={(e) => {
         e.stopPropagation();
       }}
@@ -1282,7 +1282,7 @@ export const Category = ({ category }: { category: string }) => {
       ) : (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-color-ui-hover/50" /> */}
-          <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+          <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center text-xs pt-[2px]">?</div>
           <div className="text-xs text-color-text-secondary">Unknown</div>
         </div>
       )}
@@ -1318,7 +1318,7 @@ export function formatNumber(
     { value: 1e12, suffix: 'T' },
     { value: 1e9, suffix: 'B' },
     { value: 1e6, suffix: 'M' },
-    { value: 1e3, suffix: 'k' }
+    { value: 1e3, suffix: 'K' }
   ];
 
   const absNumber = Math.abs(number);

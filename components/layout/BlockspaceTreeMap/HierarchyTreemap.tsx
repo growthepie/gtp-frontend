@@ -12,7 +12,6 @@ import {
 import Image from "next/image";
 import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
-import ShowLoading from "@/components/layout/ShowLoading";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
@@ -169,7 +168,7 @@ function SettingsDropdown({
         onClick={() => {
           if (!disabled) onOpenChange(!isOpen);
         }}
-        className={`relative w-full h-[24px] rounded-full  heading-small-xxs font-semibold pl-[10px] pr-[24px] text-left transition-colors ${
+        className={`relative w-full h-[24px] rounded-full  heading-small-xxs pl-[10px] pr-[24px] text-left transition-colors ${
           disabled
             ? "cursor-default opacity-50 bg-color-bg-medium text-color-text-primary"
             : "bg-color-bg-medium hover:bg-color-ui-hover text-color-text-primary"
@@ -205,7 +204,7 @@ function SettingsDropdown({
                 onChange(option.value);
                 onOpenChange(false);
               }}
-              className={`block w-full h-[30px] shrink-0 px-[10px] text-left heading-small-xxs font-semibold transition-colors ${
+              className={`block w-full h-[30px] shrink-0 px-[10px] text-left heading-small-xxs transition-colors ${
                 index > 0 ? "" : ""
               } ${
                 isSelected
@@ -635,7 +634,7 @@ function TreemapTooltip({
           <div className="heading-small-xxxs">
             {getMetricLabel(selectedMetric, showUsd)}
             {contractCount > 0 && (
-              <> · <span className="numbers-xs">{contractCount.toLocaleString()}</span> contract{contractCount !== 1 ? "s" : ""}</>
+              <> · <span className="numbers-xs">{contractCount.toLocaleString("en-GB")}</span> contract{contractCount !== 1 ? "s" : ""}</>
             )}
           </div>
         </div>
@@ -643,7 +642,7 @@ function TreemapTooltip({
         {/* C) Share (single denominator) */}
         <div className="flex flex-col gap-y-[3px]">
           <div className="flex items-end justify-between gap-x-[10px]">
-            <div className="text-xxs font-semibold text-color-text-primary/90">Share {`of ${primaryShare.denominator}`}</div>
+            <div className="text-xxs text-color-text-primary/90">Share {`of ${primaryShare.denominator}`}</div>
             <div className="numbers-xs">{primaryShare.pct.toFixed(2)}%</div>
           </div>
           <div className="h-[3px] rounded-full bg-color-bg-medium mt-[2px]">
@@ -686,7 +685,7 @@ function TreemapTooltip({
 
 export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const { AllChainsByKeys } = useMaster();
-  const { data, isLoading, isValidating } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
+  const { data, isLoading } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
   const { data: projectsData } = useSWR<any>(LabelsURLS.projectsFiltered);
   const { resolvedTheme } = useTheme();
   const colorTheme: ColorTheme = resolvedTheme === "light" ? "light" : "dark";
@@ -1260,7 +1259,6 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
       <GTPButtonContainer>
         <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
@@ -1774,6 +1772,9 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </div>
             )}
           </div>
+        ) : isLoading ? (
+          // load in place like the rest of the page, instead of a full-section overlay
+          <div className="h-[720px] w-full rounded-[15px] bg-color-bg-default motion-safe:animate-pulse" />
         ) : (
           <div className="h-[360px] w-full flex items-center justify-center text-color-text-secondary text-sm">
             No treemap data available for the selected settings.

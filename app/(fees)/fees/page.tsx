@@ -272,8 +272,9 @@ export default function FeesPage() {
     [key: string]: boolean;
   }>(
     "feesSelectedChains",
+    // Every L2 starts selected: master chain types are "l1", "rollup" and "others"
     Object.entries(AllChainsByKeys).reduce((acc, [key, chain]) => {
-      if (AllChainsByKeys[key].chainType === "L2") acc[key] = true;
+      if (chain.chainType && !["l1", "all-l2s"].includes(chain.chainType)) acc[key] = true;
       return acc;
     }, {}),
   );

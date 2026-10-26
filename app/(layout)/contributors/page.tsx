@@ -216,7 +216,7 @@ export default function ContributorsPage() {
 
       <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
         <Icon icon="gtp:supported-by" className="w-9 h-9" />
-        <Heading className="text-3xl font-semibold leading-snug">
+        <Heading className="text-3xl leading-snug">
           Supported By
         </Heading>
       </div>
@@ -244,7 +244,7 @@ export default function ContributorsPage() {
 
       <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[15px]">
         <Icon icon="gtp:data-sources" className="w-9 h-9" />
-        <Heading className="text-3xl font-semibold leading-snug">
+        <Heading className="text-3xl leading-snug">
           Data Sources
         </Heading>
       </div>
@@ -283,7 +283,7 @@ export default function ContributorsPage() {
 
       <div className="mb-[30px] bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2">
         <Icon icon="gtp:team" className="w-9 h-9" />
-        <Heading className="text-3xl font-semibold leading-snug">Team</Heading>
+        <Heading className="text-3xl leading-snug">Team</Heading>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-2 md:gap-y-[30px]">

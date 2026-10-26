@@ -17,7 +17,7 @@ import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
 
 const fmtDay = (date: string) =>
-  new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  new Date(`${date}T00:00:00Z`).toLocaleDateString("en-GB", { month: "short", day: "numeric", timeZone: "UTC" });
 const fmtEth = (n: number) => Math.round(n).toLocaleString("en-US");
 
 // The native range thumb is 16px wide and its centre travels from 8px to
@@ -83,8 +83,9 @@ type Pace = {
   loopWeeks?: number; // replay from the start after this long
 };
 
-// Scenarios run as a time-lapse so the level moves visibly.
-const SCENARIO_PACE: Pace = { weeksPerSecond: 4, bandEth: 400_000, tickEth: 200_000, label: "1s ≈ 1 month" };
+// Scenarios run as a time-lapse so the level moves visibly. The window is sized so a quiet
+// week (~+21k ETH) moves about as fast as "Last week" does at 1 day per second.
+const SCENARIO_PACE: Pace = { weeksPerSecond: 1, bandEth: 200_000, tickEth: 100_000, label: "1s ≈ 1 week" };
 // Last week plays at 1 day per second and replays, with a tighter window so a
 // single week's change is still visible without the window stepping.
 const LAST_WEEK_PACE: Pace = { weeksPerSecond: 1 / 7, bandEth: 25_000, tickEth: 10_000, label: "1s ≈ 1 day", loopWeeks: 1 };
@@ -237,7 +238,7 @@ function Bathtub({
         Issued to stakers
       </text>
       <text x="180" y="38" fill="rgb(var(--accent-turquoise))" style={VALUE_STYLE}>
-        +{Math.round(inflow).toLocaleString()} ETH/wk
+        +{Math.round(inflow).toLocaleString("en-GB")} ETH/wk
       </text>
 
       {/* Tub interior + water, both clipped to the column */}
@@ -299,7 +300,7 @@ function Bathtub({
         Burned by fees
       </text>
       <text x="250" y={TUB_BASE + 52} fill={burnRgb} style={VALUE_STYLE}>
-        −{Math.round(outflow).toLocaleString()} ETH/wk
+        −{Math.round(outflow).toLocaleString("en-GB")} ETH/wk
       </text>
 
       {/* The exaggeration, stated rather than implied */}
@@ -309,7 +310,7 @@ function Bathtub({
       {!reduceMotion && (
         <text x={TUB_LEFT} y={TUB_BASE + 50} fill="rgb(var(--text-primary))" opacity=".7" style={TICK_STYLE}>
           {view.offset >= 0 ? "+" : "−"}
-          {Math.abs(Math.round(view.offset)).toLocaleString()} ETH over {describeWeeks(view.weeks)}
+          {Math.abs(Math.round(view.offset)).toLocaleString("en-GB")} ETH over {describeWeeks(view.weeks)}
         </text>
       )}
     </svg>
@@ -496,7 +497,7 @@ export default function SupplySection() {
             <Legend
               items={[
                 { label: "Burned", color: "red", value: Math.round((outflow / inflow) * 100) + "% of issuance" },
-                { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString()} ETH` },
+                { label: "Net new", color: "turquoise", value: `${netEth > 0 ? "+" : ""}${Math.round(netEth).toLocaleString("en-GB")} ETH` },
               ]}
             />
           </div>

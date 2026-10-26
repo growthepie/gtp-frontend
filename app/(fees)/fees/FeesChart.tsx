@@ -25,7 +25,8 @@ import useSWR from "swr";
 import { useTheme } from "next-themes";
 import { use, useCallback, useMemo } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { useHighchartsWrappers, useUIContext } from "@/contexts/UIContext";
+import { useUIContext } from "@/contexts/UIContext";
+import { useHighchartsWrappers } from "@/hooks/useHighchartsWrappers";
 import { format as d3Format } from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -118,7 +119,7 @@ export default function FeesChart({
   function shortenNumber(number) {
     let numberStr = Math.floor(number).toString();
 
-    const suffixes = ["", "k", "M", "B"];
+    const suffixes = ["", "K", "M", "B"];
     const numberOfDigits = numberStr.length;
     const magnitude = Math.floor((numberOfDigits - 1) / 3);
     const suffixIndex = Math.min(magnitude, suffixes.length - 1);

@@ -189,11 +189,30 @@ html {
 /* From md up the floating top bar covers the top 100px of the viewport. Next.js only
    scrolls a new page into view when its top edge is outside the viewport *minus* this
    padding, so without it a page that renders with its top under the bar stays there
-   after navigating. It also keeps #anchor jumps clear of the bar. */
+   after navigating. It also keeps #anchor jumps clear of the bar. While a StickyHeader is
+   mounted, it raises this inline to clear the header too. */
 @media (min-width: 768px) {
   html {
     scroll-padding-top: 100px;
   }
+}
+
+/* Where sticky elements stick: at the top of the screen on mobile (the floating bar is at
+   the bottom there), and 10px below the floating top bar (which ends at 84px) from md up. */
+:root {
+  --gtp-sticky-top: 0px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gtp-sticky-top: 94px;
+  }
+}
+
+/* StickyHeader's backdrop: solid page background from the top of the screen down to the
+   stuck element, fading out over the 20px below it. */
+.sticky-header-backdrop {
+  mask-image: linear-gradient(to bottom, white calc(100% - 20px), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -202,15 +221,15 @@ html {
   }
 }
 
-*:focus:not(.focus-visible) {
+*:focus:not(:focus-visible) {
   outline: none;
 }
 
 *:focus-visible {
-  /* remove default focus style */
-  outline: none;
-  /* custom focus styles */
-  box-shadow: 0px 0px 0px 2px #ffffff66;
+  /* keyboard focus ring: follows the theme text colour, so it shows in light and dark mode,
+     and as an outline it isn't replaced by shadow utilities */
+  outline: 2px solid rgb(var(--text-primary) / 0.6);
+  outline-offset: 2px;
 }
 
 input:focus-visible {

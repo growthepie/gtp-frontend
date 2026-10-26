@@ -107,7 +107,7 @@ export default function Pictogram({
         width="100%"
         style={{ maxWidth: width, display: "block" }}
         role="img"
-        aria-label={`${count.toLocaleString()} ${unitLabel}`}
+        aria-label={`${count.toLocaleString("en-GB")} ${unitLabel}`}
       >
         <defs>
           <glyph.Defs uid={uid} />
@@ -145,7 +145,7 @@ export default function Pictogram({
         )}
       </svg>
       <div className="mt-auto heading-small-xxxs text-color-text-primary/70">
-        each = {perGlyph.toLocaleString()} {unitLabel}
+        each = {perGlyph.toLocaleString("en-GB")} {unitLabel}
         {count / perGlyph > maxGlyphs && " · showing the first " + maxGlyphs}
       </div>
     </div>

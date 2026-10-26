@@ -425,12 +425,13 @@ export interface GTPChartProps {
   pieTooltipFormatter?: (params: { name: string; value: number; color: string; percent: number }) => string;
   /** Opacity of non-hovered pie slices when another slice is hovered (0–1). Defaults to 1 (no dimming). */
   pieBlurOpacity?: number;
-  /** Controls where the tooltip is rendered. Defaults to true: the tooltip is
-   *  rendered inside the chart (appendToBody:false + confine:true) so it rides the
-   *  chart's scroll container — never drifting in page space onto a neighbor — and
-   *  stays clamped inside the plot on desktop instead of following the cursor past
-   *  the edges. Set false to fall back to the old behavior (appendToBody on
-   *  document.body, unconfined) for a chart that needs the tooltip to overflow. */
+  /** Controls where the tooltip is rendered. With a mouse (the default there: false) it
+   *  renders on the page and may overflow the chart, placed beside the cursor and
+   *  kept on screen, so it never covers the hovered point, its line or its date the
+   *  way a tooltip squeezed inside the chart would; it hides while the page
+   *  scrolls. On touch-primary devices (the default there: true) it renders inside
+   *  the chart and stays clamped to it, so a finger-driven tooltip rides the chart's
+   *  scroll container instead of drifting onto a neighbor. */
   confineTooltipToChart?: boolean;
   /** CSS selector for an ancestor that the tooltip must stay inside, used with
    *  confineTooltipToChart={false}: the tooltip escapes the chart's own clipped
@@ -541,7 +542,7 @@ export default function GTPChart({
   ySplitNumber,
   decimalPercentage = false,
   syncId,
-  confineTooltipToChart = true,
+  confineTooltipToChart = isTouchPrimaryDevice,
   tooltipBoundsSelector,
   showLegend = false,
   legendLift = true,
@@ -1295,6 +1296,14 @@ export default function GTPChart({
     let scrollRepositionFrame: number | null = null;
     const onDocumentScroll = () => {
       if (!tooltipVisibleRef.current) return;
+      // Mouse with a page-level tooltip: it would stay where it is while the chart scrolls
+      // away under it, so hide it; the next mouse move shows it for whatever is under the
+      // cursor then.
+      if (!confineTooltipToChart && !(isTouchPrimaryDevice || isTouchInteractionRef.current || isTouchSession())) {
+        clearTooltipHideTimer();
+        hideTooltipAndPointer();
+        return;
+      }
       if (tooltipHideTimerRef.current === null) return;
       if (!(isTouchPrimaryDevice || isTouchInteractionRef.current || isTouchSession())) return;
       if (getActiveTouchChartEl() !== containerRef.current) return;
@@ -1340,7 +1349,7 @@ export default function GTPChart({
         zr.off("click", onMoveHandler);
       }
     };
-  }, [scheduleTooltipHide, clearTooltipHideTimer, hideTooltipAndPointer]);
+  }, [scheduleTooltipHide, clearTooltipHideTimer, hideTooltipAndPointer, confineTooltipToChart]);
 
   // Cross-chart axis pointer sync — no echarts.connect, no tooltip pipeline involvement.
   //

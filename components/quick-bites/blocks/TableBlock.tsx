@@ -82,7 +82,7 @@ const BadgeLink = ({ badge, uniqueKey }: { badge: { label: string; color: string
         <span className="inline-flex">
           <ExternalLink
             href={linkProps.href}
-            className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity flex-shrink-0"
+            className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs border border-opacity-30 hover:opacity-80 transition-opacity flex-shrink-0"
             style={{ borderColor: badge.color, color: badge.color }}
           >
             <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
@@ -591,7 +591,7 @@ const TableBlockContent = React.memo(function TableBlockContent({
       return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
     }
     if (typeof value === 'number') {
-      return value.toLocaleString();
+      return value.toLocaleString("en-GB");
     }
     if (typeof value === 'string') {
       return String(value || '');

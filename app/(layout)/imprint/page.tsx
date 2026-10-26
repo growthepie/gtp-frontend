@@ -28,7 +28,7 @@ const Imprint = () => {
           </div>
           <div className="mb-4">Represented by: Matthias Seidl</div>
 
-          <h2 className="text-xl font-bold mb-4">Contact information</h2>
+          <h2 className="text-xl mb-4">Contact information</h2>
           <div className="mb-4">
             E-Mail: matthias@orbal-analytics.com <br />
             Internet address: www.orbal-analytics.com
@@ -36,9 +36,9 @@ const Imprint = () => {
         </div>
 
         <div className="flex flex-col w-full">
-          <h2 className="text-xl font-bold mb-4">Disclaimer</h2>
+          <h2 className="text-xl mb-4">Disclaimer</h2>
 
-          <h3 className="text-lg font-bold mb-2">Accountability for content</h3>
+          <h3 className="text-lg mb-2">Accountability for content</h3>
           <p className="mb-4">
             The contents of our pages have been created with the utmost care.
             However, we cannot guarantee the contents accuracy, completeness or
@@ -51,7 +51,7 @@ const Imprint = () => {
             by this as per §§ 8 to 10 of the Telemedia Act (TMG).
           </p>
 
-          <h3 className="text-lg font-bold mb-2">Accountability for links</h3>
+          <h3 className="text-lg mb-2">Accountability for links</h3>
           <p className="mb-4">
             Responsibility for the content of external links (to web pages of
             third parties) lies solely with the operators of the linked pages.
@@ -60,7 +60,7 @@ const Imprint = () => {
             link immediately.
           </p>
 
-          <h3 className="text-lg font-bold mb-2">Copyright</h3>
+          <h3 className="text-lg mb-2">Copyright</h3>
           <p className="mb-4">
             Our web pages and their contents are subject to German copyright
             law. Unless expressly permitted by law, every form of utilizing,

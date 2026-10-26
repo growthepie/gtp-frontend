@@ -4,7 +4,7 @@ import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { AggregatedDataRow, useApplicationsData } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { useMetrics } from "@/app/(layout)/applications/_contexts/MetricsContext";
-import { memo, use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, RefObject, use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useMaster } from "@/contexts/MasterContext";
 import {
@@ -30,6 +30,8 @@ import { useTimespan } from "@/app/(layout)/applications/_contexts/TimespanConte
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChainSearch from "./ChainSearch";
+import StickyHeader from "@/components/layout/StickyHeader";
+import ScrollerHeaderStandIn from "@/components/layout/ScrollerHeaderStandIn";
 import Controls from "@/app/(layout)/applications/_components/Controls";
 
 interface AppsChainProps {
@@ -43,6 +45,7 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
   const { selectedMetrics, selectedMetricKeys } = useMetrics();
   const { metricsDef } = useMetrics();
   const { timespans, selectedTimespan } = useTimespan();
+  const tableHeaderRef = useRef<HTMLDivElement>(null);
 
   const [topGainersRef, { height: topGainersHeight }] = useElementSizeObserver<HTMLDivElement>();
 
@@ -160,9 +163,16 @@ export default function AppsChain({ chainInfo, chainKey, defaultQuery = "" }: Ap
           </div>
         </div>
       </div>
-      <HorizontalScrollContainer className="!px-0" includeMargin={false} reduceLeftMask={true} enableDragScroll={true}>
-        <ApplicationsTable chainFilteredApplications={chainFilteredApplications} />
-      </HorizontalScrollContainer>
+      <div>
+        <StickyHeader overlay stacked>
+          <ScrollerHeaderStandIn originalRef={tableHeaderRef}>
+            <ApplicationsTableHeader chainFilteredApplications={chainFilteredApplications} />
+          </ScrollerHeaderStandIn>
+        </StickyHeader>
+        <HorizontalScrollContainer className="!px-0" includeMargin={false} reduceLeftMask={true} enableDragScroll={true}>
+          <ApplicationsTable chainFilteredApplications={chainFilteredApplications} headerRef={tableHeaderRef} />
+        </HorizontalScrollContainer>
+      </div>
     </div>
   )
 }
@@ -236,22 +246,15 @@ const CardSwiper = ({ cards }: { cards: React.ReactNode[] }) => {
   );
 };
 
-const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredApplications: AggregatedDataRow[] }) => {
-  const { ownerProjectToProjectData } = useProjectsMetadata();
+// The table's column header. Rendered twice: inside the table, and as the stand-in that
+// sticks below the chain page's tab bar (ScrollerHeaderStandIn).
+const ApplicationsTableHeader = memo(({ chainFilteredApplications }: { chainFilteredApplications: AggregatedDataRow[] }) => {
   const { sort, setSort } = useSort();
-  const { metricsDef, selectedMetrics, setSelectedMetrics, selectedMetricKeys, } = useMetrics();
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { metricsDef, selectedMetrics, selectedMetricKeys } = useMetrics();
+  const [showUsd] = useLocalStorage("showUsd", true);
+  const { selectedTimespan } = useTimespan();
 
   const numTotalMetrics = Object.keys(metricsDef).length;
-
-  const maxMetrics = useMemo(() => {
-    return selectedMetricKeys.map((metric) => {
-      return chainFilteredApplications.reduce((acc, application) => {
-        return Math.max(acc, application[metric]);
-      }, 0);
-    });
-  }, [chainFilteredApplications, selectedMetricKeys]);
-  const { selectedTimespan } = useTimespan();
 
   // Per-column flag: does any displayed app have a real change for this metric?
   // change_pct is Infinity when an app has no prior-period value (too new to have
@@ -280,6 +283,127 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
   }, [numTotalMetrics, selectedMetricKeys]
   );
 
+  return (
+    <GridTableHeader
+      className="group text-[14px] !px-[5px] !py-0 !gap-x-0 !pb-[4px] !z-[10] !items-start transition-all duration-300"
+      style={{
+        gridTemplateColumns: gridColumns,
+      }}
+    >
+      <div />
+      <GridTableHeaderCell
+        metric="owner_project"
+        className="heading-small-xs pl-[15px] pr-[15px] "
+        sort={sort}
+        setSort={setSort}
+      >
+        Application
+      </GridTableHeaderCell>
+      {/* <GridTableHeaderCell
+        metric="origin_keys"
+        className="heading-small-xs pl-[3px] pr-[15px] "
+        sort={sort}
+        setSort={setSort}
+      >
+        Chains
+      </GridTableHeaderCell> */}
+      <GridTableHeaderCell
+        metric="category"
+        className="heading-small-xs pr-[15px] pl-[2.5px] "
+        sort={sort}
+        setSort={setSort}
+
+      >
+        <div className="flex items-center gap-x-[5px]">
+          <GTPIcon icon="gtp-categories" size="sm" />
+          Main Category
+        </div>
+      </GridTableHeaderCell>
+      <GridTableHeaderCell
+        metric="num_contracts"
+        className="heading-small-xs pr-[15px] "
+        justify="end"
+        sort={sort}
+        setSort={setSort}
+      >
+        # Contracts
+      </GridTableHeaderCell>
+      {selectedMetrics.map((metric, index) => {
+        return (
+          <div key={index} className={`flex justify-end pr-[15px] `}>
+            <GridTableHeaderCell
+              metric={metric}
+              className="heading-small-xs z-[0] flex whitespace-nowrap"
+              justify="end"
+              sort={sort}
+              setSort={setSort}
+              extraRight={
+                <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
+                  <div
+                    className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" || !metricHasChangeData[index] ? "hidden" : "flex"}`}
+                    onClick={() => {
+                      setSort({
+                        metric: `${selectedMetricKeys[index]}_change_pct`,
+                        sortOrder:
+                          sort.metric === `${selectedMetricKeys[index]}_change_pct`
+                            ? sort.sortOrder === "asc"
+                              ? "desc"
+                              : "asc"
+                            : "desc",
+                      });
+                    }}
+                  >
+                    <div className="text-xxxs !leading-[14px]">Change</div>
+                    <Icon
+                      icon={
+                        sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
+                          ? "feather:arrow-up"
+                          : "feather:arrow-down"
+                      }
+                      className="w-[15px] h-[15px]"
+                      style={{
+                        opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
+                      }}
+                    />
+                  </div>
+                  <GTPTooltipNew
+                    placement="bottom"
+                    allowInteract={false}
+                    unstyled
+                    containerClass="z-[99]"
+                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+                  >
+                    <MetricTooltip metric={metric} />
+                  </GTPTooltipNew>
+                </div>
+              }
+            >
+              {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
+            </GridTableHeaderCell>
+          </div>
+        )
+      })}
+      {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
+        <div key={index} className="w-[0px]" />
+      )))}
+      <div />
+    </GridTableHeader>
+  );
+});
+
+ApplicationsTableHeader.displayName = 'ApplicationsTableHeader';
+
+const ApplicationsTable = memo(({ chainFilteredApplications, headerRef }: { chainFilteredApplications: AggregatedDataRow[], headerRef: RefObject<HTMLDivElement | null> }) => {
+  const { selectedMetricKeys } = useMetrics();
+
+  const maxMetrics = useMemo(() => {
+    return selectedMetricKeys.map((metric) => {
+      return chainFilteredApplications.reduce((acc, application) => {
+        return Math.max(acc, application[metric]);
+      }, 0);
+    });
+  }, [chainFilteredApplications, selectedMetricKeys]);
+
   // Optimize row rendering with a memoized item renderer
   const renderItem = useCallback((index) => {
     return (
@@ -295,110 +419,9 @@ const ApplicationsTable = memo(({ chainFilteredApplications }: { chainFilteredAp
 
   return (
     <>
-      <GridTableHeader
-        className="group text-[14px] !px-[5px] !py-0 !gap-x-0 !pb-[4px] !z-[10] !items-start transition-all duration-300"
-        style={{
-          gridTemplateColumns: gridColumns,
-        }}
-      >
-        <div />
-        <GridTableHeaderCell
-          metric="owner_project"
-          className="heading-small-xs pl-[15px] pr-[15px] "
-          sort={sort}
-          setSort={setSort}
-        >
-          Application
-        </GridTableHeaderCell>
-        {/* <GridTableHeaderCell
-          metric="origin_keys"
-          className="heading-small-xs pl-[3px] pr-[15px] "
-          sort={sort}
-          setSort={setSort}
-        >
-          Chains
-        </GridTableHeaderCell> */}
-        <GridTableHeaderCell
-          metric="category"
-          className="heading-small-xs pr-[15px] pl-[2.5px] "
-          sort={sort}
-          setSort={setSort}
-
-        >
-          <div className="flex items-center gap-x-[5px]">
-            <GTPIcon icon="gtp-categories" size="sm" />
-            Main Category
-          </div>
-        </GridTableHeaderCell>
-        <GridTableHeaderCell
-          metric="num_contracts"
-          className="heading-small-xs pr-[15px] "
-          justify="end"
-          sort={sort}
-          setSort={setSort}
-        >
-          # Contracts
-        </GridTableHeaderCell>
-        {selectedMetrics.map((metric, index) => {
-          return (
-            <div key={index} className={`flex justify-end pr-[15px] `}>
-              <GridTableHeaderCell
-                metric={metric}
-                className="heading-small-xs z-[0] flex whitespace-nowrap"
-                justify="end"
-                sort={sort}
-                setSort={setSort}
-                extraRight={
-                  <div className="flex items-end gap-x-[5px] pl-[5px] cursor-default z-[10]">
-                    <div
-                      className={`cursor-pointer items-center rounded-full bg-color-bg-medium text-color-text-primary gap-x-[2px] px-[5px] h-[18px] ${selectedTimespan === "max" || !metricHasChangeData[index] ? "hidden" : "flex"}`}
-                      onClick={() => {
-                        setSort({
-                          metric: `${selectedMetricKeys[index]}_change_pct`,
-                          sortOrder:
-                            sort.metric === `${selectedMetricKeys[index]}_change_pct`
-                              ? sort.sortOrder === "asc"
-                                ? "desc"
-                                : "asc"
-                              : "desc",
-                        });
-                      }}
-                    >
-                      <div className="text-xxxs !leading-[14px]">Change</div>
-                      <Icon
-                        icon={
-                          sort.metric === `${selectedMetricKeys[index]}_change_pct` && sort.sortOrder === "asc"
-                            ? "feather:arrow-up"
-                            : "feather:arrow-down"
-                        }
-                        className="w-[15px] h-[15px]"
-                        style={{
-                          opacity: sort.metric === `${selectedMetricKeys[index]}_change_pct` ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                    <GTPTooltipNew
-                      placement="bottom"
-                      allowInteract={false}
-                      unstyled
-                      containerClass="z-[99]"
-                      trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                    >
-                      <MetricTooltip metric={metric} />
-                    </GTPTooltipNew>
-                  </div>
-                }
-              >
-                {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
-              </GridTableHeaderCell>
-            </div>
-          )
-        })}
-        {selectedMetricKeys.length < numTotalMetrics && (new Array(numTotalMetrics - selectedMetricKeys.length).fill(0).map((_, index) => (
-          <div key={index} className="w-[0px]" />
-        )))}
-        <div />
-      </GridTableHeader>
+      <div ref={headerRef}>
+        <ApplicationsTableHeader chainFilteredApplications={chainFilteredApplications} />
+      </div>
       <div className="flex flex-col" style={{ height: `${chainFilteredApplications.length * 34 + chainFilteredApplications.length * 5}px` }}>
         <Virtuoso
           totalCount={chainFilteredApplications.length}

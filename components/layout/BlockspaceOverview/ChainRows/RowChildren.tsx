@@ -6,6 +6,7 @@ import { useRowContext } from "./RowContext";
 import { RowChildrenInterface } from "./ContextInterface";
 import { useMaster } from "@/contexts/MasterContext";
 import { indexOf } from "lodash";
+import { formatCompactRounded as formatNumber } from "@/lib/utils/formatters";
 
 export default function RowChildren({
   chainKey,
@@ -95,30 +96,6 @@ export default function RowChildren({
       };
     }, {});
   }, [data, selectedTimespan]);
-
-  function formatNumber(number: number): string {
-    if (number === 0) {
-      return "0";
-    } else if (Math.abs(number) >= 1e6) {
-      if (Math.abs(number) >= 1e9) {
-        return (number / 1e9).toFixed(1) + "B";
-      } else {
-        return (number / 1e6).toFixed(1) + "M";
-      }
-    } else if (Math.abs(number) >= 1e3) {
-      const rounded =
-        Math.abs(number) >= 10000
-          ? Math.round(number / 1e3)
-          : (number / 1e3).toFixed(1);
-      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
-    } else if (Math.abs(number) >= 100) {
-      return number.toFixed(0);
-    } else if (Math.abs(number) >= 10) {
-      return number.toFixed(1);
-    } else {
-      return number.toFixed(2);
-    }
-  }
 
   const childBlockStyle = useCallback(
     (

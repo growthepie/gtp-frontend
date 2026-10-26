@@ -7,6 +7,7 @@ import { ApplicationsURLs } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import { LinkButton, LinkDropdown } from "@/components/layout/SingleChains/ChainsOverview";
 import { SectionBar, SectionBarItem } from "@/components/SectionBar";
+import StickyHeader, { StickyHeaderHandle } from "@/components/layout/StickyHeader";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName, iconNames } from "@/icons/gtp-icon-names";
 import Link from "next/link";
@@ -939,6 +940,7 @@ export default function Page({
     return tabParam && VALID_TAB_KEYS.has(tabParam) ? tabParam : "overview";
   });
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const tabsRef = useRef<StickyHeaderHandle>(null);
   const [pendingHighlightMetric, setPendingHighlightMetric] = useState<string | null>(null);
 
   // Switches to the metrics tab and queues a scroll-to + highlight for the given metric key.
@@ -1008,7 +1010,7 @@ export default function Page({
     {owner_project && projectMetadata && (
     <Container className="flex flex-col gap-y-[10px] pt-[45px] md:pt-[30px] select-none">
       {/* Tab bar */}
-      <div className="flex items-center gap-x-[10px]">
+      <StickyHeader ref={tabsRef} className="flex items-center gap-x-[10px]">
         <GTPIcon icon="gtp-chevronleft-monochrome" size="sm" className="!size-[18px]" containerClassName="w-[44px] h-[44px] flex items-center justify-center bg-color-bg-medium hover:bg-color-ui-hover cursor-pointer rounded-full"
         onClick={() => router.push("/applications")} />
         <SectionBar>
@@ -1016,7 +1018,11 @@ export default function Page({
           {TABS.map((tab, index) => (
             <div
               key={tab.key}
-              onClick={() => setSelectedTab(tab.key)}
+              onClick={() => {
+                setSelectedTab(tab.key);
+                // start the new tab right below the tab bar if it is stuck
+                tabsRef.current?.scrollToStart();
+              }}
               onMouseEnter={() => setHoveredTab(tab.key)}
               onMouseLeave={() => setHoveredTab(null)}
             >
@@ -1038,7 +1044,7 @@ export default function Page({
             </div>
           ))}
         </SectionBar>
-      </div>
+      </StickyHeader>
       {/* Shared AboutApp — rendered once above tab content for overview and metrics */}
       {data && projectMetadata && (
         <AboutApp

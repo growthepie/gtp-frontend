@@ -30,6 +30,7 @@ import { getTimeseriesChartRevealDurationMs } from "@/lib/chart-animation";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
 import { downloadElementAsImage } from "@/components/GTPComponents/chartSnapshotHelpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import StickyHeader from "@/components/layout/StickyHeader";
 
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
@@ -694,14 +695,15 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     <span
                         key={chain}
                         ref={(el) => { labelMeasureRefs.current[i] = el; }}
-                        className="text-md font-raleway font-medium whitespace-nowrap"
+                        className="text-md font-raleway whitespace-nowrap"
                     >
                         {AllChainsByKeys[chain]?.name_short}
                     </span>
                 ))}
             </div>
 
-            <div className="w-full flex flex-row items-center gap-x-[15px] relative z-10">
+            {/* z-[60] while the compare dropdown is open: it opens over the sticky time controls below */}
+            <div className={`w-full flex flex-row items-center gap-x-[15px] relative ${isCompareDropdownOpen ? "z-[60]" : "z-10"}`}>
                 <div ref={chainsSelectedRef} className="flex flex-1 min-w-0 items-center gap-x-[5px] bg-color-bg-medium rounded-full pl-[15px] pr-[2px] py-[3px]">
                     <div ref={chainsTextRef} className="text-xs md:text-sm shrink-0">{isMobile ? "Chains" : "Chains Selected"}</div>
                     <HorizontalScrollContainer
@@ -854,7 +856,9 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     </div>
                 </div>
             </div>
-            <div className="pt-[10px] w-full">
+            {/* Time controls: stay below the app's tab bar while the charts scroll by. Not on
+                mobile, where they wrap to several rows. */}
+            <StickyHeader stacked mobile={false} className="mt-[10px] w-full">
                 <GTPButtonContainer className="w-full flex">
                         <GTPButtonRow wrap={isMobile ? true : false}
 
@@ -915,7 +919,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     </div>
                 </GTPButtonContainer>
 
-            </div>
+            </StickyHeader>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px]">
                 {Object.keys(data.metrics ?? {})
                     .filter((metric) => master?.app_metrics?.[metric])

@@ -12,7 +12,6 @@ import { useFundamentalsUrlSync } from "./useFundamentalsUrlSync";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useMaster } from "@/contexts/MasterContext";
-import { Switch } from "@/components/Switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Link from "next/link";
 

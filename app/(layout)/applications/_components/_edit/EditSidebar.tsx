@@ -35,7 +35,7 @@ export function EditSidebar({
 }: EditSidebarProps) {
   return (
     <aside
-      className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[100px] xl:pt-[var(--edit-sidebar-offset-top)]"
+      className="relative flex h-fit flex-col gap-y-[10px] xl:sticky xl:top-[var(--gtp-sticky-top)] xl:pt-[var(--edit-sidebar-offset-top)]"
       style={{ "--edit-sidebar-offset-top": `${activeStepOffsetTop}px` } as CSSProperties}
     >
       {/* Tips card */}
@@ -59,7 +59,7 @@ export function EditSidebar({
             }
             className="size-[14px] text-color-text-secondary"
           />
-          <div className="text-sm font-medium">
+          <div className="text-sm">
             {activeStep === 0
               ? "Search Tips"
               : activeStep === 2
@@ -199,7 +199,7 @@ export function EditSidebar({
         <div className="overflow-hidden rounded-[14px] border border-color-ui-shadow/40 bg-color-bg-default">
           <div className="flex items-center gap-x-[8px] border-b border-color-ui-shadow/40 px-[12px] py-[10px]">
             <Icon icon="feather:shield" className="size-[14px] text-color-text-secondary" />
-            <div className="text-sm font-medium">Validation status</div>
+            <div className="text-sm">Validation status</div>
           </div>
           <div className="flex flex-col gap-y-[6px] p-[12px]">
             <div

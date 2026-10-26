@@ -217,6 +217,7 @@ module.exports = {
         'show-loading': '200',
         'tooltip': '110',
         'sidebar-new-badge': '100',
+        'sticky-header': '50',
         'chart': '20',
       },
       transitionDuration: {

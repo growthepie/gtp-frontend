@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { navigationItems as navItemsWithoutChains } from "@/lib/navigation";
 import { useMediaQuery } from "usehooks-ts";
 import { track } from "@/lib/tracking";
@@ -13,9 +12,12 @@ import { useMaster } from "@/contexts/MasterContext";
 const Error = ({
   header,
   subheader,
+  onRetry,
 }: {
   header: string;
   subheader: string;
+  /** Adds a "Try again" button above the page links */
+  onRetry?: () => void;
 }) => {
   const [currentURL, setCurrentURL] = useState<string | null>(null);
   const [pageGroup, setPageGroup] = useState<string | null>(null);
@@ -91,7 +93,7 @@ const Error = ({
       <div className="flex flex-col items-center justify-center w-full mt-[85px] md:mt-[125px] -mb-[100px] gap-y-[15px]">
         <div
           className={`flex flex-col bg-color-bg-default border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
-          ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${
+          ${navIndex === 1 || navIndex === 3 ? "min-h-[579px]" : "min-h-[519px]"} ${
             isMobile ? "w-[95%]" : "w-[587px]"
           }`}
         >
@@ -107,6 +109,17 @@ const Error = ({
           </div>
           <div className="text-[15px] leading-[150%]">{subheader}</div>
           <div className="flex flex-col gap-y-[5px]">
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
+              ${isMobile ? "h-[50px]" : "h-[54px]"}`}
+              >
+                <Icon icon="feather:refresh-cw" className="w-[24px] h-[24px]" />
+                <div className="text-[16px] leading-[150%]">Try again</div>
+              </button>
+            )}
             <Link
               className={`flex self-center items-center p-[15px] w-[299px]  bg-color-bg-default hover:bg-color-ui-hover border-[3px] border-[#5A6462] rounded-full gap-x-[10px]
               ${isMobile ? "h-[50px]" : "h-[54px]"}`}

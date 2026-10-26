@@ -579,7 +579,7 @@ const  AboutChain = ({ chainData, master, chainKey }: { chainData: ChainInfo, ma
               {/*  */}
               {chainData.technology && <MetricTab title="Type"><div>{chainData.technology}</div></MetricTab>}
               {chainData.raas && chainData.raas !== 'Self-hosted' && <MetricTab title="Rollup as a service"><div>{chainData.raas}</div></MetricTab>}
-              {chainData.launch_date && <MetricTab title="Launch Date"><div>{chainData.launch_date ? new Date(chainData.launch_date).toLocaleDateString(undefined, { year: "numeric", month: "long", }) : "N/A"}</div></MetricTab>}
+              {chainData.launch_date && <MetricTab title="Launch Date"><div>{chainData.launch_date ? new Date(chainData.launch_date).toLocaleDateString("en-GB", { year: "numeric", month: "long", }) : "N/A"}</div></MetricTab>}
               {/* */}
               {chainData["gas_token"] && <MetricTab title="Gas Token"><div>{chainData["gas_token"]}</div></MetricTab>}
               {chainData["caip2"] && <MetricTab title="Chain ID"><div>{chainData["caip2"] ? chainData["caip2"] : "N/A"}</div></MetricTab>}
@@ -665,14 +665,16 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
   
 
   return (
-    <div className="flex xs:flex-row flex-col xs:items-center xs:justify-between xs:gap-y-0 gap-y-[10px] justify-start w-full transition-all duration-300 bg-color-bg-default rounded-[15px] xs:px-[30px] px-[15px] xs:py-[15px] py-[10px]">
+    // Seven chain buttons don't fit beside the heading, or even on their own row on a phone, at full
+    // size: they shrink below lg and sit under the heading below md
+    <div className="flex md:flex-row flex-col md:items-center md:justify-between md:gap-y-0 gap-y-[10px] justify-start w-full transition-all duration-300 bg-color-bg-default rounded-[15px] xs:px-[30px] px-[15px] xs:py-[15px] py-[10px]">
       <div className="flex items-center gap-x-[10px]">
         <GTPIcon icon="gtp-multiple-chains" className="text-color-ui-hover w-[24px] h-[24px] " />
         <div className="heading-large-md">Similar Chains</div>
         
       </div>
       {/* add for loop that loops 5 times  */}
-      <div className="flex items-center gap-x-[10px]">
+      <div className="flex items-center gap-x-[5px] lg:gap-x-[10px]">
         {similarChains.map((chainKey, index) => {
           const chain = AllChainsByKeys[chainKey];
           if (!chain) return null;
@@ -685,8 +687,8 @@ const SimilarChains = ({ chainKey, similarChains }: { chainKey: string, similarC
               key={index + chain.urlKey}
               trigger={
                 <div>
-                  <Link href={`/chains/${chain.urlKey}`} key={index} className="p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
-                    <GTPIcon icon={`gtp:${chain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[28px] !h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[28px]"
+                  <Link href={`/chains/${chain.urlKey}`} key={index} aria-label={chain.label} className="p-[4px] lg:p-[8px] flex items-center justify-center hover:bg-color-ui-hover bg-color-bg-medium rounded-full">
+                    <GTPIcon icon={`gtp:${chain.urlKey}-logo-monochrome` as GTPIconName} className="!w-[22px] !h-[22px] lg:!w-[28px] lg:!h-[28px]" containerClassName="w-full h-full flex justify-center items-center !h-[22px] lg:!h-[28px]"
                     style={{
                       color: chain.colors[resolvedTheme ?? "dark"][0],
                     }}

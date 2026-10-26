@@ -243,7 +243,7 @@ export default function AddressSearch() {
         <>
           <div className="flex relative w-[16.5%]">
             <div
-              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
+              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs text-center space-x-2 cursor-pointer"
               onClick={() => setChainsOpen(!chainsOpen)}
             >
               {selectedChain === "all" ? (
@@ -427,7 +427,7 @@ export default function AddressSearch() {
           </div>
           <div className="flex w-[19%] relative">
             <div
-              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs font-medium text-center space-x-2 cursor-pointer"
+              className="w-full rounded-3xl text-forest-900  bg-color-bg-default dark:bg-color-ui-active dark:text-color-text-primary border border-forest-500 dark:border-color-border focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300 overflow-hidden z-10 flex justify-between items-center py-1.5 px-3 text-xs text-center space-x-2 cursor-pointer"
               onClick={() => setCategoriesOpen(!categoriesOpen)}
             >
               {categoryArray.length ===

@@ -512,7 +512,7 @@ export default function ContractsPage(props: { params: Promise<any> }) {
                               className={`absolute -bottom-1.5 ${i === 0
                                 ? "left-[30px] right-3"
                                 : "left-0 right-3"
-                                } text-xs font-normal text-right`}
+                                } text-xs text-right`}
                             >
                               <div
                                 className="bg-forest-900 dark:bg-forest-500"

@@ -6,6 +6,7 @@ import * as echarts from "echarts/core";
 import { LineChart, BarChart, ScatterChart, PieChart } from "echarts/charts";
 import {
   GridComponent,
+  GraphicComponent,
   TooltipComponent,
   DataZoomComponent,
   MarkLineComponent,
@@ -19,6 +20,7 @@ echarts.use([
   ScatterChart,
   PieChart,
   GridComponent,
+  GraphicComponent,
   TooltipComponent,
   DataZoomComponent,
   MarkLineComponent,

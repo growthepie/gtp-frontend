@@ -24,7 +24,7 @@ export function formatNumberWithSI(num: number): string {
     { value: 1e12, symbol: "T" },
     { value: 1e9,  symbol: "B" },
     { value: 1e6,  symbol: "M" },
-    { value: 1e3,  symbol: "k" },
+    { value: 1e3,  symbol: "K" },
   ];
 
   const tier = tiers.find(t => absNum >= t.value);

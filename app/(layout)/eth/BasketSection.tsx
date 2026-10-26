@@ -41,7 +41,7 @@ const formatPrice = (value: number, currency: string) =>
 
 // "2026-09-01" → "September 2026".
 const formatMonth = (date: string) =>
-  new Date(date).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  new Date(date).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 
 export default function BasketSection() {
   const [regionKey, setRegionKey] = useState<RegionKey>("us");

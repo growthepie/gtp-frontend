@@ -219,10 +219,10 @@ const CategoryBar = ({
               "relative flex flex-col min-w-[140px] w-full h-full justify-start pt-2 pl-[20px] bg-color-ui-default text-color-text-primary"
             }
           >
-            <div className="text-sm font-bold pb-[10px]">
+            <div className="text-sm pb-[10px]">
               {categories[category]}
             </div>
-            <div className="text-xs font-medium">Subcategories</div>
+            <div className="text-xs">Subcategories</div>
           </div>
         ),
       )}

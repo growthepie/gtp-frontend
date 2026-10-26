@@ -114,15 +114,16 @@ export default function RankingSection() {
   const ratioSince = ratioSeries
     ? ratioSpanDays
       ? `last ${RATIO_SPANS.find((s) => s.key === ratioSpan)!.label}`
-      : "since " + new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+      : "since " + new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
     : null;
   const showsOffScale = rows.some((r) => OFF_SCALE_KEYS.includes(r.key));
 
   // Side by side, the two columns share one set of rows (subgrid: title,
   // description, button bar, card), so the cards are always the same height even
-  // when one description wraps to two lines and the other doesn't.
+  // when one description wraps to two lines and the other doesn't. Stacked, they read
+  // as two sections, so they get the page's 60px between sections.
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px] gap-y-[60px] lg:gap-y-[30px]">
       <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-4">
         <SectionTitle icon="gtp-rank" title="How big is it really?" titleSize="md" as="h2" />
         <SectionDescription>ETH next to assets you already have a sense of.</SectionDescription>

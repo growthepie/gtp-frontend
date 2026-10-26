@@ -71,6 +71,8 @@ interface CategoryNode {
   txcount: number;
   pctShare: number;
   apps: EnrichedApp[];
+  /** Layout-only weight, raised for categories the treemap would otherwise make too small */
+  layoutBoost?: number;
 }
 
 interface LayoutNode extends CategoryNode {
@@ -529,66 +531,6 @@ const DensePackedTreeMap = ({ chainKey, width, appsPage = false, selectedCategor
   // Layout Calculation (mostly unchanged, just type improvements)
   // ============================================================================
 
-  const redistributeTxCountByPercentage = (
-    layout: LayoutNode[],
-    offendingNodes: LayoutNode[],
-    nonOffendingNodes: LayoutNode[],
-    percentage: number
-  ): LayoutNode[] => {
-    if (offendingNodes.length === 0 || percentage <= 0) {
-      return layout;
-    }
-
-    const totalTxCount = layout.reduce((sum, node) => sum + node.txcount, 0);
-    if (totalTxCount === 0) return layout;
-
-    const totalNonOffendingTxCount = nonOffendingNodes.reduce((sum, node) => sum + node.txcount, 0);
-    if (totalNonOffendingTxCount <= 0) {
-      return layout;
-    }
-
-    const desiredRedistribution = Math.min(totalTxCount * percentage, totalNonOffendingTxCount);
-    if (desiredRedistribution <= 0) {
-      return layout;
-    }
-
-    let actualRedistributed = 0;
-
-    nonOffendingNodes.forEach(node => {
-      if (node.txcount <= 0) {
-        return;
-      }
-
-      const proportion = node.txcount / totalNonOffendingTxCount;
-      const amountToRemove = Math.min(node.txcount, desiredRedistribution * proportion);
-      node.txcount -= amountToRemove;
-      actualRedistributed += amountToRemove;
-    });
-
-    if (actualRedistributed <= 0) {
-      return layout;
-    }
-
-    const totalOffendingTxCount = offendingNodes.reduce((sum, node) => sum + node.txcount, 0);
-    const needFactors = offendingNodes.map(node => Math.max(0, totalOffendingTxCount - node.txcount));
-    const totalNeedFactor = needFactors.reduce((sum, value) => sum + value, 0);
-
-    if (totalNeedFactor > 0) {
-      offendingNodes.forEach((node, index) => {
-        const needFactor = needFactors[index];
-        const proportionOfNeed = needFactor / totalNeedFactor;
-        node.txcount += actualRedistributed * proportionOfNeed;
-      });
-    } else {
-      const valuePerNode = actualRedistributed / offendingNodes.length;
-      offendingNodes.forEach(node => {
-        node.txcount += valuePerNode;
-      });
-    }
-
-    return layout;
-  };
-
 const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): number => {
   // Logo gets a fixed reasonable value
   if (node.id === '__logo__' && otherNodes) {
@@ -598,7 +540,7 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
 
     return logoValue;
   }
-  return Math.sqrt(node.txcount) + node.apps.length * 1000;
+  return (Math.sqrt(node.txcount) + node.apps.length * 1000) * (node.layoutBoost ?? 1);
 };
 
   type LogoRegionName = 'top' | 'bottom' | 'left' | 'right';
@@ -828,21 +770,13 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
           break;
         }
 
-        const percentageToRedistribute = Math.min(0.25, 0.05 * (iterations + 1));
-        const updatedLayout = redistributeTxCountByPercentage(
-          layout,
-          offendingNodes,
-          nonOffendingNodes,
-          percentageToRedistribute
+        // Give each too-small category more weight in the next layout. (Shifting txcount between
+        // categories barely moved them, since the app count dominates a category's weight, so the
+        // loop used to give up and leave boxes too narrow for a single app tile.)
+        const offendingIds = new Set(offendingNodes.map((leaf) => leaf.id));
+        currentNodes = currentNodes.map((node: CategoryNode) =>
+          offendingIds.has(node.id) ? { ...node, layoutBoost: (node.layoutBoost ?? 1) * 1.5 } : node,
         );
-  
-        currentNodes = currentNodes.map(node => {
-          const updatedNode = updatedLayout.find(layoutNode => layoutNode.id === node.id);
-          return {
-            ...node,
-            txcount: updatedNode ? updatedNode.txcount : node.txcount,
-          };
-        });
       }
       iterations++;
     }
@@ -1163,7 +1097,9 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                         <motion.div
                           key={`__logo__`}
                           layoutId="__logo__"
-                          className="absolute z-[150] flex items-center justify-center"
+                          // above the category boxes (z-5), below sticky headers (z-sticky-header), which it
+                          // would otherwise paint over when it scrolls under them
+                          className="absolute z-[10] flex items-center justify-center"
                           initial={{ opacity: 0 }}
                           animate={{
                             opacity: 1,
@@ -1332,19 +1268,19 @@ const CategorySection = ({
       {/* Animated category label */}
       <motion.div
         // @ts-ignore
-        className={`absolute -top-[9px] left-[10px] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
+        className={`absolute -top-[9px] left-[10px] max-w-[calc(100%-20px)] heading-large-xs bg-color-bg-default px-[10px] ${viewMode === 'main' ? 'group-hover/category-section:underline' : ''}`}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
         {viewMode === 'main'
 
-          ? <div className='flex items-center gap-x-[5px]'>
+          ? <div className='flex items-center gap-x-[5px] min-w-0'>
             <GTPIcon icon={`${categoryIcon[node.id]}` as GTPIconName} size="sm"
               className="w-[15px] h-[15px]"
-              containerClassName="flex items-center justify-center w-[24px] h-[24px]"
+              containerClassName="flex items-center justify-center w-[24px] h-[24px] shrink-0"
             />
-            <div className=''>{ShortMainCategoryNames[node.label] || node.label}</div>
+            <div className='truncate'>{ShortMainCategoryNames[node.label] || node.label}</div>
 
           </div>
           : (ShortSubCategoryNames[node.label] || node.label)}

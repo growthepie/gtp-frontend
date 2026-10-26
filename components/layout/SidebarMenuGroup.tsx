@@ -67,7 +67,7 @@ export const SidebarMenuLink = memo(({
       disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
-          <div className="pointer-events-none absolute bottom-[8px] right-[5px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
+          <div className="pointer-events-none absolute bottom-[8px] right-[5px] top-[8px] flex items-center justify-center overflow-hidden text-xs transition-all duration-300 md:right-[20px]">
             <div
               className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                 (!sidebarOpen && !isMobile) || isActive
@@ -218,7 +218,7 @@ export const SidebarMenuGroup = memo(({
       disableAnimation={disableAnimation}
       rightContent={
         item.newChild && (
-          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[20px]">
+          <div className="pointer-events-none absolute bottom-[8px] right-[0px] top-[8px] flex items-center justify-center overflow-hidden text-xs transition-all duration-300 md:right-[20px]">
             <div
               className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                 !sidebarOpen || isOpen
@@ -282,7 +282,7 @@ export const SidebarMenuGroup = memo(({
                         disableAnimation={disableAnimation}
                         rightContent={
                           option.showNew && (
-                            <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
+                            <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs transition-all duration-300 md:right-[16px]">
                               <div
                                 className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                                   sidebarOpen && isOpen
@@ -364,7 +364,7 @@ export const SidebarMenuGroup = memo(({
                     disableAnimation={disableAnimation}
                     rightContent={
                       option.showNew && (
-                        <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs font-bold transition-all duration-300 md:right-[16px]">
+                        <div className="absolute bottom-1 right-[5px] top-1 flex items-center justify-center overflow-hidden text-xs transition-all duration-300 md:right-[16px]">
                           <div
                             className={`h-full w-[50px] rounded-full bg-gradient-to-t from-[#FFDF27] to-[#FE5468] transition-all duration-300 md:rounded-br-none md:rounded-tr-none ${
                               sidebarOpen && isOpen
