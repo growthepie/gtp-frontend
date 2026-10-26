@@ -2,6 +2,11 @@
 // how it reads. Kept apart from the Quick Bite data because these are functions, and the
 // Quick Bite data is passed from server to client components.
 import { formatNumber } from "@/lib/utils/formatters";
+import {
+  STABLECOIN_FIAT_TIMESERIES_URL,
+  STABLECOIN_FIAT_USD_TABLE_URL,
+  readStablecoinFiatSupply,
+} from "@/lib/quick-bites/stablecoinFiatSupply";
 
 export type TrackerHeadline = {
   /** The number, formatted ("122.15M ETH"). */
@@ -13,7 +18,8 @@ export type TrackerHeadline = {
 };
 
 type HeadlineSource = {
-  url: string;
+  /** One URL, or several: then `read` gets their responses as an array, in the same order */
+  url: string | string[];
   read: (json: any) => TrackerHeadline | null;
 };
 
@@ -73,15 +79,12 @@ export const TRACKER_HEADLINES: Record<string, HeadlineSource> = {
     },
   },
   "stablecoins-for-fiat": {
-    url: `${API}/quick-bites/stablecoins/fiat/timeseries.json`,
-    read: (json) => {
-      // Same total as the Quick Bite's own KPI: the latest row summed over all currencies.
-      const types: string[] = json?.data?.timeseries?.types ?? [];
-      const rows: unknown[][] = json?.data?.timeseries?.values ?? [];
-      const latest = rows[rows.length - 1];
-      if (!latest) return null;
-      const total = latest.slice(1).reduce<number>((sum, value) => sum + (Number(value) || 0), 0);
-      return { value: formatNumber(total, { decimals: 1, prefix: "$" }), label: `supply in ${types.length} currencies` };
+    // the timeseries' absolute values are ~7x too high; see stablecoinFiatSupply.ts
+    url: [STABLECOIN_FIAT_TIMESERIES_URL, STABLECOIN_FIAT_USD_TABLE_URL],
+    read: ([timeseries, usdTable]) => {
+      const supply = readStablecoinFiatSupply(timeseries, usdTable);
+      if (!supply) return null;
+      return { value: formatNumber(supply.total, { decimals: 1, prefix: "$" }), label: `supply in ${supply.currencies} currencies` };
     },
   },
   "stablecoins-for-chain": {
