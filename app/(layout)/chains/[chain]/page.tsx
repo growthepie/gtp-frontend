@@ -25,7 +25,6 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
-import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
 import UserInsights from "@/components/layout/SingleChains/UserInsights";
@@ -1260,7 +1259,6 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
             <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}
             </div>
-            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
     )
 }
