@@ -547,7 +547,7 @@ export const formatNumber =
       if (isPercentage) {
         number = decimalToPercent(val * 100, 0);
       } else {
-        number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+        number = prefix + d3.format(".2s")(val).replace(/G/, "B").replace(/k/, "K") + suffix;
       }
     } else {
       if (isPercentage) {

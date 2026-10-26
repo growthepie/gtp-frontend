@@ -99,7 +99,7 @@ const formatNumberMemo = (() => {
       result = (number / 1e6).toFixed(2) + "M";
     } else if (Math.abs(number) >= 1e3) {
       const rounded = (number / 1e3).toFixed(2);
-      result = `${rounded}k`;
+      result = `${rounded}K`;
     } else {
       result = number.toFixed(decimals ?? 2);
     }

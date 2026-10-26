@@ -340,7 +340,7 @@ const MetricsTable = ({
       return (number / 1e6).toFixed(2) + "M";
     } else if (Math.abs(number) >= 1e3) {
       const rounded = (number / 1e3).toFixed(2);
-      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
+      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
     } else if (Math.abs(number) >= 100) {
       return number.toFixed(decimals ? decimals : 2);
     } else if (Math.abs(number) >= 10) {

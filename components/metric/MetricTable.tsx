@@ -17,6 +17,7 @@ import { useMetricChartControls } from "./MetricChartControlsContext";
 import { useMetricData } from "./MetricDataContext";
 import { isExcludedFromSinceLaunch, isSinceLaunchInterval } from "./launchDate";
 import ChartWatermark, { ChartWatermarkWithMetricName } from "../layout/ChartWatermark";
+import { formatCompactTwoDecimals as formatNumber } from "@/lib/utils/formatters";
 
 const METRIC_TABLE_GRID_TEMPLATE_COLUMNS =
   "minmax(120px, 174px) 4px minmax(60px, 2fr) minmax(44px, 1fr) minmax(44px, 1fr) minmax(44px, 1fr) 22px";
@@ -511,33 +512,6 @@ const MetricTable = ({
 
     return result;
   }, [rows, selectedChains, sort.metric, sort.sortOrder, timeIntervalKey, reversePerformer, lastValueTimeIntervalKey]);
-
-  function formatNumber(number: number, decimals?: number): string {
-
-    if (number === 0) {
-      return "0";
-    } else if (Math.abs(number) >= 1e9) {
-      if (Math.abs(number) >= 1e12) {
-        return (number / 1e12).toFixed(2) + "T";
-      } else if (Math.abs(number) >= 1e9) {
-        return (number / 1e9).toFixed(2) + "B";
-      }
-    } else if (Math.abs(number) >= 1e6) {
-      return (number / 1e6).toFixed(2) + "M";
-    } else if (Math.abs(number) >= 1e3) {
-      const rounded = (number / 1e3).toFixed(2);
-      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
-    } else if (Math.abs(number) >= 100) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else if (Math.abs(number) >= 10) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else {
-      return number.toFixed(decimals ? decimals : 2);
-    }
-
-    // Default return if none of the conditions are met
-    return "";
-  }
 
   const getTinyUsdThresholdLabel = useCallback(
     (rawValue: number, decimals?: number, prefix?: string, suffix?: string) => {

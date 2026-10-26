@@ -46,7 +46,7 @@ const formatNumber = (number: number, decimals = 2): string => {
   if (absNumber >= 1e12) return (number / 1e12).toFixed(2) + "T";
   if (absNumber >= 1e9) return (number / 1e9).toFixed(2) + "B";
   if (absNumber >= 1e6) return (number / 1e6).toFixed(2) + "M";
-  if (absNumber >= 1e3) return (number / 1e3).toFixed(2) + "k";
+  if (absNumber >= 1e3) return (number / 1e3).toFixed(2) + "K";
   if (absNumber >= 100) return number.toFixed(decimals);
   return number.toFixed(decimals);
 };

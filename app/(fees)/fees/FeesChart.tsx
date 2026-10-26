@@ -119,7 +119,7 @@ export default function FeesChart({
   function shortenNumber(number) {
     let numberStr = Math.floor(number).toString();
 
-    const suffixes = ["", "k", "M", "B"];
+    const suffixes = ["", "K", "M", "B"];
     const numberOfDigits = numberStr.length;
     const magnitude = Math.floor((numberOfDigits - 1) / 3);
     const suffixIndex = Math.min(magnitude, suffixes.length - 1);
