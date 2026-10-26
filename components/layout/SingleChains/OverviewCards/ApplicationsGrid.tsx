@@ -1097,7 +1097,9 @@ const computeNodeValue = (node: CategoryNode, otherNodes?: CategoryNode[]): numb
                         <motion.div
                           key={`__logo__`}
                           layoutId="__logo__"
-                          className="absolute z-[150] flex items-center justify-center"
+                          // above the category boxes (z-5), below sticky headers (z-sticky-header), which it
+                          // would otherwise paint over when it scrolls under them
+                          className="absolute z-[10] flex items-center justify-center"
                           initial={{ opacity: 0 }}
                           animate={{
                             opacity: 1,
