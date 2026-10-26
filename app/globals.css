@@ -189,7 +189,8 @@ html {
 /* From md up the floating top bar covers the top 100px of the viewport. Next.js only
    scrolls a new page into view when its top edge is outside the viewport *minus* this
    padding, so without it a page that renders with its top under the bar stays there
-   after navigating. It also keeps #anchor jumps clear of the bar. */
+   after navigating. It also keeps #anchor jumps clear of the bar. While a StickyHeader is
+   mounted, it raises this inline to clear the header too. */
 @media (min-width: 768px) {
   html {
     scroll-padding-top: 100px;

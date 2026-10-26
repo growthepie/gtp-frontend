@@ -5,6 +5,16 @@ import { CSSProperties, ReactNode, Ref, useEffect, useImperativeHandle, useRef, 
 // gap between a sticky header and one stacked below it
 const STACK_GAP = 10;
 
+// Where each mounted sticky header's bottom edge sits while stuck. Anchor jumps (scroll-padding-top)
+// land below the lowest one instead of underneath it; without any, globals.css applies.
+const stuckBottoms = new Map<HTMLElement, number>();
+const updateScrollPadding = () => {
+  const bottom = Math.max(0, ...stuckBottoms.values());
+  const root = document.documentElement;
+  if (bottom > 0) root.style.scrollPaddingTop = `${bottom + STACK_GAP}px`;
+  else root.style.removeProperty("scroll-padding-top");
+};
+
 export type StickyHeaderHandle = {
   /**
    * If the header is stuck, scroll back up to where it starts sticking, so the content after it
@@ -64,6 +74,9 @@ export default function StickyHeader({
   const [box, setBox] = useState({ left: 0, right: 0, height: 0 });
   // how far above the stuck header the backdrop starts
   const [cover, setCover] = useState(0);
+  // overlay only: how far the stand-in is pushed up as the end of its section scrolls past (≤ 0),
+  // like a regular sticky element that has reached the end of its parent
+  const [shift, setShift] = useState(0);
 
   useImperativeHandle(handleRef, () => ({
     scrollToStart: () => {
@@ -96,6 +109,10 @@ export default function StickyHeader({
       const stickyTop = getStickyTop();
       const isBelowAnother = stacked && getComputedStyle(el).getPropertyValue("--gtp-sticky-stack").trim() !== "";
       setCover(isBelowAnother ? STACK_GAP : stickyTop);
+      if (overlay && parent) {
+        const top = el.getBoundingClientRect().top;
+        setShift(Math.min(0, Math.round(parent.getBoundingClientRect().bottom - top - content.offsetHeight)));
+      }
       setIsStuck(isSticky() && window.scrollY > 0 && el.getBoundingClientRect().top <= stickyTop + 0.5);
     };
 
@@ -116,6 +133,10 @@ export default function StickyHeader({
         if (isSticky()) parent.style.setProperty("--gtp-sticky-stack", `${stickyTop + height + STACK_GAP}px`);
         else parent.style.removeProperty("--gtp-sticky-stack");
       }
+      // stand-ins only matter within their own table, so they don't move anchor jumps
+      if (!overlay && isSticky()) stuckBottoms.set(el, stickyTop + height);
+      else stuckBottoms.delete(el);
+      updateScrollPadding();
       updateStuck();
     };
 
@@ -137,6 +158,8 @@ export default function StickyHeader({
       window.removeEventListener("resize", measure);
       if (frame) cancelAnimationFrame(frame);
       if (!stacked) parent?.style.removeProperty("--gtp-sticky-stack");
+      stuckBottoms.delete(el);
+      updateScrollPadding();
     };
   }, [overlay, stacked]);
 
@@ -155,7 +178,7 @@ export default function StickyHeader({
           aria-hidden
           className="sticky-header-backdrop pointer-events-none absolute -z-10"
           style={{
-            top: -cover,
+            top: -cover + shift,
             height: cover + box.height + 20,
             left: -box.left,
             right: -box.right,
@@ -172,7 +195,8 @@ export default function StickyHeader({
       )}
       <div
         ref={contentRef}
-        className={overlay ? `absolute inset-x-0 top-0 ${isStuck ? "" : "invisible"}` : "contents"}
+        className={overlay ? `absolute inset-x-0 ${isStuck ? "" : "invisible"}` : "contents"}
+        style={overlay ? { top: shift } : undefined}
       >
         {children}
       </div>
