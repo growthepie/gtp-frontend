@@ -17,7 +17,7 @@ import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 const fmtPct = (v: number) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(2) + "%";
 
 const fmtDay = (date: string) =>
-  new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  new Date(`${date}T00:00:00Z`).toLocaleDateString("en-GB", { month: "short", day: "numeric", timeZone: "UTC" });
 const fmtEth = (n: number) => Math.round(n).toLocaleString("en-US");
 
 // The native range thumb is 16px wide and its centre travels from 8px to

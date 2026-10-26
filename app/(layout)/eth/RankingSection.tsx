@@ -114,7 +114,7 @@ export default function RankingSection() {
   const ratioSince = ratioSeries
     ? ratioSpanDays
       ? `last ${RATIO_SPANS.find((s) => s.key === ratioSpan)!.label}`
-      : "since " + new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })
+      : "since " + new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
     : null;
   const showsOffScale = rows.some((r) => OFF_SCALE_KEYS.includes(r.key));
 
