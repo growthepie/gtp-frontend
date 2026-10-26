@@ -12,7 +12,6 @@ import {
 import Image from "next/image";
 import { BlockspaceURLs, LabelsURLS } from "@/lib/urls";
 import { useMaster } from "@/contexts/MasterContext";
-import ShowLoading from "@/components/layout/ShowLoading";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
@@ -686,7 +685,7 @@ function TreemapTooltip({
 
 export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
   const { AllChainsByKeys } = useMaster();
-  const { data, isLoading, isValidating } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
+  const { data, isLoading } = useSWR<RawTreeMapResponse>(BlockspaceURLs["tree-map"]);
   const { data: projectsData } = useSWR<any>(LabelsURLS.projectsFiltered);
   const { resolvedTheme } = useTheme();
   const colorTheme: ColorTheme = resolvedTheme === "light" ? "light" : "dark";
@@ -1260,7 +1259,6 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
 
   return (
     <div className="flex flex-col gap-y-[15px]">
-      <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
 
       <GTPButtonContainer>
         <GTPButtonRow className="flex-nowrap" style={{ width: isMobile ? "100%" : "auto" }} wrap={isMobile ? true : false}>
@@ -1774,6 +1772,9 @@ export default function HierarchyTreemap({ chainKey }: { chainKey?: string }) {
               </div>
             )}
           </div>
+        ) : isLoading ? (
+          // load in place like the rest of the page, instead of a full-section overlay
+          <div className="h-[720px] w-full rounded-[15px] bg-color-bg-default motion-safe:animate-pulse" />
         ) : (
           <div className="h-[360px] w-full flex items-center justify-center text-color-text-secondary text-sm">
             No treemap data available for the selected settings.
