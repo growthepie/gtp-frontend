@@ -347,7 +347,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                     >
                       <div className="pl-[10px] pr-[10px] flex items-center gap-x-[15px] justify-between w-full truncate min-w-0">
                         {row.contract_name ? (
-                          <div className="truncate font-medium text-xs" title={row.contract_name}>
+                          <div className="truncate text-xs" title={row.contract_name}>
                             {row.contract_name}
                           </div>
                         ) : (
@@ -636,7 +636,7 @@ export default function UserInsights({ chainKey }: UserInsightsProps) {
                           <div className="w-[15px] h-[15px] rounded-full bg-gray-300"></div>
                         )}
                       </div>
-                      <div className="truncate font-medium text-xs group-hover:underline">{chain?.label || row.cross_chain}</div>
+                      <div className="truncate text-xs group-hover:underline">{chain?.label || row.cross_chain}</div>
 
                       <div className="text-right numbers-xs flex items-center justify-end">{(row.share_of_users * 100).toFixed(2)}%</div>
                       <div className="text-right numbers-xs flex items-center justify-end">{formatNum(row.current)}</div>

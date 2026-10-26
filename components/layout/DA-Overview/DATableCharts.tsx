@@ -354,7 +354,7 @@ const DATableChartsComponent = ({
                         setHoverChain={setHoverChain}
                     />
                     <div className="w-[254px] flex items-center justify-center relative">
-                        <div className="absolute left-[30%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs font-bold leading-[120%] pointer-events-none z-10">
+                        <div className="absolute left-[30%] w-[99px] flex items-center justify-center bottom-[48%] text-xxxs leading-[120%] pointer-events-none z-10">
                             {"% OF TOTAL USAGE"}
                         </div>
                         <GTPChart
@@ -468,7 +468,7 @@ const YAxisScaleControls = ({
                 <input type="checkbox" className="hidden" />
                 <label htmlFor="toggle" className="flex items-center cursor-pointer">
                     <div
-                        className="relative text-sm md:text-base font-medium"
+                        className="relative text-sm md:text-base"
                         onClick={() => setSelectedScale(selectedScale === "stacked" ? "percentage" : "stacked")}
                     >
                         <div className={`w-[176px] h-[28px] heading-small flex gap-x-[20px] items-center pl-[10px] md:pr-[24px] rounded-full transition duration-200 ease-in-out text-forest-900 bg-color-bg-medium ${GTP_BUTTON_INTERACTION_CLASSES}`}>

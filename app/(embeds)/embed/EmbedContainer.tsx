@@ -66,7 +66,7 @@ const EmbedContainer = ({
               <div className="md:leading-[1.3] text-[10px] md:text-xs text-forest-400">
                 Timeframe
               </div>
-              <div className="text-xs md:text-sm font-semibold">
+              <div className="text-xs md:text-sm">
                 {timeframe_text}
               </div>
             </div>

@@ -46,12 +46,12 @@ export const LinkDisclaimerModal = ({ href, type, displayDestination, onClose, o
                 className="w-[14px] h-[14px] text-color-text-primary"
               />
             </div>
-            <span className="text-sm font-bold text-color-text-primary">
+            <span className="text-sm text-color-text-primary">
               {isEmail ? 'Opening Email Client' : 'External Link Disclaimer'}
             </span>
           </div>
 
-          <p className="text-xs text-color-text-primary font-medium leading-[16px] pt-[10px]">
+          <p className="text-xs text-color-text-primary leading-[16px] pt-[10px]">
             {isEmail
               ? `This will open your default email client for ${emailDestination}.`
               : "You are about to open an external link. We do not guarantee external content or security. Continue?"

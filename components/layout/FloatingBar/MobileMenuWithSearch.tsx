@@ -1084,7 +1084,7 @@ const MobileMenuWithSearch = memo(function MobileMenuWithSearch({
               className="!size-[15px] mt-[3px]"
             />
             {/* <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]"> */}
-            <div className="text-sm font-raleway font-medium leading-[150%] cursor-default ml-[-10px] mt-[-3px]">
+            <div className="text-sm font-raleway leading-[150%] cursor-default ml-[-10px] mt-[-3px]">
               {isBucketMatch ? (
                 <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
               ) : (

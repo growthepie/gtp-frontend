@@ -552,7 +552,7 @@ const DAMetricsTable = ({
                   </div>
                   <div>
                     <div className="flex-1 flex flex-col">
-                      <div className="flex w-full items-baseline text-sm font-bold leading-[120%]">
+                      <div className="flex w-full items-baseline text-sm leading-[120%]">
                         {getDisplayValue(item).prefix && (
                           <div className="text-[14px] font-bold mr-[1px]">
                             {getDisplayValue(item).prefix}

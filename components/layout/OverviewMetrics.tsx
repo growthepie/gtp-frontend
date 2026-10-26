@@ -423,7 +423,7 @@ export default function OverviewMetrics({
           {isSingleChainView && (
             <Container className="w-[100%] ml-[22px]">
               <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
-                <h1 className="font-bold text-sm pr-2 pl-2">
+                <h1 className="text-sm pr-2 pl-2">
                   {!allCats
                     ? master &&
                       master.blockspace_categories.main_categories[

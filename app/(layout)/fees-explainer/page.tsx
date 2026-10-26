@@ -21,7 +21,7 @@ const FeesExplainer = () => {
         >
           Fees Explainer
         </Heading>
-        <Subheading className="text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2]">
+        <Subheading className="text-xs sm:text-sm md:text-[20px] leading-[1.2]">
           Gain additional context and understanding of our fees metrics
         </Subheading>
       </div>

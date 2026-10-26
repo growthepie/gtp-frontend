@@ -585,7 +585,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary">
                     Chain
                   </div>
                   <div>
@@ -644,7 +644,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary">
                     Chain Revenue
                   </div>
 
@@ -684,7 +684,7 @@ export default function ChainBreakdown({
                 {" "}
                 <div className="flex items-center group gap-x-[1px]">
                   <div
-                    className="text-xs group-hover:text-color-text-secondary font-bold cursor-pointer"
+                    className="text-xs group-hover:text-color-text-secondary cursor-pointer"
                     onClick={() => {
                       if (metricSort !== "costs") {
                         setSortOrder(true);
@@ -804,7 +804,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary">
                     Loss | Profit
                   </div>
                   <div>
@@ -852,7 +852,7 @@ export default function ChainBreakdown({
               >
                 {" "}
                 <div className="flex items-center group gap-x-[1px] ">
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
+                  <div className="text-xs group-hover:text-color-text-secondary">
                     Margin
                   </div>
                   <div>
@@ -899,7 +899,7 @@ export default function ChainBreakdown({
                   }
                 }}
               >
-                <div className="text-xs group-hover:text-color-text-secondary font-bold">
+                <div className="text-xs group-hover:text-color-text-secondary">
                   {"Blob Data"}
                 </div>
                 <div>

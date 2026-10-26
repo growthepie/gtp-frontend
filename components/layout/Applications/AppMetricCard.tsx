@@ -291,7 +291,7 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
               <div className="w-4 h-2 rounded-r-full" style={{ backgroundColor: color }} />
               <span className="text-xs whitespace-nowrap text-color-text-primary">{label}</span>
             </div>
-            <span className={`numbers-xs text-color-text-primary font-medium ${edgeToEdge ? "whitespace-nowrap" : ""}`}>
+            <span className={`numbers-xs text-color-text-primary ${edgeToEdge ? "whitespace-nowrap" : ""}`}>
               {tooltip?.formatValue ? tooltip.formatValue(customTooltip.value) : <>{prefix}{formatLargeNumber(customTooltip.value, decimals)}{suffix}</>}
             </span>
           </div>

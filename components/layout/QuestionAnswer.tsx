@@ -59,7 +59,7 @@ export default function QuestionAnswer({
             />
           </div>
         </div>
-        <h3 className={`font-semibold leading-[133%] heading-sm ${open ? "" : "select-none"}`}>
+        <h3 className={`leading-[133%] heading-sm ${open ? "" : "select-none"}`}>
           {question}
         </h3>
       </div>

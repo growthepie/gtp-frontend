@@ -183,7 +183,7 @@ export const PageTitleAndDescriptionAndControls = () => {
             </div>
           </div>
 
-          <div className="flex-1 text-sm font-medium">
+          <div className="flex-1 text-sm">
             <ApplicationDescription owner_project={urlOwnerProject} />
             {/* Relay is a cross-chain payment system that enables instant, low-cost bridging and transaction execution by connecting users with relayers who act on their behalf for a small fee. It aims to minimize gas costs and execution latency, making it suitable for applications like payments, bridging, NFT minting, and gas abstraction. I can add one more sentence to that and its still legible. And one more maybe so that we reach 450 characters. Let’s see.  */}
           </div>
@@ -1282,7 +1282,7 @@ export const Category = ({ category }: { category: string }) => {
       ) : (
         <div className="flex items-center gap-x-[5px] whitespace-nowrap">
           {/* <Icon icon="carbon:unknown-filled" className="size-[15px] text-color-ui-hover/50" /> */}
-          <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center font-bold text-xs pt-[2px]">?</div>
+          <div className="size-[15px] text-black/90 rounded-sm bg-color-ui-hover/50 flex justify-center items-center text-xs pt-[2px]">?</div>
           <div className="text-xs text-color-text-secondary">Unknown</div>
         </div>
       )}

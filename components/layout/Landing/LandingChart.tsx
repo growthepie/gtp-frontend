@@ -1163,7 +1163,7 @@ export default function LandingChart({
             <ChartWatermark className="w-[128.67px] md:w-[192.87px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
           {filteredData.length === 0 && (
-            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs flex justify-center w-full text-color-text-primary/60">
               No chain(s) selected for comparison. Please select at least one.
             </div>
           )}
@@ -1419,7 +1419,7 @@ export default function LandingChart({
             <ChartWatermark className="w-[128.67px] md:w-[192.87px] text-forest-300 dark:text-[#EAECEB]" />
           </div>
           {filteredData.length === 0 && (
-            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-color-text-primary/60">
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs flex justify-center w-full text-color-text-primary/60">
               No chain(s) selected for comparison. Please select at least one.
             </div>
           )}
@@ -1596,7 +1596,7 @@ const MetricCard = ({
           </div>
           <span className="numbers-2xl">{is_multiple && "x"}</span>
         </div>
-        <div className="numbers-xxs font-medium">
+        <div className="numbers-xxs">
           {metric_comparison > 0 ? (
             <span
               className="text-green-500 dark:text-green-500 font-semibold"

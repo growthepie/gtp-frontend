@@ -446,7 +446,7 @@ export const HeaderSearchButton = () => {
         <GTPIcon icon="gtp-search" size="md" />
         {!isMobile && (
         <div className={`flex items-center justify-end overflow-hidden w-0 group-hover:w-[28px] transition-all duration-200 ${isOpen ? "!w-[28px]" : "w-0"}`}>
-          <div className="size-[18px] heading-small-xs font-black rounded-[4px] text-color-bg-medium bg-color-bg-default flex items-center justify-center">/</div>
+          <div className="size-[18px] heading-small-xs rounded-[4px] text-color-bg-medium bg-color-bg-default flex items-center justify-center">/</div>
         </div>
         )}
       </div>
@@ -926,7 +926,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 id="global-search-input"
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-color-text-primary ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                className={`flex-1 h-full bg-transparent text-color-text-primary ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-raleway`}
                 placeholder={isMounted && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
@@ -935,7 +935,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               />
               <div className={`absolute flex items-center gap-x-[10px] right-[15px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"} transition-opacity duration-200`}>
                 <div className="flex items-center px-[15px] h-[24px] border border-color-bg-medium rounded-full select-none">
-                  <div className="text-xxxs text-color-text-primary font-medium font-raleway -mb-[1px]">
+                  <div className="text-xxxs text-color-text-primary font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
@@ -994,7 +994,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                 autoFocus={true}
                 autoComplete="off"
                 spellCheck={false}
-                className={`flex-1 h-full bg-transparent text-white ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-medium font-raleway`}
+                className={`flex-1 h-full bg-transparent text-white ${isFocused && localQuery.length === 0 ? 'placeholder-color-text-secondary' : 'placeholder-color-text-primary'} border-none outline-none overflow-x-clip text-md leading-[150%] font-raleway`}
                 placeholder={isMounted && localQuery.length === 0 && animatedPlaceholder ? animatedPlaceholder : placeholder}
                 value={localQuery}
                 onChange={handleSearchChange}
@@ -1003,7 +1003,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               />
               <div className={`absolute flex items-center gap-x-[10px] right-[20px] text-[8px] text-color-text-primary font-medium ${localQuery.length > 0 ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}>
                 <div className="flex items-center px-[15px] h-[24px] border border-color-text-primary rounded-full select-none">
-                  <div className="text-xxxs text-color-text-primary font-medium font-raleway -mb-[1px]">
+                  <div className="text-xxxs text-color-text-primary font-raleway -mb-[1px]">
                     {totalMatches} {totalMatches === 1 ? "result" : "results"}
                   </div>
                 </div>
@@ -2638,7 +2638,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
         <div className="flex flex-col pt-[14px] pb-[18px] px-[14px] gap-y-[10px]">
           <div className="flex items-center gap-x-[8px]">
             <GTPIcon icon="gtp-search" size="sm" />
-            <div className="text-sm font-semibold font-raleway text-color-text-primary">
+            <div className="text-sm font-raleway text-color-text-primary">
               {projectEditSearchMode === "edit" ? "Search existing projects" : "Search before adding"}
             </div>
           </div>
@@ -2663,7 +2663,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
             <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
               <div className="flex gap-x-[10px] items-center shrink-0">
                 <GTPIcon icon="gtp-project" size="md" className="max-sm:size-[15px]" />
-                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Edit</div>
+                <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default max-sm:ml-[-10px]">Edit</div>
                 <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
               </div>
               <div className="flex flex-wrap gap-[5px]">
@@ -2733,7 +2733,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
                   <div className="flex gap-x-[10px] items-center shrink-0">
                     <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px] opacity-40" />
-                    <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] opacity-40">Add</div>
+                    <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default max-sm:ml-[-10px] opacity-40">Add</div>
                     <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                   </div>
                   <div className="flex items-center gap-x-[6px] text-xs text-color-text-secondary">
@@ -2748,7 +2748,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[6px] items-start">
                 <div className="flex gap-x-[10px] items-center shrink-0">
                   <GTPIcon icon="gtp-plus" size="md" className="max-sm:size-[15px]" />
-                  <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px]">Add</div>
+                  <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default max-sm:ml-[-10px]">Add</div>
                   <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
                 </div>
                 <div className="flex flex-wrap items-center gap-[5px]">
@@ -2811,7 +2811,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                   size="md"
                   className="max-sm:size-[15px] max-sm:mt-[3px]"
                 />
-                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
+                <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default max-sm:ml-[-10px] max-sm:mt-[-3px]">
                   {isBucketMatch ? (
                     <OpacityUnmatchedText text={type} query={memoizedQuery || ""} />
                   ) : (
@@ -2969,7 +2969,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
               <div className="flex items-center justify-center w-[24px] h-[24px]">
                 <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
               </div>
-              <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+              <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default">
                 <span className="text-color-text-primary">Recent Searches</span>
               </div>
               <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
@@ -3014,7 +3014,7 @@ const Filters = ({ showMore, setShowMore }: { showMore: { [key: string]: boolean
                 <div className="flex items-center justify-center w-[24px] h-[24px]">
                   <Icon icon="feather:clock" className="size-[15px] text-color-text-primary" />
                 </div>
-                <div className="text-sm md:w-[120px] font-raleway font-medium leading-[150%] cursor-default">
+                <div className="text-sm md:w-[120px] font-raleway leading-[150%] cursor-default">
                   <span className="text-color-text-primary">Recent Results</span>
                 </div>
                 <div className="w-[6px] h-[6px] bg-color-bg-medium rounded-full" />
@@ -3450,7 +3450,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               // stroke="#CDD8D3"
             />
           </svg>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -3465,7 +3465,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" className="text-color-text-primary stroke-color-text-primary" strokeWidth="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" className="text-color-text-primary stroke-color-text-primary" />
           </svg>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
@@ -3474,7 +3474,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               ESC
             </div>
           </div>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Close</div>
         </div>
       </div>
     </div>

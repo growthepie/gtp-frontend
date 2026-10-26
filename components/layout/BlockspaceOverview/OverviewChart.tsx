@@ -1268,7 +1268,7 @@ export default function OverviewChart({
               }`}
           >
             <AnimatedDiv
-              className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
+              className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm"
               style={{
                 backgroundColor:
                   AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]

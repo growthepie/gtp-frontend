@@ -694,7 +694,7 @@ export default function MetricsBody({ data, owner_project, projectMetadata, high
                     <span
                         key={chain}
                         ref={(el) => { labelMeasureRefs.current[i] = el; }}
-                        className="text-md font-raleway font-medium whitespace-nowrap"
+                        className="text-md font-raleway whitespace-nowrap"
                     >
                         {AllChainsByKeys[chain]?.name_short}
                     </span>

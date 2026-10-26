@@ -179,7 +179,7 @@ export default function ContractCard({
             {data[types.indexOf(`${metric}_change_percent`)] ? (
               <div className="flex space-x-1 text-xxs items-end justify-end ">
                 <div
-                  className={`flex flex-row items-end space-x-1 numbers-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
+                  className={`flex flex-row items-end space-x-1 numbers-xs transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
                     ? " text-green-500 dark:group-hover:text-green-400"
                     : " text-red-500 dark:group-hover:text-red-400"
                     }`}

@@ -680,7 +680,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                 <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[398px]:opacity-0"></div>
                 <div className="flex h-auto w-full flex-col justify-between gap-y-[5px] lg:h-[calc(111px-20px)]">
                   <div className="w-full">
-                    <div className="text-xs font-semibold text-[#5A6462]">
+                    <div className="text-xs text-[#5A6462]">
                       Background Information
                     </div>
                     <div className="text-[10px] leading-[150%]">
@@ -713,7 +713,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                   <div className="relative flex min-h-[111px] items-center justify-between gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 bg-clip-border px-[5px] py-[10px] dark:bg-color-bg-default lg:max-h-[111px]">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col pl-[5px]">
-                      <div className="text-xs font-semibold text-[#5A6462]">
+                      <div className="text-xs text-[#5A6462]">
                         User Wallets with GLM locked
                       </div>
                       <div
@@ -829,7 +829,7 @@ VirtualizedList.displayName = 'VirtualizedList';
                   <div className="group relative flex h-[111px] gap-x-[5px] overflow-hidden rounded-[15px] bg-forest-50 px-[10px] py-[8px] dark:bg-color-bg-default">
                     <div className="pointer-events-none absolute -right-[58px] bottom-0 top-0 z-10 w-[125px] bg-[linear-gradient(90deg,rgb(var(--bg-default)/0)_0%,rgb(var(--bg-default)/0.8)_38%,rgb(var(--bg-default))_76%)] opacity-100 transition-all duration-300 group-hover:opacity-0 @[294px]:opacity-0"></div>
                     <div className="flex flex-col">
-                      <div className="text-xs font-semibold text-[#5A6462]">
+                      <div className="text-xs text-[#5A6462]">
                         Total Funding Paid Out
                       </div>
                       <div className={`w-full text-[10px] leading-[150%]`}>
@@ -2489,7 +2489,7 @@ const ExpandingButtonMenu = ({
                 });
               }
             }}
-            className="flex h-[32px] w-0 items-center gap-x-[10px] whitespace-nowrap px-4 py-2 text-sm font-medium transition-[width] duration-100 ease-in-out group-hover:w-full hover:bg-forest-50 dark:hover:bg-forest-900"
+            className="flex h-[32px] w-0 items-center gap-x-[10px] whitespace-nowrap px-4 py-2 text-sm transition-[width] duration-100 ease-in-out group-hover:w-full hover:bg-forest-50 dark:hover:bg-forest-900"
           >
             <div className="h-4 w-4">
               <Icon icon={item.icon} className="h-4 w-4" />
