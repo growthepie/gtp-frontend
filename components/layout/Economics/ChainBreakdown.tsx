@@ -147,11 +147,16 @@ export default function ChainBreakdown({
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   }
+  // Chains whose row has been expanded at least once. Their charts mount on the first expand and
+  // then stay mounted, so collapsing still animates them and reopening is instant.
+  const [openedChains, setOpenedChains] = useState<Record<string, boolean>>({});
+
   const toggleOpenChain = (key) => {
     setOpenChain((prevState) => ({
       ...prevState,
       [key]: !prevState[key],
     }));
+    setOpenedChains((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
   };
 
   const handleClick = (e, chain) => {
@@ -1393,6 +1398,7 @@ export default function ChainBreakdown({
                         }`}
                     >
                       <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                        {openedChains[item.key] && (
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
                           dailyData={
@@ -1404,6 +1410,7 @@ export default function ChainBreakdown({
                           isOpen={openChain[item.key]}
                           isMonthly={isMonthly}
                         />
+                        )}
                       </div>
                     </div>
                   </AnimatedDiv>

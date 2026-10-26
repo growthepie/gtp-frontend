@@ -56,11 +56,17 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
     return initialState;
   });
 
+  // DA layers whose row has been expanded at least once (Ethereum blobs starts open). Their charts
+  // mount on the first expand and then stay mounted, so collapsing still animates them and
+  // reopening is instant.
+  const [openedDA, setOpenedDA] = useState<Record<string, boolean>>({ da_ethereum_blobs: true });
+
   const toggleOpenDA = (key) => {
     setOpenDA((prevState) => ({
       ...prevState,
       [key]: !prevState[key],
     }));
+    setOpenedDA((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
   };
 
   const handleClick = (e, da) => {
@@ -848,7 +854,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     }`}
                 >
                   <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-color-text-secondary">
-                    {chart_data && master && (
+                    {chart_data && master && openedDA[item.key] && (
                       <DATableCharts
                         data={chart_data.data.da_layers[item.key]}
                         selectedTimespan={selectedTimespan}

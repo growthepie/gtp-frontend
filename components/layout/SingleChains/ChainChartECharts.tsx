@@ -30,6 +30,7 @@ import {
   isTouchPrimaryDevice,
   isTouchSession,
 } from "@/components/tooltip/touchSession";
+import LazyMount from "@/components/layout/LazyMount";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -173,46 +174,6 @@ function formatNumberWithSI(num: number, decimals = 2): string {
   return sign + formattedValue + tier.symbol;
 }
 
-// Lazy loading wrapper for charts - only renders when visible
-const LazyChart = memo(({ children, height = 224 }: { children: React.ReactNode; height?: number }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasBeenVisible, setHasBeenVisible] = useState(false);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const visible = entry.isIntersecting;
-        setIsVisible(visible);
-        if (visible && !hasBeenVisible) {
-          setHasBeenVisible(true);
-        }
-      },
-      {
-        rootMargin: "100px", // Start loading 100px before entering viewport
-        threshold: 0,
-      }
-    );
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [hasBeenVisible]);
-
-  return (
-    <div ref={containerRef} style={{ minHeight: height }}>
-      {hasBeenVisible ? children : (
-        <div
-          className="w-full rounded-2xl bg-color-bg-default animate-pulse"
-          style={{ height }}
-        />
-      )}
-    </div>
-  );
-});
-
 // Helper to create a diagonal hash pattern
 const createDiagonalPattern = (color: string) => {
   // Ensure we are in the browser
@@ -257,8 +218,6 @@ const createDiagonalPattern = (color: string) => {
   };
 };
 
-
-LazyChart.displayName = "LazyChart";
 
 // Single chart component
 const MetricChart = memo(
@@ -2228,7 +2187,7 @@ export default function ChainChartECharts({
                       if (!intervalData?.data?.length) return null;
 
                       return (
-                        <LazyChart key={key} height={224}>
+                        <LazyMount key={key} minHeight={224}>
                           <MetricChart
                             metricKey={key}
                             data={data}
@@ -2247,7 +2206,7 @@ export default function ChainChartECharts({
                             groupId="fundamentals-charts"
                             lineType={lineType}
                           />
-                        </LazyChart>
+                        </LazyMount>
                       );
                     })}
                 </div>
