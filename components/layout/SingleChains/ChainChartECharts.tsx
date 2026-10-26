@@ -30,6 +30,7 @@ import {
   isTouchPrimaryDevice,
   isTouchSession,
 } from "@/components/tooltip/touchSession";
+import StickyHeader from "@/components/layout/StickyHeader";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -2029,8 +2030,9 @@ export default function ChainChartECharts({
 
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
-      {/* Title and Compare Section */}
-      <div className="flex items-center justify-between mb-[15px]">
+      {/* Title and Compare Section. While the compare dropdown is open it sits above the
+          sticky controls below, which it opens over. */}
+      <div className={`relative flex items-center justify-between mb-[15px] ${compareTo ? "z-[60]" : ""}`}>
         <div className="flex gap-x-[8px] items-center scroll-mt-8" id="fundamentals">
           <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
           <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
@@ -2142,64 +2144,67 @@ export default function ChainChartECharts({
         </div>
       </div>
 
-      {/* Controls */}
-      <GTPButtonContainer
-        className="relative mb-[15px]"
-        isWrapping={isTopBarWrapping}
-        setIsWrapping={setIsTopBarWrapping}
-      >
-        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
-          {availableIntervals.map((interval) => (
-            <GTPButton
-              key={interval}
-              label={interval.charAt(0).toUpperCase() + interval.slice(1)}
-              innerStyle={{ width: "100%" }}
-              className="w-full justify-center"
-              variant="primary"
-              size="sm"
-              clickHandler={() => startTransition(() => setSelectedTimeInterval(interval))}
-              isSelected={selectedTimeInterval === interval}
-            />
-          ))}
-        </GTPButtonRow>
-        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
-          {!zoomed ? (
-            Object.keys(timespans)
-              .filter((timespan) =>
-                selectedTimeInterval === "daily"
-                  ? ["90d", "180d", "365d", "max"].includes(timespan)
-                  : selectedTimeInterval === "hourly"
-                  ? ["24h", "3d", "7d", "14d"].includes(timespan)
-                  : selectedTimeInterval === "weekly"
-                  ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                  : selectedTimeInterval === "monthly"
-                  ? ["6m", "12m", "maxM"].includes(timespan)
-                  : ["4q", "8q", "maxQ"].includes(timespan)
-              )
-              .map((timespan) => (
-                <GTPButton
-                  key={timespan}
-                  label={timespans[timespan].label}
-                  innerStyle={{ width: "100%" }}
-                  className="w-full justify-center"
-                  variant="primary"
-                  size="sm"
-                  clickHandler={() => setSelectedTimespan(timespan)}
-                  isSelected={selectedTimespan === timespan}
-                />
-              ))
-          ) : (
-            <GTPButton
-              label="Reset Zoom"
-              leftIcon={"feather:zoom-out" as GTPIconName}
-              size="sm"
-              variant="highlight"
-              visualState="default"
-              clickHandler={resetZoom}
-            />
-          )}
-        </GTPButtonRow>
-      </GTPButtonContainer>
+      {/* Controls: stay below the chain tab bar while the charts scroll by. Not on mobile,
+          where they wrap to two rows. */}
+      <StickyHeader stacked mobile={false} className="mb-[15px]">
+        <GTPButtonContainer
+          className="relative"
+          isWrapping={isTopBarWrapping}
+          setIsWrapping={setIsTopBarWrapping}
+        >
+          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+            {availableIntervals.map((interval) => (
+              <GTPButton
+                key={interval}
+                label={interval.charAt(0).toUpperCase() + interval.slice(1)}
+                innerStyle={{ width: "100%" }}
+                className="w-full justify-center"
+                variant="primary"
+                size="sm"
+                clickHandler={() => startTransition(() => setSelectedTimeInterval(interval))}
+                isSelected={selectedTimeInterval === interval}
+              />
+            ))}
+          </GTPButtonRow>
+          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+            {!zoomed ? (
+              Object.keys(timespans)
+                .filter((timespan) =>
+                  selectedTimeInterval === "daily"
+                    ? ["90d", "180d", "365d", "max"].includes(timespan)
+                    : selectedTimeInterval === "hourly"
+                    ? ["24h", "3d", "7d", "14d"].includes(timespan)
+                    : selectedTimeInterval === "weekly"
+                    ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                    : selectedTimeInterval === "monthly"
+                    ? ["6m", "12m", "maxM"].includes(timespan)
+                    : ["4q", "8q", "maxQ"].includes(timespan)
+                )
+                .map((timespan) => (
+                  <GTPButton
+                    key={timespan}
+                    label={timespans[timespan].label}
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    variant="primary"
+                    size="sm"
+                    clickHandler={() => setSelectedTimespan(timespan)}
+                    isSelected={selectedTimespan === timespan}
+                  />
+                ))
+            ) : (
+              <GTPButton
+                label="Reset Zoom"
+                leftIcon={"feather:zoom-out" as GTPIconName}
+                size="sm"
+                variant="highlight"
+                visualState="default"
+                clickHandler={resetZoom}
+              />
+            )}
+          </GTPButtonRow>
+        </GTPButtonContainer>
+      </StickyHeader>
 
       {/* Charts Grid */}
       <div className={`flex flex-col gap-y-[15px] transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>

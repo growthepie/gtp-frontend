@@ -35,6 +35,7 @@ import { ExpandableCardContainer } from "@/components/layout/ExpandableCardConta
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import StickyHeader from "@/components/layout/StickyHeader";
+import ScrollerHeaderStandIn from "@/components/layout/ScrollerHeaderStandIn";
 
 
 // Preload data for the overview page
@@ -268,7 +269,9 @@ export default function Page() {
       <div>
         {showGrid && (
           <StickyHeader overlay>
-            <StickyApplicationsTableHeader originalRef={tableHeaderRef} />
+            <ScrollerHeaderStandIn originalRef={tableHeaderRef}>
+              <ApplicationsTableHeader />
+            </ScrollerHeaderStandIn>
           </StickyHeader>
         )}
         <HorizontalScrollContainer className="!px-0" reduceLeftMask={true} enableDragScroll={true}>
@@ -291,7 +294,7 @@ export default function Page() {
 }
 
 // The table's column header. Rendered twice: inside the table, and as the stand-in that
-// sticks below the top bar (StickyApplicationsTableHeader).
+// sticks below the top bar (ScrollerHeaderStandIn).
 const ApplicationsTableHeader = memo(() => {
   const { applicationDataAggregatedAndFiltered } = useApplicationsData();
   const { sort, setSort } = useSort();
@@ -456,53 +459,6 @@ const ApplicationsTableHeader = memo(() => {
 });
 
 ApplicationsTableHeader.displayName = 'ApplicationsTableHeader';
-
-// The table header can't stick itself: it sits inside the horizontal scroller, which is its
-// scroll container. So while it is scrolled under the top bar, this copy takes its place,
-// following the scroller's horizontal position.
-const StickyApplicationsTableHeader = ({ originalRef }: { originalRef: RefObject<HTMLDivElement | null> }) => {
-  const outerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number>();
-
-  useEffect(() => {
-    const original = originalRef.current;
-    const scroller = original?.closest<HTMLElement>("#horizontal-scroll-content");
-    if (!original || !scroller) return;
-
-    // line the copy up with wherever the original currently is, scroll position and the
-    // scroller's own padding included
-    const syncScroll = () => {
-      const inner = innerRef.current;
-      const outer = outerRef.current;
-      if (!inner || !outer) return;
-      const offset = original.getBoundingClientRect().left - outer.getBoundingClientRect().left;
-      inner.style.transform = `translateX(${offset}px)`;
-    };
-    const syncWidth = () => {
-      setWidth(original.offsetWidth);
-      syncScroll();
-    };
-
-    const resizeObserver = new ResizeObserver(syncWidth);
-    resizeObserver.observe(original);
-    scroller.addEventListener("scroll", syncScroll, { passive: true });
-    syncWidth();
-
-    return () => {
-      resizeObserver.disconnect();
-      scroller.removeEventListener("scroll", syncScroll);
-    };
-  }, [originalRef]);
-
-  return (
-    <div ref={outerRef} className="overflow-hidden">
-      <div ref={innerRef} style={{ width }}>
-        <ApplicationsTableHeader />
-      </div>
-    </div>
-  );
-};
 
 const ApplicationsTable = memo(({ headerRef }: { headerRef: RefObject<HTMLDivElement | null> }) => {
   const { applicationDataAggregatedAndFiltered } = useApplicationsData();
