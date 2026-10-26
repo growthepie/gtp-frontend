@@ -13,7 +13,9 @@ interface ChainSearchProps {
 
 export default function ChainSearch({ chainInfo, chainKey }: ChainSearchProps) {
   return (
-    <div className="sticky top-0 z-[120] flex flex-col w-full pt-[0px] gap-y-[15px] overflow-visible">
+    // Below the sticky chain tab bar (z-sticky-header) so it scrolls under it, but on top of the
+    // page while the search is in use, so its dropdown and dimming overlay cover everything
+    <div className="relative z-[40] focus-within:z-[120] flex flex-col w-full pt-[0px] gap-y-[15px] overflow-visible">
       <div className="flex flex-col gap-y-[10px]">
       <div className="flex items-center h-[43px] gap-x-[8px]">
         {/* <GTPIcon icon="gtp-project" size="lg" /> */}

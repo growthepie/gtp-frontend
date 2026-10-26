@@ -4,7 +4,7 @@ import Container from "@/components/layout/Container";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
-import { useState, useMemo, memo, useEffect, use, useRef } from "react";
+import { useState, useMemo, memo, useEffect, use, useRef, useCallback } from "react";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
@@ -40,6 +40,7 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useUIContext } from "@/contexts/UIContext";
+import StickyHeader, { StickyHeaderHandle } from "@/components/layout/StickyHeader";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -1186,6 +1187,14 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
       };
     }, [selectedTab, setEthUsdSwitchEnabled]);
 
+    // Switching tabs while the tab bar is stuck starts the new tab right below it,
+    // instead of at the old tab's scroll position
+    const tabsRef = useRef<StickyHeaderHandle>(null);
+    const selectTab = useCallback((tab: string) => {
+      setSelectedTab(tab);
+      tabsRef.current?.scrollToStart();
+    }, []);
+
     // Update URL when selectedTab changes
     useEffect(() => {
       const currentTabInUrl = searchParams.get("tab");
@@ -1240,12 +1249,14 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none"
      
         >
-            <ChainTabs 
-              chainInfo={master.chains[chainKey]} 
-              selectedTab={selectedTab} 
-              setSelectedTab={setSelectedTab} 
-              fillWidth
-            />
+            <StickyHeader ref={tabsRef}>
+              <ChainTabs
+                chainInfo={master.chains[chainKey]}
+                selectedTab={selectedTab}
+                setSelectedTab={selectTab}
+                fillWidth
+              />
+            </StickyHeader>
             <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}
             </div>
