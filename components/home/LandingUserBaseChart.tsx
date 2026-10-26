@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -27,6 +27,8 @@ import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
 import { IS_PRODUCTION } from "@/lib/helpers";
+import StickyHeader from "@/components/layout/StickyHeader";
+import ScrollerHeaderStandIn from "@/components/layout/ScrollerHeaderStandIn";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -171,6 +173,9 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
+  // shared by the table and its sticky header copy
+  const [centerMetric, setCenterMetric] = useState("daa");
+  const tableHeaderRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [isWrapping, setIsWrapping] = useState(false);
 
@@ -283,9 +288,31 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               />
             </GTPButtonContainer>
           </Container>
+          {/* One ranking context for the table and its sticky header stand-in, so hovering a rank
+              column in either one highlights the rows */}
+          <TableRankingProvider>
+          <div>
+          {showTable && (
+            // the table header sits inside the horizontal scroller, so a copy sticks in its place
+            <StickyHeader overlay>
+              <ScrollerHeaderStandIn originalRef={tableHeaderRef}>
+                <LandingMetricsTable
+                  data={{ chains: landing.data.metrics.table_visual }}
+                  master={master}
+                  interactable={false}
+                  sort={sort}
+                  setSort={setSort}
+                  selectedChainTypes={selectedChainTypes}
+                  theme={resolvedTheme}
+                  centerMetric={centerMetric}
+                  setCenterMetric={setCenterMetric}
+                  headerOnly
+                />
+              </ScrollerHeaderStandIn>
+            </StickyHeader>
+          )}
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
             <div className="" style={{ display: showTable ? "block" : "none" }}>
-              <TableRankingProvider>
                 <div className="flex flex-col gap-y-[5px]">
                 <LandingMetricsTable
                   data={{ chains: landing.data.metrics.table_visual }}
@@ -296,9 +323,11 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   setSort={setSort}
                   selectedChainTypes={selectedChainTypes}
                   theme={resolvedTheme}
+                  centerMetric={centerMetric}
+                  setCenterMetric={setCenterMetric}
+                  headerRef={tableHeaderRef}
                 />
                 </div>
-              </TableRankingProvider>
             </div>
             <div className="rounded-[15px] pr-[10px] mt-[15px] -ml-[5px]" style={{ display: showTable ? "none" : "block" }}>
               <ProjectsMetadataProvider>
@@ -311,6 +340,8 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               </ProjectsMetadataProvider>
             </div>
           </HorizontalScrollContainer>
+          </div>
+          </TableRankingProvider>
         </>
       ) : (
         <Container>

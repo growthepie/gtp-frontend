@@ -5,7 +5,7 @@ import {
   Get_DefaultChainSelectionKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
-import { ReactNode, createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { ReactNode, Ref, createContext, memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { format as d3Format } from "d3"
@@ -126,6 +126,10 @@ export default memo(function LandingMetricsTable({
   setSort,
   selectedChainTypes,
   theme,
+  centerMetric: controlledCenterMetric,
+  setCenterMetric: setControlledCenterMetric,
+  headerRef,
+  headerOnly = false,
 }: {
   data: any;
   master: MasterResponse;
@@ -134,10 +138,18 @@ export default memo(function LandingMetricsTable({
   setSort: (sort: { metric: string; sortOrder: "asc" | "desc" }) => void;
   selectedChainTypes: string[];
   theme: string | undefined;
+  /** The metric the rank column ranks by; pass it in to share it with a second copy of the header */
+  centerMetric?: string;
+  setCenterMetric?: (metric: string) => void;
+  headerRef?: Ref<HTMLDivElement>;
+  /** Render only the column header, e.g. as the sticky stand-in for this table's header */
+  headerOnly?: boolean;
 }) {
   const { AllChainsByKeys, EnabledChainsByKeys } = useMaster();
   const { data: landing } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  const [centerMetric, setCenterMetric] = useState("daa");
+  const [ownCenterMetric, setOwnCenterMetric] = useState("daa");
+  const centerMetric = controlledCenterMetric ?? ownCenterMetric;
+  const setCenterMetric = setControlledCenterMetric ?? setOwnCenterMetric;
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
   // const [maxVal, setMaxVal] = useState(0);
   // useEffect(() => {
@@ -232,6 +244,7 @@ export default memo(function LandingMetricsTable({
 
   return (
     <>
+      <div ref={headerRef}>
       <GridTableHeader
         gridDefinitionColumns="grid-cols-[26px_125px_190px_95px_minmax(300px,800px)_140px_125px_120px]"
         className="mt-[15px] group heading-small-xs gap-x-[15px] z-[2] !pl-[5px] !pr-[15px] select-none h-[34px] !pb-0 !pt-0"
@@ -350,6 +363,8 @@ export default memo(function LandingMetricsTable({
           Age
         </GridTableHeaderCell>
       </GridTableHeader>
+      </div>
+      {!headerOnly && (
       <div className="flex flex-col gap-y-[5px] w-full relative">
         {rows
           .filter((row) => Get_SupportedChainKeys(master).includes(row.chain.key))
@@ -411,6 +426,7 @@ export default memo(function LandingMetricsTable({
             );
           })}
       </div>
+      )}
     </>
   );
 });
