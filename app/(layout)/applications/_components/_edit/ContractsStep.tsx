@@ -97,9 +97,6 @@ type ContractsStepProps = {
   bulkSubmitResult: BulkOnchainSubmitResult | null;
   lastSubmitChainId: string;
 
-  // Survey
-  onSurveySubmit?: (data: { teamSize: string; goal: string; metric: string; other: string }) => void;
-
   // Step gating
   isMetadataSubmitted: boolean;
 };
@@ -164,7 +161,6 @@ export function ContractsStep({
   singleSubmitResult,
   bulkSubmitResult,
   lastSubmitChainId,
-  onSurveySubmit,
   isMetadataSubmitted,
 }: ContractsStepProps) {
   const [duplicateMemoOpen, setDuplicateMemoOpen] = useState(true);
@@ -174,12 +170,6 @@ export function ContractsStep({
   const [rowDropdownQuery, setRowDropdownQuery] = useState<Record<string, string>>({});
   const [tableContainerWidth, setTableContainerWidth] = useState(9999);
   const [nameColWidth, setNameColWidth] = useState(80);
-
-  // Survey state
-  const [surveyTeamSize, setSurveyTeamSize] = useState("");
-  const [surveyGoal, setSurveyGoal] = useState("");
-  const [surveyMetric, setSurveyMetric] = useState("");
-  const [surveyOther, setSurveyOther] = useState("");
 
   // Tracks whether the user has explicitly proceeded through step 3 via the "Continue to review" button
   const [step3Completed, setStep3Completed] = useState(false);
@@ -1163,64 +1153,6 @@ export function ContractsStep({
               </div>
             </div>
 
-            {/* Survey */}
-            <div className="border-t border-color-ui-shadow/40 pt-[16px] flex flex-col gap-y-[12px]">
-              <div className="text-sm">A few quick questions</div>
-
-              <div className="flex flex-col gap-y-[10px]">
-                {/* Team size */}
-                <div>
-                  <label className="mb-[6px] block text-xs text-color-text-primary">How big is your team?</label>
-                  <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
-                    <input
-                      value={surveyTeamSize}
-                      onChange={(e) => setSurveyTeamSize(e.target.value)}
-                      placeholder="e.g. Solo, 2–5, 10+"
-                      className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                    />
-                  </div>
-                </div>
-
-                {/* Goal */}
-                <div>
-                  <label className="mb-[6px] block text-xs text-color-text-primary">What's your goal with submitting your labels?</label>
-                  <textarea
-                    value={surveyGoal}
-                    onChange={(e) => setSurveyGoal(e.target.value)}
-                    placeholder="e.g. Improve data accuracy, get visibility for our project..."
-                    className="w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-none text-color-text-primary placeholder-color-text-secondary min-h-[72px]"
-                  />
-                </div>
-
-                {/* Most important metric */}
-                <div>
-                  <label className="mb-[6px] block text-xs text-color-text-primary">What's the most important metric you are tracking?</label>
-                  <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
-                    <input
-                      value={surveyMetric}
-                      onChange={(e) => setSurveyMetric(e.target.value)}
-                      placeholder="e.g. TVL, daily active users, transaction volume..."
-                      className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                    />
-                  </div>
-                </div>
-
-                {/* Anything else */}
-                <div>
-                  <label className="mb-[6px] block text-xs text-color-text-primary">
-                    Anything else you'd like to tell us?{" "}
-                    <span className="font-normal text-color-text-secondary">(what you miss on growthepie, etc.)</span>
-                  </label>
-                  <textarea
-                    value={surveyOther}
-                    onChange={(e) => setSurveyOther(e.target.value)}
-                    placeholder="Share any feedback or feature requests..."
-                    className="w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-none text-color-text-primary placeholder-color-text-secondary min-h-[72px]"
-                  />
-                </div>
-              </div>
-            </div>
-
             <div className="mt-[4px] flex items-center justify-end gap-x-[8px]">
               <GTPButton
                 label="Continue to review"
@@ -1228,15 +1160,10 @@ export function ContractsStep({
                 size="sm"
                 rightIcon={"in-button-right" as any}
                 clickHandler={() => {
-                  onSurveySubmit?.({ teamSize: surveyTeamSize, goal: surveyGoal, metric: surveyMetric, other: surveyOther });
                   setStep3Completed(true);
                   setActiveStep(4);
                 }}
-                className={
-                  surveyTeamSize.trim() && surveyGoal.trim() && surveyMetric.trim()
-                    ? "bg-color-text-primary text-color-bg-default"
-                    : "border border-color-ui-shadow bg-color-bg-default"
-                }
+                className="bg-color-text-primary text-color-bg-default"
               />
             </div>
           </div>

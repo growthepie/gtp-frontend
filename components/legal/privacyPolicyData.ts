@@ -1,5 +1,5 @@
-export const privacyPolicyLastUpdated = "May 21, 2026";
-export const privacyPolicyLastUpdatedIso = "2026-05-21";
+export const privacyPolicyLastUpdated = "October 27, 2026";
+export const privacyPolicyLastUpdatedIso = "2026-10-27";
 
 export type PrivacyPolicySection = {
   title: string;
@@ -24,7 +24,7 @@ export const privacyPolicySections: PrivacyPolicySection[] = [
       "Technical access data: IP address, request URL, date and time, browser and device information, referrer, server logs, and security-related request metadata.",
       "Analytics data: page views, approximate location, device type, browser, referrer, and interaction events such as clicks on charts, filters, downloads, and navigation items.",
       "Cookie and preference data: cookie consent state, theme preference, recently used searches, selected metrics, chart settings, and similar browser-side preferences.",
-      "Contact and submission data: information you actively submit through forms, surveys, project edits, application contributions, donation-related forms, or similar workflows, such as project name, website, social links, wallet address, logo files, descriptions, feedback, and contact details if provided.",
+      "Contact and submission data: information you actively submit through forms, project edits, application contributions, donation-related forms, or similar workflows, such as project name, website, social links, wallet address, logo files, descriptions, feedback, and contact details if provided.",
       "Public contribution data: project metadata or app information submitted for inclusion in open datasets or GitHub-based contribution workflows.",
     ],
   },
@@ -38,7 +38,7 @@ export const privacyPolicySections: PrivacyPolicySection[] = [
       "Cookie consent and preference storage: Art. 6(1)(c) GDPR where consent records are legally required, and Art. 6(1)(f) GDPR for strictly necessary preferences.",
       "Google Analytics, Google Tag Manager, advertising-related consent signals, and comparable non-essential analytics: Art. 6(1)(a) GDPR, based on consent.",
       "Privacy-friendly aggregated analytics through Vercel Web Analytics: Art. 6(1)(f) GDPR, based on our legitimate interest in understanding aggregate site usage without cross-site tracking cookies.",
-      "Responding to messages, surveys, project edits, app contributions, and similar submissions: Art. 6(1)(b) GDPR for requested pre-contractual or service-related steps, Art. 6(1)(f) GDPR for community/project operations, and Art. 6(1)(a) GDPR where a submission is optional and consent-based.",
+      "Responding to messages, project edits, app contributions, and similar submissions: Art. 6(1)(b) GDPR for requested pre-contractual or service-related steps, Art. 6(1)(f) GDPR for community/project operations, and Art. 6(1)(a) GDPR where a submission is optional and consent-based.",
       "Legal compliance, accounting, documentation, and defense of claims: Art. 6(1)(c) and Art. 6(1)(f) GDPR.",
     ],
   },
@@ -64,7 +64,7 @@ export const privacyPolicySections: PrivacyPolicySection[] = [
     bullets: [
       "Vercel hosts parts of the website infrastructure and provides Web Analytics. Vercel Web Analytics is designed to provide aggregated analytics without third-party cookies or cross-site user identifiers.",
       "Google Tag Manager and Google Analytics 4 may be used after consent. Google Analytics 4 does not log or store individual IP addresses from EU users according to Google's current documentation, but Google may process analytics data as an independent provider under its own terms.",
-      "Airtable may be used to store survey responses, notifications, donation-related form data, and similar submitted records.",
+      "Airtable may be used to store notifications, donation-related form data, and similar submitted records.",
       "GitHub and Open Labels tooling may be used for project/app contribution workflows. If you submit project metadata for public inclusion, the submitted data may become public in repositories, pull requests, datasets, or related review systems.",
       "Discord webhooks may be used internally to notify the team about certain submissions or system events.",
     ],
@@ -87,7 +87,7 @@ export const privacyPolicySections: PrivacyPolicySection[] = [
       "Browser localStorage preferences remain until you clear browser storage or the app removes them.",
       "Operational logs are kept only as long as needed for security, debugging, and service operation, typically for a short operational period unless an incident requires longer retention.",
       "Analytics data is retained according to the settings and retention periods of the relevant analytics provider.",
-      "Contact, survey, donation-related, and project-submission records are retained while needed to process the request and for reasonable documentation periods, generally no longer than three years after the last relevant interaction unless legal obligations require longer retention.",
+      "Contact, donation-related, and project-submission records are retained while needed to process the request and for reasonable documentation periods, generally no longer than three years after the last relevant interaction unless legal obligations require longer retention.",
       "Public project/app contribution data may be retained indefinitely where it becomes part of public repositories, public datasets, changelogs, or historical records.",
     ],
   },
