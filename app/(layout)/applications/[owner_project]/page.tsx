@@ -796,7 +796,10 @@ const OverviewContent = memo(({
             <>
           {Object.keys(data.kpi_cards).map((metric) => {
             const card = data.kpi_cards[metric];
-            const units = masterData?.app_metrics[metric]?.units ?? {};
+            const metricDef = masterData?.app_metrics?.[metric];
+            // Skip KPI cards for metrics not (yet) defined in master.app_metrics
+            if (!metricDef) return null;
+            const units = metricDef.units ?? {};
             const unitKey = "usd" in units || "eth" in units
               ? (showUsd ? "usd" : "eth")
               : "value";
@@ -819,14 +822,14 @@ const OverviewContent = memo(({
             return (
               <GTPMetricCard
                 key={metric}
-                label={masterData?.app_metrics[metric].name ?? metric}
+                label={metricDef.name ?? metric}
                 value={card.current_values.data[valueIdx] * scale}
                 wowChange={card.wow_change.data[wowIdx] * 100}
                 sparkline={card.sparkline.data.map((item: any) => item[sparklineIdx] * scale)}
                 prefix={unit?.prefix ?? ""}
                 suffix={isPercentage ? "%" : (unit?.suffix ?? "")}
                 color={appColor[0]}
-                icon={normalizeAppMetricIcon(masterData?.app_metrics[metric].icon) ?? "gtp-metrics-marketcap"}
+                icon={normalizeAppMetricIcon(metricDef.icon) ?? "gtp-metrics-marketcap"}
                 onClick={() => navigateToMetric(metric)}
               />
             );
