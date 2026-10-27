@@ -1,0 +1,12 @@
+name: Deploy on preview push
+on:
+  push:
+    branches:
+      - preview
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.PREVIEW_DEPLOY_HOOK }}
