@@ -55,8 +55,8 @@ export default function LandingEthAssetCard() {
     [hourly, livePrice],
   );
   const priceTrend = price.values;
-  // Rounded to what's shown, so a tiny move reads "0.0%" rather than a red "-0.0%".
-  const priceChange = price.change === null ? null : Math.round(price.change * 10) / 10 || 0;
+  // Rounded to what's shown, so a tiny move reads "0.00%" rather than a red "-0.00%".
+  const priceChange = price.change === null ? null : Math.round(price.change * 100) / 100 || 0;
 
   return (
     <Link
@@ -87,7 +87,7 @@ export default function LandingEthAssetCard() {
                 : "—"}
             </div>
             <div className={`numbers-xs ${priceChange === null ? "" : priceChange > 0 ? "text-color-positive" : priceChange < 0 ? "text-color-negative" : ""}`}>
-              {priceChange === null ? "" : `${priceChange > 0 ? "+" : ""}${priceChange.toFixed(1)}%`}
+              {priceChange === null ? "" : `${priceChange > 0 ? "+" : ""}${priceChange.toFixed(2)}%`}
             </div>
             {/* Only where cards are wide enough for it on the same line. */}
             <div className="hidden xl:block heading-small-xxxs text-color-text-secondary">24h</div>

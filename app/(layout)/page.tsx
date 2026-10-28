@@ -73,7 +73,7 @@ export default async function Page() {
         </Heading>
         <div className="flex items-center gap-[10px]">
           <Subheading className="text-lg md:text-xl">
-            Ethereum is more than one blockchain. It&apos;s many.
+            Ethereum is more than just a blockchain.
           </Subheading>
           <LinkButton href="https://ethereum.org/" icon="ethereum-logo-monochrome" iconClassName="text-chains-ethereum">
             What is Ethereum?
