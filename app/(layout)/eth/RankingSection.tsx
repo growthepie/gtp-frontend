@@ -126,7 +126,7 @@ export default function RankingSection() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[30px] gap-y-[60px] lg:gap-y-[30px]">
       <div className="flex flex-col gap-y-[15px] lg:grid lg:grid-rows-subgrid lg:row-span-4">
         <SectionTitle icon="gtp-rank" title="How big is it really?" titleSize="md" as="h2" />
-        <SectionDescription>ETH next to assets you already have a sense of.</SectionDescription>
+        <SectionDescription>ETH next to assets you already know.</SectionDescription>
         {/* Same control bar as the fundamentals charts. It sits inside this column, so
             side by side it stops at the column edge rather than running under ETH / BTC.
             The four labels don't fit a phone on one line, so the row itself wraps and

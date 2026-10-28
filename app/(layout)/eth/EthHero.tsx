@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import GTPMetricCard from "@/components/layout/Applications/AppMetricCard";
@@ -9,7 +9,7 @@ import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { useMediaQuery } from "@react-hook/media-query";
-import { useSSE } from "@/hooks/useSSE";
+import { useLiveEthPrice, withLivePrice } from "@/hooks/useLiveEthPrice";
 import { KPI_TIMEFRAMES, KpiKey, KpiTimeframe, liveStatValue } from "@/lib/eth-the-asset/data";
 import { useEthAssetSection } from "@/hooks/useEthAssetSection";
 import { ACCENT_HEX, AccentColor, FALLBACK_TEXT, FALLBACK_TILE_BG, ifFallback } from "./_components/colors";
@@ -33,28 +33,6 @@ const TIMESPANS: Record<KpiTimeframe, { label: string; shortLabel: string; dateF
   "1y": { label: "1 year", shortLabel: "1y", dateFormat: "DD MMM YYYY" },
   "5y": { label: "5 years", shortLabel: "5y", dateFormat: "MMM YYYY" },
 };
-
-const ETH_PRICE_SSE_URL = "https://sse.growthepie.com/events/eth-price";
-
-// Live ETH/USD from growthepie's price stream: an "initial" message, then an "update"
-// about every 2s. A price flagged stale, or off from the stream's own cross-check,
-// doesn't count, and neither does one from a dropped connection: the hero then falls
-// back to kpis.json's hourly price. Paused while the tab is hidden (useSSE).
-function useLiveEthPrice() {
-  const [price, setPrice] = useState<number | null>(null);
-  const onMessage = useCallback((event: MessageEvent) => {
-    try {
-      const d = JSON.parse(event.data)?.data;
-      const ok = d && Number.isFinite(d.price) && d.price > 0 && !d.stale && !d.deviation_warning;
-      setPrice(ok ? d.price : null);
-    } catch {
-      // Ignore a malformed message; the next one comes in ~2s.
-    }
-  }, []);
-  const onError = useCallback(() => setPrice(null), []);
-  useSSE(ETH_PRICE_SSE_URL, { onMessage, onError });
-  return price;
-}
 
 // Timespan bar, by the bar's own width rather than the screen's. The five buttons
 // with full labels need ~410px, plus ~32px for the i-button at the end. Below that they
@@ -123,6 +101,9 @@ export default function EthHero() {
       burned: series("eth_burned"),
     };
   }, [kpisData, timespan]);
+  // The price card's last point and change follow the live price when it's coming in
+  // (kept apart from kpis so the other cards don't redraw with every price update).
+  const price = useMemo(() => withLivePrice(kpis.price, livePrice), [kpis.price, livePrice]);
 
   // The live stream's price when it's coming in, otherwise kpis.json's latest hourly price.
   const isLivePrice = livePrice !== null;
@@ -296,7 +277,7 @@ export default function EthHero() {
           </InfoButton>
         </GTPButtonContainer>
         <div className="grid grid-cols-1 @[850px]:grid-cols-2 @[1295px]:grid-cols-3 gap-[10px]">
-          {hasSeries(kpis.price) && displayedPrice ? (
+          {hasSeries(price) && displayedPrice ? (
             <GTPMetricCard
               sparklineTransitionKey={timespan}
               fillSparkline
@@ -304,10 +285,13 @@ export default function EthHero() {
               label="ETH price"
               icon="gtp-tokeneth"
               value={displayedPrice}
-              wowChange={kpis.price.change}
+              // In full to the cent, and a pulsing end dot: the price updates live.
+              formatValue={(v) => v.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              pulseEndDot={isLivePrice}
+              wowChange={price.change}
               prefix="$"
-              sparkline={kpis.price.values}
-              timestamps={kpis.price.timestamps}
+              sparkline={price.values}
+              timestamps={price.timestamps}
               tooltipDateFormat={dateFormat}
               color={tile("turquoise")}
             />
