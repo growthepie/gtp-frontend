@@ -35,6 +35,11 @@ const MYTHS = [
       "That stopped in 2022. Ethereum switched from mining to staking and cut its energy use by over 99.9%. It now runs on roughly the power of a small town.",
   },
   {
+    question: "“Proof of Stake is a scam.”",
+    answer:
+      "Ethereum ran on proof of work, the same mining model as Bitcoin, from its launch in 2015 until the Merge in September 2022. Switching to proof of stake cut energy use by over 99.9% and new ETH issuance by around 90%, because the network no longer has to pay for mining hardware and electricity. It also changed what an attack costs: an attacker has to buy and lock up ETH, and the protocol can destroy (slash) that stake if they misbehave, while a miner who attacks keeps their hardware. And anyone with ETH can take part from an ordinary computer, without specialized mining machines.",
+  },
+  {
     question: "“It’s only used for speculation.”",
     answer:
       "Most of the fees on Ethereum today come from payments, stablecoin transfers and trading, the same things a payment network does.",

@@ -87,6 +87,10 @@ export interface GTPMetricCardProps {
    * dot fades in once the line reaches it. Without it, the chart behaves as before.
    */
   sparklineTransitionKey?: string;
+  /** Pulse the sparkline's end dot, e.g. for a value that updates live. */
+  pulseEndDot?: boolean;
+  /** Replaces the default `prefix + compact value + suffix` for the card's value. */
+  formatValue?: (value: number) => string;
 }
 
 // ─── Sparkline chart ──────────────────────────────────────────────────────────
@@ -118,9 +122,11 @@ interface SparklineChartProps {
   tooltip?: SparklineTooltipOptions;
   /** Draw the line in from the left on mount, and fade the end dot in once it's drawn. */
   revealOnMount?: boolean;
+  /** Pulse the end dot (not while hovering, when the dot follows the pointer). */
+  pulseEndDot?: boolean;
 }
 
-export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip, revealOnMount = false }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip, revealOnMount = false, pulseEndDot = false }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
@@ -128,6 +134,10 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
   // With revealOnMount the end dot waits for the line's draw-in to finish.
   const [lineDrawn, setLineDrawn] = useState(!revealOnMount);
   const onEvents = useMemo(() => (revealOnMount ? { finished: () => setLineDrawn(true) } : undefined), [revealOnMount]);
+  const dotColor =
+    typeof window !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "#fff"
+      : "#fff";
 
   const [customTooltip, setCustomTooltip] = useState<{
     visible: boolean;
@@ -259,18 +269,19 @@ export const SparklineChart = ({ values, timestamps, color, label, prefix, suffi
       {/* Dot at current / hovered data point */}
       {circlePosition && (
         <div
-          className="absolute w-[10px] h-[10px] rounded-full pointer-events-none z-[60]"
+          className="absolute w-[10px] h-[10px] pointer-events-none z-[60]"
           style={{
             left: circlePosition.x - 5,
             top: circlePosition.y - 5,
-            backgroundColor:
-              typeof window !== "undefined"
-                ? getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "#fff"
-                : "#fff",
             opacity: lineDrawn ? 0.6 : 0,
             ...(revealOnMount ? { transition: "opacity 250ms ease-out" } : {}),
           }}
-        />
+        >
+          {pulseEndDot && !isHovering && (
+            <div className="absolute inset-0 rounded-full motion-safe:animate-ping" style={{ backgroundColor: dotColor }} />
+          )}
+          <div className="absolute inset-0 rounded-full" style={{ backgroundColor: dotColor }} />
+        </div>
       )}
 
       {/* Tooltip */}
@@ -342,6 +353,8 @@ export default function GTPMetricCard({
   nonInteractive = false,
   tooltip,
   sparklineTransitionKey,
+  pulseEndDot = false,
+  formatValue,
 }: GTPMetricCardProps) {
   const computedWowChange =
     wowChangeProp !== undefined
@@ -393,6 +406,7 @@ export default function GTPMetricCard({
               edgeToEdge
               tooltipDateFormat={tooltipDateFormat}
               tooltip={tooltip}
+              pulseEndDot={pulseEndDot}
             />
           </div>
         </div>
@@ -410,6 +424,7 @@ export default function GTPMetricCard({
             decimals={decimals}
             tooltipDateFormat={tooltipDateFormat}
             tooltip={tooltip}
+            pulseEndDot={pulseEndDot}
           />
         </div>
       )}
@@ -424,7 +439,9 @@ export default function GTPMetricCard({
           className={`numbers-sm xs:numbers-md ${nonInteractive ? "" : "group-hover:!text-color-text-primary"} ${fillSparkline ? "whitespace-nowrap" : ""}`}
           style={{ color }}
         >
-          {stackSuffixWhenNarrow ? (
+          {formatValue ? (
+            formatValue(value)
+          ) : stackSuffixWhenNarrow ? (
             <>
               <span className="whitespace-nowrap">{prefix}{formatLargeNumber(value, decimals)}</span>
               <span className="block @[400px]:inline whitespace-nowrap text-right">{suffix}</span>

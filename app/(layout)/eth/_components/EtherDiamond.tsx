@@ -17,7 +17,8 @@ const subscribeNever = () => () => {};
 // dragged (with inertia), leans towards a hovering mouse and follows the device
 // gyroscope on phones and tablets. Spun hard enough, it turns into the steam of
 // growthepie's logo for a while. See etherDiamondScene.ts for the renderer.
-function EtherDiamond({ height = 380 }: { height?: number }) {
+// interactive={false} gives a display-only glyph: the idle spin, nothing else.
+function EtherDiamond({ height = 380, interactive = true }: { height?: number; interactive?: boolean }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<EtherDiamondScene | null>(null);
@@ -28,6 +29,7 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
   useEffect(() => {
     if (!wrapperRef.current || !canvasRef.current) return;
     const scene = createEtherDiamondScene(wrapperRef.current, canvasRef.current, {
+      interactive,
       onTiltActive: () => setTilt("on"),
       onSteam: () => track("found ETH steam easter egg", { location: "eth hero", page: window.location.pathname }),
     });
@@ -36,7 +38,7 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
       scene?.destroy();
       sceneRef.current = null;
     };
-  }, []);
+  }, [interactive]);
 
   const enableTilt = () => {
     const requestPermission = motionApi()?.requestPermission;
@@ -53,8 +55,8 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
   return (
     <div
       ref={wrapperRef}
-      className="relative flex w-full cursor-grab select-none items-center justify-center [-webkit-touch-callout:none]"
-      style={{ height, touchAction: "pan-y pinch-zoom" }}
+      className={`relative flex w-full select-none items-center justify-center [-webkit-touch-callout:none] ${interactive ? "cursor-grab" : "pointer-events-none"}`}
+      style={{ height, touchAction: interactive ? "pan-y pinch-zoom" : undefined }}
     >
       <div
         aria-hidden="true"
@@ -72,7 +74,7 @@ function EtherDiamond({ height = 380 }: { height?: number }) {
         style={{ width: height * 0.82 }}
       />
       <div className="absolute bottom-0 right-[15px] flex items-center gap-x-[8px] text-xs text-color-text-primary/70">
-        {needsMotionPermission && !reducedMotion && tilt === "off" && (
+        {interactive && needsMotionPermission && !reducedMotion && tilt === "off" && (
           <button
             type="button"
             onClick={enableTilt}

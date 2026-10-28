@@ -335,7 +335,16 @@ export type EtherDiamondScene = {
 export function createEtherDiamondScene(
   wrapper: HTMLElement,
   canvas: HTMLCanvasElement,
-  { onTiltActive, onSteam }: { onTiltActive?: () => void; onSteam?: () => void } = {},
+  {
+    onTiltActive,
+    onSteam,
+    interactive = true,
+  }: {
+    onTiltActive?: () => void;
+    onSteam?: () => void;
+    /** False: display only. It still spins on its own, but ignores pointer and gyro and never turns to steam. */
+    interactive?: boolean;
+  } = {},
 ): EtherDiamondScene | null {
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
@@ -431,7 +440,7 @@ export function createEtherDiamondScene(
     if (!reduced) {
       // Held, it's as fast as the pointer has been turning it lately (0 once it stops).
       const speed = dragging ? releaseVelocity(lastFrame) : spin;
-      const charging = morph === 0 && morphTarget === 0 && Math.abs(speed) > CHARGE_SPIN;
+      const charging = interactive && morph === 0 && morphTarget === 0 && Math.abs(speed) > CHARGE_SPIN;
       charge = clamp(charge + (charging ? dt / CHARGE_TIME : -dt / CHARGE_DRAIN), 0, 1);
       if (charge === 1 && morphTarget === 0) {
         morphTarget = 1;
@@ -780,7 +789,7 @@ export function createEtherDiamondScene(
   };
 
   const updateTiltListener = () => {
-    const listen = !reduced && touchQuery.matches && onScreen && pageVisible && typeof DeviceMotionEvent !== "undefined";
+    const listen = interactive && !reduced && touchQuery.matches && onScreen && pageVisible && typeof DeviceMotionEvent !== "undefined";
     if (listen === tiltListening) return;
     tiltListening = listen;
     if (listen) {
@@ -921,12 +930,14 @@ export function createEtherDiamondScene(
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
-  wrapper.addEventListener("pointerdown", onPointerDown);
-  wrapper.addEventListener("pointermove", onPointerMove);
-  wrapper.addEventListener("pointerup", endDrag);
-  wrapper.addEventListener("pointercancel", endDrag);
-  wrapper.addEventListener("lostpointercapture", endDrag);
-  wrapper.addEventListener("pointerleave", onPointerLeave);
+  if (interactive) {
+    wrapper.addEventListener("pointerdown", onPointerDown);
+    wrapper.addEventListener("pointermove", onPointerMove);
+    wrapper.addEventListener("pointerup", endDrag);
+    wrapper.addEventListener("pointercancel", endDrag);
+    wrapper.addEventListener("lostpointercapture", endDrag);
+    wrapper.addEventListener("pointerleave", onPointerLeave);
+  }
   document.addEventListener("visibilitychange", onVisibilityChange);
   reducedMotionQuery.addEventListener("change", onReducedMotionChange);
 

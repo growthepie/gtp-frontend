@@ -23,6 +23,7 @@ import { Carousel } from "@/components/Carousel";
 import { useUIContext } from "@/contexts/UIContext";
 import LandingAppHighlight from "./LandingAppHighlight";
 import LandingEcosystemTPSCard from "./LandingEcosystemTPSCard";
+import LandingEthAssetCard from "./LandingEthAssetCard";
 import Container from "../Container";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
@@ -77,7 +78,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds: string[] = ["ethereum-quarterly-report-2026-q3"];
+const quickBiteIds: string[] = [];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -168,6 +169,9 @@ export default function LandingSwiperItems() {
       desktopRightPadding
       bottomOffset={-28}
     >
+      <div className="group w-full">
+        <LandingEthAssetCard />
+      </div>
       {quickBiteItems.map(({slug, quickBite}) => (
         <div key={slug} className="group w-full">
           <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
