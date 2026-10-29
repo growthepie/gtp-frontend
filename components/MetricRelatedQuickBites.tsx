@@ -10,9 +10,17 @@ interface MetricRelatedQuickBitesProps {
   metricKey: string;
   metricType?: string;
   includePageContainer?: boolean;
+  title?: string;
+  description?: string;
 }
 
-const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metricKey, metricType = "fundamentals", includePageContainer = false }) => {
+const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({
+    metricKey,
+    metricType = "fundamentals",
+    includePageContainer = false,
+    title = "Related Quick Bites",
+    description = "See related quick bites for this metric. Quick bites are blog-style articles that go in-depth on certain topics, backed by live data.",
+}) => {
     const relatedQuickBites = getQuickBitesByMetric(metricKey, metricType);
     
     if(Object.keys(relatedQuickBites).length === 0) {
@@ -32,16 +40,16 @@ const MetricRelatedQuickBites: React.FC<MetricRelatedQuickBitesProps> = ({ metri
         <>
             <div className="flex justify-between items-center">
                 <Title
-                    title="Related Quick Bites"
+                    title={title}
                     icon="gtp-quick-bites"
-                    as="h1"
+                    as="h2"
                     titleSize="md"
                 />
                 <SectionButtonLink href="/quick-bites" label="See all Quick Bites" shortLabel="More Bites" />
             </div>
             
             <div className="text-md">
-                See related quick bites for this metric. Quick bites are blog-style articles that go in-depth on certain topics, backed by live data.
+                {description}
             </div>
             
             <QuickBitesGrid 

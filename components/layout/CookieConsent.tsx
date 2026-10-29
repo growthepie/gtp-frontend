@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { setCookie, getCookie } from "cookies-next";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { useSearchParams } from "next/navigation";
 import { ANALYTICS_CONFIG, getConsentUpdate } from '@/lib/analyticsConfig';
 
@@ -91,20 +92,8 @@ export default function CookieConsent() {
 
         <div className="flex align-middle justify-between lg:pt-0 pt-[15px]">
           <div className="flex items-center justify-center w-full space-x-[15px]">
-            <button
-              onClick={() => {
-                acceptCookie();
-              }}
-              className="bg-color-ui-active hover:bg-color-ui-hover dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
-            >
-              Allow
-            </button>
-            <button
-              onClick={(e) => denyCookie()}
-              className="hover:bg-color-ui-hover dark:text-forest-50 text-sm md:text-base px-[15px] py-[8px] rounded-full text-center whitespace-nowrap w-full lg:w-auto "
-            >
-              Decline
-            </button>
+            <GTPButton label="Allow" variant="highlight" size="md" fill="mobile" clickHandler={() => acceptCookie()} />
+            <GTPButton label="Decline" variant="no-background" size="md" fill="mobile" clickHandler={() => denyCookie()} />
           </div>
         </div>
       </div>

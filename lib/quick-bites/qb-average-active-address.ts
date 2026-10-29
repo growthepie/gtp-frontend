@@ -5,6 +5,7 @@ const averageActiveAddress: QuickBiteData = createQuickBite({
   title: "The Average Active Address",
   subtitle: "Tracking average active address activity across the ecosystem",
   shortTitle: "Avg Active Address",
+  themes: ["activity"],
   content: [
     "## Active Addresses",
     "Rightfully so, active addresses is a metric that often gets a lot of push back as it can be easily gamed by bots and sybil attackers - an active address != a unique user. The best way to get a more accurate understanding of a chain is to combine metrics and this quick bite does just that. We have taken the top 10 chains in multiple metrics and plotted them against weekly active addresses.",

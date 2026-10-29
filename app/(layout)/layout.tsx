@@ -178,6 +178,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${firaMono.variable} ${firaSans.variable} ${sourceCodePro.variable}`}
+      // Lets Next.js turn off the smooth scrolling from globals.css while it resets the
+      // scroll position on navigation; otherwise it measures mid-animation and lands wrong.
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       style={{
         fontFeatureSettings: "'pnum' on, 'lnum' on",
@@ -243,7 +246,10 @@ export default function RootLayout({
               <SidebarContainer />
               <div
                 id="content-panel"
-                className="relative z-10 flex min-h-full flex-1 flex-col overflow-y-auto overflow-x-hidden bg-inherit"
+                // overflow-x-clip (not hidden/auto) keeps the panel from becoming a scroll container, so
+                // position: sticky inside it sticks to the window. min-w-0 because, unlike hidden, clip
+                // doesn't stop a flex item from growing to its content's min width
+                className="relative z-10 flex min-h-full min-w-0 flex-1 flex-col overflow-x-clip bg-inherit"
               >
                 <div className="relative min-h-full w-full">
                   <Header />

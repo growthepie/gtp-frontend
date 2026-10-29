@@ -16,6 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { normalizeString } from "@/lib/searchNormalize";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // New props to support chain-scoped usage
 type SearchProps = {
@@ -517,7 +518,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                 )}
                 {Filters.length > 0 && (
                   <div
-                    className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                    className={`group/clear flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                     onClick={(e) => {
                       clearAllFilters()
                       e.stopPropagation();
@@ -525,7 +526,7 @@ export default function Search({ hideChainSection = false }: SearchProps) {
                   >
                     <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
-                      <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                      <path fillRule="evenodd" clipRule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" className="group-hover/clear:fill-color-text-primary" />
                       <defs>
                         <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
                           <stop stopColor="#FE5468" />
@@ -675,6 +676,12 @@ export default function Search({ hideChainSection = false }: SearchProps) {
   );
 }
 
+// Neutral icon colours that match --ui-hover in one of the themes; they switch to
+// text-primary while the badge is hovered so they stay visible on the hover fill.
+const NEUTRAL_BADGE_ICON_COLORS = ["#CDD8D3", "#5A6462"];
+const badgeIconHoverClass = (color: string) =>
+  NEUTRAL_BADGE_ICON_COLORS.includes(color.toUpperCase()) ? "group-hover/badge:!text-color-text-primary" : "";
+
 // These components remain the same
 type BadgeProps = {
   onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -713,14 +720,14 @@ export const Badge = memo(({
   if (size === "sm")
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`group/badge flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} ${GTP_BUTTON_INTERACTION_CLASSES} transition-[background-color,color,opacity] duration-200 text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={handleClick}
       >
         {leftIcon ? (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
             <Icon
               icon={leftIcon}
-              className="text-color-text-primary w-[10px] h-[10px]"
+              className={`text-color-text-primary w-[10px] h-[10px] ${badgeIconHoverClass(leftIconColor)}`}
               style={{
                 color: leftIconColor,
               }}
@@ -739,9 +746,9 @@ export const Badge = memo(({
         >
             <Icon
               icon={rightIcon}
-              className={
+              className={`${
                 rightIconSize == "sm" ? "w-[10px] h-[10px]" : "w-[14px] h-[14px]"
-              }
+              } ${badgeIconHoverClass(rightIconColor)}`}
               style={{ color: rightIconColor }}
             />
           </div>
@@ -751,14 +758,14 @@ export const Badge = memo(({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
+      className={`group/badge flex items-center ${altColoring ? "bg-color-bg-default" : "bg-color-bg-medium"} ${GTP_BUTTON_INTERACTION_CLASSES} transition-[background-color,color,opacity] duration-200 text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
       onClick={handleClick}
     >
       {leftIcon ? (
         <div className="flex items-center justify-center w-[25px] h-[25px]">
           <Icon
             icon={leftIcon}
-            className="text-color-text-primary w-[15px] h-[15px]"
+            className={`text-color-text-primary w-[15px] h-[15px] ${badgeIconHoverClass(leftIconColor)}`}
             style={{
               color: leftIconColor,
             }}
@@ -776,7 +783,7 @@ export const Badge = memo(({
         <div className="flex items-center justify-center w-[15px] h-[15px]">
           <Icon
             icon={rightIcon}
-            className="w-[15px] h-[15px]"
+            className={`w-[15px] h-[15px] ${badgeIconHoverClass(rightIconColor)}`}
             style={{ color: rightIconColor }}
           />
         </div>

@@ -68,7 +68,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { ChainsNavigationItems, data: master } = useMaster();
   const pathname = usePathname();
   const { setActiveGroup } = useSidebarContext();
-  const navRef = useRef<HTMLElement>(null); 
+  const navRef = useRef<HTMLElement>(null);
+  const initialPathnameRef = useRef<string | null>(pathname);
   const { setActiveTooltipId } = useTooltipContext();
 
   // Include chains like in the original implementation
@@ -113,7 +114,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       return null;
     };
 
-    const newActiveGroup = findActiveGroup(sidebarNavigation);
+    // On the initial page load, expand Ethereum when no group owns the current path
+    if (pathname !== initialPathnameRef.current) initialPathnameRef.current = null;
+    const fallbackGroup = initialPathnameRef.current !== null ? "Ethereum" : null;
+
+    const newActiveGroup = findActiveGroup(sidebarNavigation) ?? fallbackGroup;
     setActiveGroup(newActiveGroup);
 
   }, [pathname, sidebarNavigation, setActiveGroup]);

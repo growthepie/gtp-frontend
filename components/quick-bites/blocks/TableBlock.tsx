@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect, startTransition } from 'react';
 import { TableBlock as TableBlockType } from "@/lib/types/blockTypes";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -82,7 +82,7 @@ const BadgeLink = ({ badge, uniqueKey }: { badge: { label: string; color: string
         <span className="inline-flex">
           <ExternalLink
             href={linkProps.href}
-            className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs font-medium border border-opacity-30 hover:opacity-80 transition-opacity flex-shrink-0"
+            className="inline-flex items-center gap-x-[4px] rounded-full px-[8px] py-[1px] text-xxs border border-opacity-30 hover:opacity-80 transition-opacity flex-shrink-0"
             style={{ borderColor: badge.color, color: badge.color }}
           >
             <span className="rounded-full size-[5px]" style={{ backgroundColor: badge.color }} />
@@ -102,8 +102,99 @@ const BadgeLink = ({ badge, uniqueKey }: { badge: { label: string; color: string
 /** Fixed-content column types that should never flex. */
 const FIXED_COLUMN_TYPES = new Set(["image", "chain", "boolean", "metric"]);
 
+// "3 days ago" under a date. formatTimeAgo falls back to the plain date after 30 days,
+// which would repeat the date above it, so that case shows nothing.
+const relativeDate = (rawDate: string) => {
+  const timeAgo = formatTimeAgo(rawDate);
+  return timeAgo === formatDate(rawDate) ? null : timeAgo;
+};
+
+const INITIAL_RENDERED_ROWS = 40;
+
+/** Placeholder in the table's shape (header + pulsing rows) while its data loads. */
+function TableSkeleton({ maxHeight, className }: { maxHeight: number; className?: string }) {
+  // Rows are 34px with a 5px gap; fill the same height the loaded table will take.
+  const rowCount = Math.max(3, Math.min(12, Math.floor((maxHeight - 39) / 39)));
+  const barWidths = ["w-[30%]", "w-[18%]", "w-[12%]", "w-[15%]"];
+  return (
+    <div className={`my-8 ${className || ''}`} role="status" aria-live="polite">
+      <span className="sr-only">Loading table data…</span>
+      <div className="flex items-end gap-x-[15px] h-[34px] px-[20px] pb-[8px]" aria-hidden>
+        {barWidths.map((w, i) => (
+          <div key={i} className={`h-[10px] rounded-full bg-color-bg-medium animate-pulse ${w}`} />
+        ))}
+      </div>
+      <div className="flex flex-col gap-y-[5px] mt-[5px]" aria-hidden>
+        {Array.from({ length: rowCount }, (_, row) => (
+          <div
+            key={row}
+            className="h-[34px] rounded-full border-[0.5px] border-color-ui-hover flex items-center gap-x-[15px] px-[20px]"
+          >
+            {barWidths.map((w, i) => (
+              <div
+                key={i}
+                className={`h-[10px] rounded-full bg-color-bg-medium animate-pulse ${w}`}
+                style={{ animationDelay: `${row * 60}ms` }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type TableFilterKeys = { categoryKey: string | null; valueKey: string | null };
+const NO_FILTER_KEYS: TableFilterKeys = { categoryKey: null, valueKey: null };
+const NO_STATE: Record<string, any> = {};
+
+/**
+ * Reads the Quick Bite's shared state and passes on only what this table uses: the
+ * variables in its data URL and, with filterOnStateKey, its filter. A change elsewhere
+ * (e.g. a stock picked in a dropdown) then doesn't re-render the table, which for long
+ * tables (robinhood-stock: 2,000+ rows) is about a second of blocked page.
+ */
 export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const { sharedState, exclusiveFilterKeys, inclusiveFilterKeys } = useQuickBite();
+
+  const stateKeys = useMemo(() => {
+    const url = block.readFromJSON ? block.jsonData?.url : undefined;
+    const urlVars = url?.includes("{{")
+      ? (Mustache.parse(url) || []).filter((tag) => tag[0] === "name").map((tag) => String(tag[1]))
+      : [];
+    return [...urlVars, ...(block.filterOnStateKey ? [block.filterOnStateKey.stateKey] : [])];
+  }, [block.readFromJSON, block.jsonData?.url, block.filterOnStateKey]);
+
+  // A stable object as long as the values this table reads don't change.
+  const stateSignature = JSON.stringify(stateKeys.map((key) => sharedState[key] ?? null));
+  const relevantState = useMemo(
+    () => (stateKeys.length ? Object.fromEntries(stateKeys.map((key) => [key, sharedState[key]])) : NO_STATE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recomputed when the relevant values change
+    [stateKeys, stateSignature],
+  );
+  const usesFilter = Boolean(block.filterOnStateKey);
+
+  return (
+    <TableBlockContent
+      block={block}
+      sharedState={relevantState}
+      exclusiveFilterKeys={usesFilter ? exclusiveFilterKeys : NO_FILTER_KEYS}
+      inclusiveFilterKeys={usesFilter ? inclusiveFilterKeys : NO_FILTER_KEYS}
+    />
+  );
+};
+
+const TableBlockContent = React.memo(function TableBlockContent({
+  block,
+  sharedState,
+  exclusiveFilterKeys,
+  inclusiveFilterKeys,
+}: {
+  block: TableBlockType;
+  sharedState: Record<string, any>;
+  exclusiveFilterKeys: TableFilterKeys;
+  inclusiveFilterKeys: TableFilterKeys;
+}) {
   const [sortConfig, setSortConfig] = useState<{ metric: string; sortOrder: string }>({ metric: '', sortOrder: 'desc' });
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -164,7 +255,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       trigger={
         <button
           type="button"
-          className="inline-flex items-center justify-center text-[#5A6462] hover:text-color-text-primary cursor-pointer z-"
+          className="inline-flex items-center justify-center text-color-text-secondary hover:text-color-text-primary cursor-pointer"
           aria-label="Show info"
           onClick={(e) => e.preventDefault()}
         >
@@ -199,9 +290,24 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
   const { data: jsonData, error, isLoading, isValidating } = useSWR(url, { keepPreviousData: true });
 
+  // jsonData.recordKeyColumn: row data that is an object of records becomes rows with
+  // the record key first, then each field (in order of first appearance).
+  const recordTable = useMemo(() => {
+    const keyColumn = block.jsonData?.recordKeyColumn;
+    if (!block.readFromJSON || !jsonData || !keyColumn) return null;
+    const records = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
+    if (!records || typeof records !== 'object' || Array.isArray(records)) return null;
+    const entries = Object.entries(records as Record<string, Record<string, unknown>>);
+    const fields = [...new Set(entries.flatMap(([, record]) => Object.keys(record ?? {})))];
+    return {
+      columns: [keyColumn, ...fields],
+      rows: entries.map(([key, record]) => [key, ...fields.map((field) => record?.[field])]),
+    };
+  }, [block.readFromJSON, block.jsonData?.recordKeyColumn, block.jsonData?.pathToRowData, jsonData]);
+
   const dynamicColumnKeys = useMemo(() => {
     if (!block.readFromJSON || !jsonData) return block.columnDefinitions || {};
-    const columns = getNestedValue(jsonData, block.jsonData?.pathToColumnKeys || '');
+    const columns = recordTable ? recordTable.columns : getNestedValue(jsonData, block.jsonData?.pathToColumnKeys || '');
     if (Array.isArray(columns)) {
       const keysObject: { [key: string]: { label: string; sortByValue: boolean } } = {};
       columns.forEach(key => {
@@ -210,7 +316,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       return keysObject;
     }
     return columns || block.columnDefinitions || {};
-  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData]);
+  }, [block.readFromJSON, block.columnDefinitions, block.jsonData?.pathToColumnKeys, jsonData, recordTable]);
 
   const defaultColumnKeyOrder = useMemo(() => Object.keys(dynamicColumnKeys), [dynamicColumnKeys]);
   const hiddenKeys = useMemo(() => {
@@ -291,7 +397,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       }
       return [];
     }
-    const rowsArray = getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
+    const rowsArray = recordTable ? recordTable.rows : getNestedValue(jsonData, block.jsonData?.pathToRowData || '');
     if (!Array.isArray(rowsArray)) return [];
     return rowsArray.map((row, rowIndex) => columnKeyOrder.map((columnKey) => {
       const columnDef = columnDefinitions[columnKey];
@@ -352,7 +458,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
       return cellObject;
     }));
-  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, columnKeyOrder, columnIndexMap, columnDefinitions]);
+  }, [block.readFromJSON, block.rowData, block.jsonData?.pathToRowData, jsonData, recordTable, columnKeyOrder, columnIndexMap, columnDefinitions]);
 
   const sortedRows = useMemo(() => {
     const dataToSort = [...processedRows];
@@ -428,6 +534,20 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     return result;
   }, [sortedRows, columnKeyOrder, columnDefinitions, block.rowBar]);
 
+  // Long tables (e.g. 2,000+ stocks) render in two steps: the first rows fill the visible
+  // area right away, the rest follow in one transition, which React renders in small
+  // slices so the page stays responsive. (Several smaller batches would re-render the
+  // rows already shown each time.) Every row still ends up in the DOM for crawlers.
+  const [renderedRowCount, setRenderedRowCount] = useState(INITIAL_RENDERED_ROWS);
+  useEffect(() => {
+    if (renderedRowCount >= sortedRows.length) return;
+    const timeout = setTimeout(() => {
+      startTransition(() => setRenderedRowCount(Number.POSITIVE_INFINITY));
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [renderedRowCount, sortedRows.length]);
+  const visibleRows = renderedRowCount >= sortedRows.length ? sortedRows : sortedRows.slice(0, renderedRowCount);
+
   const resolveBarColor = (rowData: any[], colorColumn?: string, explicitColor?: string) => {
     if (explicitColor) return explicitColor;
     if (colorColumn) {
@@ -447,8 +567,12 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     </div>
   ) : null;
 
-  if (showInitialLoadingState) return <div className="my-8 text-center">Loading table data...</div>;
-  if (block.readFromJSON && error) return <div className="my-8 text-center text-red-500">Error: {error.message}</div>;
+  // From the first render until the data arrives (including before the request starts),
+  // show the table's shape instead of a blank space or a line of text.
+  if (showInitialLoadingState || (block.readFromJSON && !jsonData && !error)) {
+    return <TableSkeleton maxHeight={block.maxHeight ?? 500} className={block.className} />;
+  }
+  if (block.readFromJSON && error) return <div className="my-8 text-center text-xs text-color-negative">Couldn&apos;t load table data: {error.message}</div>;
   if (sortedRows.length === 0 || columnKeyOrder.length === 0) return <div className="my-8 text-center">No data available</div>;
 
   const formatValue = (value: any, columnKey: string) => {
@@ -460,14 +584,14 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const units = columnDefinitions[columnKey]?.units;
     if (units) {
       const unit = Object.values(units)[0];
-      const numericValue = typeof value === 'number' ? value : Number(value);
+      const numericValue = (typeof value === 'number' ? value : Number(value)) * (unit.multiplier ?? 1);
       if (!Number.isFinite(numericValue)) {
         return null;
       }
       return `${unit.prefix ?? ''}${numericValue.toLocaleString("en-GB", { minimumFractionDigits: unit.decimals ?? 0, maximumFractionDigits: unit.decimals ?? 0 })}${unit.suffix ?? ''}`;
     }
     if (typeof value === 'number') {
-      return value.toLocaleString();
+      return value.toLocaleString("en-GB");
     }
     if (typeof value === 'string') {
       return String(value || '');
@@ -479,10 +603,10 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
   const EmptyCell = ({ centered = false }: { centered?: boolean }) => (
     centered ? (
       <div className="flex items-center justify-center w-full">
-        <span className="text-[#5A6462] text-xs">—</span>
+        <span className="text-color-text-secondary text-xs">—</span>
       </div>
     ) : (
-      <span className="text-[#5A6462] text-xs">—</span>
+      <span className="text-color-text-secondary text-xs">—</span>
     )
   );
 
@@ -535,7 +659,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!info) return <span className="text-xs">{cellData.value}</span>;
       return (
         <div className="flex items-center gap-x-[8px] w-full min-w-0">
-          <span className="inline-flex items-center justify-center flex-shrink-0 min-w-[22px] px-[4px] h-[18px] rounded-[4px] bg-forest-500/10 numbers-xs leading-none">
+          <span className="inline-flex items-center justify-center flex-shrink-0 min-w-[22px] px-[4px] h-[18px] rounded-full bg-forest-500/10 numbers-xs leading-none">
             {info.symbol}
           </span>
           <span className="text-xs truncate">{info.name}</span>
@@ -553,7 +677,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!rawDate) return <EmptyCell />;
       const colDef = columnDefinitions?.[columnKey];
       const dateStr = formatDate(rawDate, colDef?.dateFormat ?? 'medium');
-      const timeAgo = colDef?.showTimeAgo ? formatTimeAgo(rawDate) : null;
+      const timeAgo = colDef?.showTimeAgo ? relativeDate(rawDate) : null;
       return (
         <div className={`flex flex-col gap-y-[2px] ${timeAgo && "-mt-[5px]"}`}>
           <span className="text-xs">{dateStr}</span>
@@ -566,7 +690,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (normalized === null) return <EmptyCell centered />;
       return (
         <div className="flex items-center justify-center w-full">
-          <GTPIcon icon={(normalized ? "feather:check" : "feather:x") as GTPIconName} className={`!w-[14px] !h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`} containerClassName="!w-[14px] !h-[14px]" />
+          <GTPIcon icon={(normalized ? "feather:check" : "feather:x") as GTPIconName} className={`!w-[14px] !h-[14px] ${normalized ? "text-color-positive" : "text-color-text-secondary"}`} containerClassName="!w-[14px] !h-[14px]" />
         </div>
       );
     } else if (columnType === "link") {
@@ -574,8 +698,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       if (!linkValue) return <EmptyCell />;
       return (
         <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
-          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-[#5A6462] flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
-          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-color-text-secondary flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
+          <span className="truncate text-color-text-secondary">{getHostname(linkValue)}</span>
         </div>
       );
     } else if (columnType === "badges") {
@@ -646,7 +770,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
     const isScrollable = block.scrollable !== false;
     const cardGrid = (
       <div className="grid grid-cols-1 gap-[10px]">
-        {sortedRows.map((rowData, rowIndex) => {
+        {visibleRows.map((rowData, rowIndex) => {
           const titleCell = titleColIndex >= 0 ? rowData[titleColIndex] : null;
           const imageCell = imageColIndex >= 0 ? rowData[imageColIndex] : null;
           const imageSrc = typeof imageCell?.value === "string" ? imageCell.value.trim() : "";
@@ -659,7 +783,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           const titleInfoTooltipText = getCellInfoTooltipText(titleCell);
 
           return (
-            <div key={`card-${rowIndex}`} className="flex flex-col gap-y-[10px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] py-[10px] hover:bg-forest-500/10">
+            <div key={`card-${rowIndex}`} className="flex flex-col gap-y-[10px] border-[0.5px] border-color-ui-hover rounded-[15px] px-[15px] py-[10px] hover:bg-forest-500/10 [content-visibility:auto] [contain-intrinsic-height:auto_120px]">
               {/* Header: image/icon + title + info tooltip + arrow link */}
               <div className="flex items-center gap-x-[8px]">
                 {imageColumn && (
@@ -746,7 +870,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     return (
       <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
-        {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
+        {block.content && <div className="mb-4 text-md">{block.content}</div>}
         <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
           {isScrollable ? (
             <VerticalScrollContainer
@@ -791,7 +915,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
 
     return (
     <div ref={containerRef} className={`my-8 ${block.className || ''} relative`} aria-busy={showUpdatingState}>
-      {block.content && <div className="mb-4 text-sm text-forest-700 dark:text-forest-300">{block.content}</div>}
+      {block.content && <div className="mb-4 text-md">{block.content}</div>}
 
       <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'}`}>
         <HorizontalScrollContainer includeMargin={isMobile} enableDragScroll>
@@ -826,8 +950,11 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
           );
           const tableRows = (
             <div className="flex flex-col gap-y-[5px] w-full relative mt-[5px]">
-            {sortedRows.map((rowData, rowIndex) => (
-              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0`}
+            {visibleRows.map((rowData, rowIndex) => (
+              // content-visibility: off-screen rows stay in the DOM (crawlers and search
+              // see every row) but the browser skips their layout and paint, which keeps
+              // long tables (2,000+ rows) fast to scroll and resize.
+              <GridTableRow key={`row-${rowIndex}`} style={{ gridTemplateColumns }} className={`relative group text-xs !gap-x-0 !px-[5px] !pr-[15px] !select-none h-[34px] !pt-0 !pb-0 [content-visibility:auto] [contain-intrinsic-height:auto_34px]`}
                 bar={block.rowBar && barMaxValues.rowBarMax > 0 ? {
                   origin_key: block.rowBar.colorColumn
                     ? rowData[columnKeyOrder.indexOf(block.rowBar.colorColumn)]?.value
@@ -934,7 +1061,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     } else {
                       const colDef = columnDefinitions?.[columnKey];
                       const dateStr = formatDate(rawDate, colDef?.dateFormat ?? 'medium');
-                      const timeAgo = colDef?.showTimeAgo ? formatTimeAgo(rawDate) : null;
+                      const timeAgo = colDef?.showTimeAgo ? relativeDate(rawDate) : null;
                       cellMainContent = (
                         <div className={`flex flex-col gap-y-[0px] ${colDef.isNumeric && "items-end"}  ${timeAgo && "-mt-[5px]"}`}>
                           <div className="text-xs">{dateStr}</div>
@@ -956,7 +1083,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                         <div className="flex items-center justify-center w-full">
                           <GTPIcon
                             icon={(normalized ? "feather:check" : "feather:x") as GTPIconName}
-                            className={`!w-[14px] !h-[14px] ${normalized ? "text-green-500" : "text-[#5A6462]"}`}
+                            className={`!w-[14px] !h-[14px] ${normalized ? "text-color-positive" : "text-color-text-secondary"}`}
                             containerClassName="!w-[14px] !h-[14px]"
                           />
                         </div>
@@ -967,8 +1094,8 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                     if (linkValue) {
                       cellMainContent = (
                         <div className="flex items-center gap-x-[5px] w-full text-xs truncate">
-                          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-[#5A6462] flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
-                          <span className="truncate text-[#5A6462]">{getHostname(linkValue)}</span>
+                          <GTPIcon icon={"feather:external-link" as GTPIconName} className="!w-[12px] !h-[12px] text-color-text-secondary flex-shrink-0" containerClassName="!w-[12px] !h-[12px]" />
+                          <span className="truncate text-color-text-secondary">{getHostname(linkValue)}</span>
                         </div>
                       );
                     } else {
@@ -1046,7 +1173,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                       ) : (
                         <>
                           {cellData?.icon && <GTPIcon icon={cellData.icon as GTPIconName} size="sm" style={cellData.color ? { color: cellData.color } : {}} />}
-                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-green-500' : cellData.value < 0 ? 'text-red-500' : '') : ''}`}>
+                          <span className={`truncate ${colDef?.isNumeric ? 'numbers-xs' : 'text-xs'} ${colDef?.uppercase ? 'uppercase' : ''} ${colDef?.colorBySign && typeof cellData?.value === 'number' ? (cellData.value > 0 ? 'text-color-positive' : cellData.value < 0 ? 'text-color-negative' : '') : ''}`}>
                             {formatted}{valueMapKey && <span className="text-color-text-secondary"> ({valueMapKey})</span>}
                           </span>
                         </>
@@ -1138,7 +1265,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
                   const isNumeric = columnDefinitions?.[columnKey]?.isNumeric;
                   if (cellBarDef && typeof cellData?.value === "number" && barMaxValues.cellBarMaxes[columnKey] > 0) {
                     const barWidth = Math.abs(cellData.value) / barMaxValues.cellBarMaxes[columnKey];
-                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "#5A6462";
+                    const barColor = resolveBarColor(rowData, cellBarDef.colorColumn, cellBarDef.color) || "rgb(var(--ui-hover))";
                     cellMainContent = (
                       <div className={`relative flex flex-col w-full gap-y-[4px] ${isNumeric ? 'items-end' : 'items-start'}`}>
                         <div className={`w-full flex items-center ${isNumeric ? 'justify-end' : ''}`}>
@@ -1195,7 +1322,7 @@ export const TableBlock = ({ block }: { block: TableBlockType }) => {
       {updatingBadge}
     </div>
   );
-};
+});
 
 const CopyButton = ({ value }: { value: string }) => {
   const [copied, setCopied] = useState(false);

@@ -33,7 +33,7 @@ export default function PrivacyPolicyContent({
 
       {privacyPolicySections.map((section) => (
         <section key={section.title} className={sectionClassName}>
-          <h2 className="mb-3 text-2xl font-semibold">{section.title}</h2>
+          <h2 className="mb-3 text-2xl">{section.title}</h2>
           {section.paragraphs.map((paragraph) => (
             <p key={paragraph} className="mb-4">
               {paragraph}

@@ -43,6 +43,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { fullBrowserVersion } from "react-device-detect";
 import "@/app/highcharts.axis.css";
 import ChartWatermark from "../ChartWatermark";
+import { formatCompactRounded as formatNumber } from "@/lib/utils/formatters";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -642,30 +643,6 @@ export default function OverviewChart({
       },
       [isMobile],
     );
-
-  function formatNumber(number: number): string {
-    if (number === 0) {
-      return "0";
-    } else if (Math.abs(number) >= 1e6) {
-      if (Math.abs(number) >= 1e9) {
-        return (number / 1e9).toFixed(1) + "B";
-      } else {
-        return (number / 1e6).toFixed(1) + "M";
-      }
-    } else if (Math.abs(number) >= 1e3) {
-      const rounded =
-        Math.abs(number) >= 10000
-          ? Math.round(number / 1e3)
-          : (number / 1e3).toFixed(1);
-      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
-    } else if (Math.abs(number) >= 100) {
-      return number.toFixed(0);
-    } else if (Math.abs(number) >= 10) {
-      return number.toFixed(1);
-    } else {
-      return number.toFixed(2);
-    }
-  }
 
   const tooltipFormatter = useCallback(
     function (this: any) {
@@ -1268,7 +1245,7 @@ export default function OverviewChart({
               }`}
           >
             <AnimatedDiv
-              className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
+              className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm"
               style={{
                 backgroundColor:
                   AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]

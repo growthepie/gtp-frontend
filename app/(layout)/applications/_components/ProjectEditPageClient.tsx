@@ -222,27 +222,6 @@ export default function ProjectEditPageClient() {
     setActiveStep,
   });
 
-  // ── Survey → Airtable ──────────────────────────────────────────────────────
-
-  const handleSurveySubmit = useCallback(
-    (data: { teamSize: string; goal: string; metric: string; other: string }) => {
-      fetch("/api/labels/survey", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          projectName: form.display_name || form.owner_project,
-          walletAddress: walletAddress ?? "",
-        }),
-      })
-        .then((res) => res.json().then((json) => {
-          if (!res.ok) console.error("[survey] error", res.status, json);
-        }))
-        .catch((err) => console.error("[survey] fetch failed:", err));
-    },
-    [form.display_name, form.owner_project, walletAddress],
-  );
-
   // ── Tabs: switchToAdd / switchToFind ───────────────────────────────────────
 
   const switchToAdd = () => {
@@ -632,7 +611,6 @@ export default function ProjectEditPageClient() {
                 singleSubmitResult={queueHook.singleSubmitResult}
                 bulkSubmitResult={queueHook.bulkSubmitResult}
                 lastSubmitChainId={queueHook.lastSubmitChainId}
-                onSurveySubmit={handleSurveySubmit}
                 isMetadataSubmitted={isMetadataSubmitted}
               />
             </div>

@@ -181,6 +181,8 @@ const mainContent = [
 const StablecoinProject: QuickBiteData = {
   title: "Stablecoin Supply Breakdown for Issuers",
   shortTitle: "Stablecoins by Issuer",
+  themes: ["stablecoins"],
+  kind: "tracker",
   subtitle: "Analyzing the composition and trends of stablecoins across different issuers.",
   content: [
     ...mainContent,

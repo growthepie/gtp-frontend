@@ -2,6 +2,7 @@ import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "./helpers";
 import { MasterURL } from "./urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import QUICK_BITES_DATA from "@/lib/quick-bites/index";
+import { QUICK_BITE_TOPICS, getListedQuickBites, getQuickBiteTopicUrl } from "@/lib/quick-bites/themes";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { metricPagesByKey, type MetricItem } from "@/lib/metrics";
 
@@ -88,11 +89,6 @@ export const navigationCategories = {
     icon: "transaction-costs",
     group: "fundamentals",
   },
-  "public-goods-funding": {
-    label: "Public Goods Funding",
-    icon: "feather:sun",
-    group: "trackers",
-  },
   gtpmetrics: {
     label: "More from growthepie",
     icon: "gtp-pie-monochrome",
@@ -101,6 +97,11 @@ export const navigationCategories = {
   latest: {
     label: "Latest",
     icon: "feather:clock",
+    group: "quick-bites",
+  },
+  topics: {
+    label: "Topics",
+    icon: "gtp-categories",
     group: "quick-bites",
   },
   "public-funding": {
@@ -202,55 +203,69 @@ const quickBitesGroup: NavigationItem = {
       urlKey: "quick-bites",
       url: "/quick-bites",
     },
-    ...Object.entries(QUICK_BITES_DATA)
-      .reverse()
-      .filter(([slug]) => QUICK_BITES_DATA[slug].showInMenu === true)
-      .slice(0, 5)
-      .map(([slug, data], index) => ({
-        label: data.shortTitle,
+    // The three newest by date, then the topic pages, so Quick Bites can be browsed
+    // from the menu.
+    ...getListedQuickBites()
+      .slice(0, 3)
+      .map((quickBite) => ({
+        label: quickBite.shortTitle,
         icon: "gtp-chevronright" as GTPIconName,
         category: "latest",
-        key: slug,
-        rootKey: slug,
-        urlKey: slug,
-        url: `/quick-bites/${slug}`,
-        group: "latest",
-        // showNew: index === 0,
+        key: quickBite.slug,
+        rootKey: quickBite.slug,
+        urlKey: quickBite.slug,
+        url: `/quick-bites/${quickBite.slug}`,
       })),
-    {
-      label: "Glo Dollar",
-      icon: "glo-dollar-monochrome",
-      category: "public-goods-funding",
-      key: "glodollar",
-      rootKey: "glodollar",
-      urlKey: "glodollar",
-      url: "/trackers/glodollar",
-    },
+    ...QUICK_BITE_TOPICS.map((topic) => ({
+      label: topic.label,
+      icon: topic.icon,
+      category: "topics",
+      key: `quick-bites-topic-${topic.key}`,
+      rootKey: "quick-bites",
+      urlKey: "quick-bites",
+      url: getQuickBiteTopicUrl(topic.key),
+      // Listed in the Quick Bites sitemap already.
+      excludeFromSitemap: true,
+    })),
   ],
 };
 
 export const navigationItems: NavigationItem[] = [
   {
-    name: "Ecosystem",
-    label: "Ecosystem",
+    // A group (no href): ETH the asset and the Ethereum ecosystem as two sub-items.
+    name: "Ethereum",
+    label: "Ethereum",
     icon: "gtp-ethereumlogo",
     options: [
       {
-        label: "Overview",
+        label: "ETH the Asset",
         page: {
-          title: "Overview",
+          title: "ETH the Asset",
+          description: "ETH as an asset: supply and burn, staking yield, what it buys and how it compares to other assets.",
+          icon: "gtp-metrics-marketcap",
+        },
+        icon: "gtp-metrics-marketcap",
+        key: "eth-the-asset",
+        rootKey: "eth",
+        urlKey: "eth",
+        url: "/eth",
+        showNew: true,
+      },
+      {
+        label: "Ethereum Ecosystem",
+        page: {
+          title: "Ethereum Ecosystem",
           description: `Applications are the lifeblood of any blockchain ecosystem. They drive user engagement, transaction volume, and overall network activity. By analyzing the top applications on a chain, we can gain insights into the most popular use cases and the types of users that are attracted to the platform. This information is crucial for developers, investors, and anyone interested in understanding the dynamics of a blockchain ecosystem.`,
           icon: "gtp-overview",
         },
-        icon: "gtp-overview",
+        icon: "gtp-metrics-ethereum-ecosystem",
         key: "ethereum-ecosystem",
         rootKey: "ethereum-ecosystem",
         urlKey: "ethereum-ecosystem",
-        url: "/ethereum-ecosystem",
+        url: "/ethereum-ecosystem/metrics",
         showNew: false,
       },
     ],
-    href: "/ethereum-ecosystem/metrics",
   },
   {
     name: "Applications",

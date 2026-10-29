@@ -85,7 +85,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
           }}
           aria-label={isImageAvailable ? `View full image: ${alt}` : undefined}
         >
-            <div style={{ aspectRatio }} className='relative w-full overflow-hidden rounded-lg cursor-pointer hover:shadow-lg transition-transform duration-300 ease-in-out'>
+            <div style={{ aspectRatio }} className='relative w-full overflow-hidden rounded-[15px] cursor-pointer hover:shadow-standard transition-transform duration-300 ease-in-out'>
               {isImageAvailable ? (
                 <Image
                   src={src}
@@ -104,7 +104,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ block }) => {
             </div>
         </div>
         {caption && (
-          <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
+          <figcaption className="text-center text-xs mt-[10px] text-color-text-secondary">
             <span dangerouslySetInnerHTML={{ __html: captionWithLinks }} />
           </figcaption>
         )}
@@ -170,7 +170,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ src, alt, caption, isOpe
       aria-label={alt}
     >
       <div
-        className="relative max-w-[90vw] lg:max-w-[70vw] max-h-[90vh] w-full bg-white dark:bg-neutral-900 rounded-lg shadow-xl flex flex-col p-4"
+        className="relative max-w-[90vw] lg:max-w-[70vw] max-h-[90vh] w-full bg-color-bg-default rounded-[15px] shadow-standard flex flex-col p-[15px]"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal content
       >
 
@@ -189,7 +189,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({ src, alt, caption, isOpe
         </div>
         
         {caption && (
-          <figcaption className="mt-3 flex-shrink-0 text-center text-sm text-neutral-600 dark:text-neutral-400">
+          <figcaption className="mt-[10px] flex-shrink-0 text-center text-xs text-color-text-secondary">
             <span dangerouslySetInnerHTML={{ __html: caption }} />
           </figcaption>
         )}

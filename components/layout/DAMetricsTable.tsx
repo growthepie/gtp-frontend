@@ -15,6 +15,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import { metricItems } from "@/lib/metrics";
 import { GTPIcon } from "./GTPIcon";
 import { GridTableHeader, GridTableHeaderCell, GridTableRow } from "./GridTable";
+import { formatCompactTwoDecimals as formatNumber } from "@/lib/utils/formatters";
 
 const AnimatedDiv = animated.div as any;
 
@@ -315,32 +316,6 @@ const DAMetricsTable = ({
     },
   );
 
-  function formatNumber(number: number, decimals?: number): string {
-    if (number === 0) {
-      return "0";
-    } else if (Math.abs(number) >= 1e9) {
-      if (Math.abs(number) >= 1e12) {
-        return (number / 1e12).toFixed(2) + "T";
-      } else if (Math.abs(number) >= 1e9) {
-        return (number / 1e9).toFixed(2) + "B";
-      }
-    } else if (Math.abs(number) >= 1e6) {
-      return (number / 1e6).toFixed(2) + "M";
-    } else if (Math.abs(number) >= 1e3) {
-      const rounded = (number / 1e3).toFixed(2);
-      return `${rounded}${Math.abs(number) >= 10000 ? "k" : "k"}`;
-    } else if (Math.abs(number) >= 100) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else if (Math.abs(number) >= 10) {
-      return number.toFixed(decimals ? decimals : 2);
-    } else {
-      return number.toFixed(decimals ? decimals : 2);
-    }
-
-    // Default return if none of the conditions are met
-    return "";
-  }
-
   const getDisplayValue = useCallback(
     (item: any) => {
       if (!lastValues || !master) return { value: "0", prefix: "", suffix: "" };
@@ -552,7 +527,7 @@ const DAMetricsTable = ({
                   </div>
                   <div>
                     <div className="flex-1 flex flex-col">
-                      <div className="flex w-full items-baseline text-sm font-bold leading-[120%]">
+                      <div className="flex w-full items-baseline text-sm leading-[120%]">
                         {getDisplayValue(item).prefix && (
                           <div className="text-[14px] font-bold mr-[1px]">
                             {getDisplayValue(item).prefix}

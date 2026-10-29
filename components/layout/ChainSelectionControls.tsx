@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 export function ChainSelectionToggle({
   state,
@@ -24,7 +25,7 @@ export function ChainSelectionToggle({
       aria-label={ariaLabel}
       aria-pressed={state === "all"}
       disabled={disabled}
-      className={`flex shrink-0 items-center gap-[5px] rounded-full text-xxs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-ui-hover disabled:opacity-30 ${className}`}
+      className={`flex shrink-0 items-center gap-[5px] rounded-full text-xxs transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} disabled:hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-ui-hover disabled:opacity-30 ${className}`}
     >
       {label}
       <span className="relative flex size-[23px] items-center justify-center" style={{ color: state === "all" ? undefined : "#5A6462" }}>

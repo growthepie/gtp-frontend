@@ -119,7 +119,7 @@ export default function LandingEcosystemTPSCard() {
           yAxisLabelFormatter={(v) => {
             if (v === 0) return "";
             if (Math.abs(v) >= 1_000_000) return `${+(v / 1_000_000).toPrecision(3)}M`;
-            if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}k`;
+            if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}K`;
             return String(Math.round(v));
           }}
           seriesOverrides={(s) => ({

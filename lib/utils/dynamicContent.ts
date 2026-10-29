@@ -1,4 +1,6 @@
 // lib/utils/dynamicContent.ts - Extended version
+import { STABLECOIN_FIAT_TIMESERIES_URL, STABLECOIN_FIAT_USD_TABLE_URL, readStablecoinFiatSupply } from "@/lib/quick-bites/stablecoinFiatSupply";
+
 export const processDynamicContent = async (content: any[]): Promise<any[]> => {
   const dynamicDataCache = new Map<string, any>();
   const formatChainLabel = (value: string): string =>
@@ -632,6 +634,31 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           .replace('{{robinhood_stockCount}}', stockCount || 'N/A');
       }
 
+      // Handle Glo Dollar placeholders (market cap, its 30-day change, largest holder's share)
+      if (processedItem.includes('{{glo_')) {
+        const glo: any = await fetchData('glo_dollar', "https://api.growthepie.com/v1/glo_dollar.json");
+        const types: string[] = glo?.chart?.types ?? [];
+        const rows: number[][] = glo?.chart?.data ?? [];
+        const usdIndex = types.indexOf('usd');
+        const latest = rows[rows.length - 1]?.[usdIndex];
+        const monthAgo = rows[rows.length - 31]?.[usdIndex];
+        const shares = Object.values(glo?.holders_table ?? {}).map((holder: any) => Number(holder?.share) || 0);
+
+        const marketCap = Number.isFinite(latest)
+          ? '$' + (latest / 1e6).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M'
+          : 'N/A';
+        const change = Number.isFinite(latest) && Number.isFinite(monthAgo) && monthAgo
+          ? ((latest / monthAgo - 1) * 100)
+          : null;
+        const change30d = change === null ? 'N/A' : `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
+        const topHolderShare = shares.length ? (Math.max(...shares) * 100).toFixed(1) + '%' : 'N/A';
+
+        processedItem = processedItem
+          .replace('{{glo_market_cap}}', marketCap)
+          .replace('{{glo_market_cap_change_30d}}', change30d)
+          .replace('{{glo_top_holder_share}}', topHolderShare);
+      }
+
       // Handle Fusaka totals placeholders
       if (processedItem.includes('{{fusaka_')) {
         const fusakaTotals: any = await fetchData('fusaka_totals', "https://api.growthepie.com/v1/quick-bites/fusaka/totals.json");
@@ -1067,23 +1094,14 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
 
       // Handle stablecoin fiat data placeholders
       if (processedItem.includes('{{stablecoin_fiat_')) {
-        const stablecoinFiatData = await fetchData('stablecoin_fiat_timeseries', "https://api.growthepie.com/v1/quick-bites/stablecoins/fiat/timeseries.json");
+        // the timeseries' absolute values are ~7x too high; see stablecoinFiatSupply.ts
+        const [stablecoinFiatData, stablecoinFiatUsdTable] = await Promise.all([
+          fetchData('stablecoin_fiat_timeseries', STABLECOIN_FIAT_TIMESERIES_URL),
+          fetchData('stablecoin_fiat_usd_table', STABLECOIN_FIAT_USD_TABLE_URL),
+        ]);
+        const supply = readStablecoinFiatSupply(stablecoinFiatData, stablecoinFiatUsdTable);
 
-        if (stablecoinFiatData?.data?.timeseries) {
-          const types: string[] = stablecoinFiatData.data.timeseries.types ?? [];
-          const values: any[][] = stablecoinFiatData.data.timeseries.values ?? [];
-          const latestRow: any[] = values.length > 0 ? values[values.length - 1] : [];
-
-          const fiatCount = types.length;
-
-          // Sum all currency values in the latest row (index 0 is timestamp)
-          const total = latestRow.slice(1).reduce((sum: number, v: any) => sum + (Number(v) || 0), 0);
-
-          const usdRawIdx = types.findIndex((t: string) => t.toLowerCase() === "usd");
-          const usdValue = usdRawIdx >= 0 ? (Number(latestRow[usdRawIdx + 1]) || 0) : 0;
-          const usdDominance = total > 0 ? ((usdValue / total) * 100).toFixed(1) : 'N/A';
-          const nonUsdMcap = total - usdValue;
-
+        if (supply) {
           const formatBillions = (value: number) => {
             if (value >= 1e9) return (value / 1e9).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'B';
             if (value >= 1e6) return (value / 1e6).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'M';
@@ -1091,9 +1109,9 @@ export const processDynamicContent = async (content: any[]): Promise<any[]> => {
           };
 
           processedItem = processedItem
-            .replace('{{stablecoin_fiat_count}}', String(fiatCount))
-            .replace('{{stablecoin_fiat_usd_dominance}}', usdDominance + '%')
-            .replace('{{stablecoin_fiat_non_usd_mcap}}', '$' + formatBillions(nonUsdMcap));
+            .replace('{{stablecoin_fiat_count}}', String(supply.currencies))
+            .replace('{{stablecoin_fiat_usd_dominance}}', (supply.usdShare * 100).toFixed(1) + '%')
+            .replace('{{stablecoin_fiat_non_usd_mcap}}', '$' + formatBillions(supply.nonUsd));
         }
       }
 

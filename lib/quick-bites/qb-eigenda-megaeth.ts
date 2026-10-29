@@ -149,6 +149,7 @@ const EigenDACapacityChart = ["```chart",
 const EigenDAMegaETH: QuickBiteData = {
   title: "Why MegaETH Chose EigenDA Over Ethereum Blobs",
   shortTitle: "EigenDA x MegaETH",
+  themes: ["scaling"],
   subtitle: "How EigenDA enables MegaETH to reach 100k TPS.",
   content: [
     "# The MegaETH Stress Test",

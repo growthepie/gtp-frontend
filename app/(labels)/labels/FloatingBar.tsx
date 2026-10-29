@@ -197,7 +197,7 @@ export default function FloatingBar({
                   <div className="font-normal text-color-text-primary/50 text-right px-3.5">
                     Format
                   </div>
-                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
+                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
                     track("clicked Download JSON", {
                       location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
                       page: window.location.pathname,
@@ -207,11 +207,11 @@ export default function FloatingBar({
                     <div className="w-[15px] h-[15px]">
                       <Icon icon="feather:download" className="w-[15px] h-[15px]" />
                     </div>
-                    <div className="flex flex-1 items-center justify-end text-sm font-semibold">
+                    <div className="flex flex-1 items-center justify-end text-sm">
                       JSON
                     </div>
                   </div>
-                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
+                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
                     track("clicked Download CSV", {
                       location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
                       page: window.location.pathname,
@@ -221,7 +221,7 @@ export default function FloatingBar({
                     <div className="w-[15px] h-[15px]">
                       <Icon icon="feather:download" className="w-[15px] h-[15px]" />
                     </div>
-                    <div className="flex flex-1 items-center justify-end text-sm font-semibold">
+                    <div className="flex flex-1 items-center justify-end text-sm">
                       CSV
                     </div>
 

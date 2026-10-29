@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { Get_SupportedChainKeys } from "@/lib/chains";
@@ -27,7 +27,8 @@ import { MeetL2sCard } from "@/components/layout/MeetL2sSlider";
 import dayjs from "@/lib/dayjs";
 import { format as d3Format } from "d3";
 import { IS_PRODUCTION } from "@/lib/helpers";
-import LandingEventsChart from "./LandingEventsChart";
+import StickyHeader from "@/components/layout/StickyHeader";
+import ScrollerHeaderStandIn from "@/components/layout/ScrollerHeaderStandIn";
 
 const formatNumber = (number: number, decimals = 2): string => {
   if (!Number.isFinite(number)) return "N/A";
@@ -37,7 +38,7 @@ const formatNumber = (number: number, decimals = 2): string => {
   if (absNumber >= 1e12) return (number / 1e12).toFixed(1) + "T";
   if (absNumber >= 1e9) return (number / 1e9).toFixed(1) + "B";
   if (absNumber >= 1e6) return (number / 1e6).toFixed(1) + "M";
-  if (absNumber >= 1e3) return (number / 1e3).toFixed(1) + "k";
+  if (absNumber >= 1e3) return (number / 1e3).toFixed(1) + "K";
   if (absNumber >= 100) return number.toFixed(decimals);
   return number.toFixed(decimals);
 };
@@ -159,10 +160,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const {
-    data: ethAgg,
-  } = useSWR<EthereumEcosystemOverviewResponse>(EthAggURL);
-
 
   const [selectedMetric, setSelectedMetric] = useState("Total Ethereum Ecosystem");
 
@@ -172,6 +169,19 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
   //Filters for apps grid/table
   const [showTable, setShowTable] = useState(true);
+  // The grid view fetches its data and mounts its cards the first time it is opened
+  const [gridOpened, setGridOpened] = useState(false);
+  useEffect(() => {
+    if (!showTable) setGridOpened(true);
+  }, [showTable]);
+
+  const {
+    data: ethAgg,
+  } = useSWR<EthereumEcosystemOverviewResponse>(gridOpened ? EthAggURL : null);
+
+  // shared by the table and its sticky header copy
+  const [centerMetric, setCenterMetric] = useState("daa");
+  const tableHeaderRef = useRef<HTMLDivElement>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [isWrapping, setIsWrapping] = useState(false);
 
@@ -248,13 +258,6 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
 
       {landing && master && AllChainsByKeys ? (
         <>
-
-          <Container className="w-full">
-           
-
-            <LandingEventsChart />
-         
-          </Container>
           <Container className="flex flex-col flex-1 w-full mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
@@ -291,9 +294,31 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
               />
             </GTPButtonContainer>
           </Container>
+          {/* One ranking context for the table and its sticky header stand-in, so hovering a rank
+              column in either one highlights the rows */}
+          <TableRankingProvider>
+          <div>
+          {showTable && (
+            // the table header sits inside the horizontal scroller, so a copy sticks in its place
+            <StickyHeader overlay>
+              <ScrollerHeaderStandIn originalRef={tableHeaderRef}>
+                <LandingMetricsTable
+                  data={{ chains: landing.data.metrics.table_visual }}
+                  master={master}
+                  interactable={false}
+                  sort={sort}
+                  setSort={setSort}
+                  selectedChainTypes={selectedChainTypes}
+                  theme={resolvedTheme}
+                  centerMetric={centerMetric}
+                  setCenterMetric={setCenterMetric}
+                  headerOnly
+                />
+              </ScrollerHeaderStandIn>
+            </StickyHeader>
+          )}
           <HorizontalScrollContainer reduceLeftMask={true} enableDragScroll>
             <div className="" style={{ display: showTable ? "block" : "none" }}>
-              <TableRankingProvider>
                 <div className="flex flex-col gap-y-[5px]">
                 <LandingMetricsTable
                   data={{ chains: landing.data.metrics.table_visual }}
@@ -304,21 +329,27 @@ export default function LandingUserBaseChart({ isLoading = false }: { isLoading?
                   setSort={setSort}
                   selectedChainTypes={selectedChainTypes}
                   theme={resolvedTheme}
+                  centerMetric={centerMetric}
+                  setCenterMetric={setCenterMetric}
+                  headerRef={tableHeaderRef}
                 />
                 </div>
-              </TableRankingProvider>
             </div>
             <div className="rounded-[15px] pr-[10px] mt-[15px] -ml-[5px]" style={{ display: showTable ? "none" : "block" }}>
-              <ProjectsMetadataProvider>
-                <MeetL2sMapCards
-                  meetL2sData={ethAgg?.data.meet_l2s}
-                  tableVisual={landing.data.metrics.table_visual}
-                  chainKeys={tableChainKeys}
-                  chainAges={chainAges}
-                />
-              </ProjectsMetadataProvider>
+              {gridOpened && (
+                <ProjectsMetadataProvider>
+                  <MeetL2sMapCards
+                    meetL2sData={ethAgg?.data.meet_l2s}
+                    tableVisual={landing.data.metrics.table_visual}
+                    chainKeys={tableChainKeys}
+                    chainAges={chainAges}
+                  />
+                </ProjectsMetadataProvider>
+              )}
             </div>
           </HorizontalScrollContainer>
+          </div>
+          </TableRankingProvider>
         </>
       ) : (
         <Container>

@@ -45,7 +45,7 @@ export default function Address({ address, shortenAddress }: AddressProps) {
       </div>
       <button
         onClick={onCopy}
-        className="text-xs font-semibold text-forest-900/50 dark:text-color-text-primary/50 hover:text-forest-900 dark:hover:text-color-text-primary"
+        className="text-xs text-forest-900/50 dark:text-color-text-primary/50 hover:text-forest-900 dark:hover:text-color-text-primary"
       >
         <Icon
           icon={copied ? "feather:check" : "feather:copy"}
@@ -56,7 +56,7 @@ export default function Address({ address, shortenAddress }: AddressProps) {
         href={`https://etherscan.io/address/${address}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-xs font-semibold text-forest-900/50 dark:text-color-text-primary/50 hover:text-forest-900 dark:hover:text-color-text-primary"
+        className="text-xs text-forest-900/50 dark:text-color-text-primary/50 hover:text-forest-900 dark:hover:text-color-text-primary"
       >
         <Icon icon="feather:external-link" className="w-2 h-2" />
       </Link>

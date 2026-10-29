@@ -233,7 +233,7 @@ const CustomizationControls: React.FC = () => {
       {/* Mode Selection */}
       <div>
         {/* Section Title */}
-        <h4 className="font-medium text-xs mb-1.5 text-[#5A6462] uppercase tracking-wider">Mode</h4>
+        <h4 className="text-xs mb-1.5 text-[#5A6462] uppercase tracking-wider">Mode</h4>
         {/* Grid layout for radio options */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
           <ModeRadioOption value="original" currentMode={mode} onChange={handleModeChange} title="Display original icon colors">
@@ -254,7 +254,7 @@ const CustomizationControls: React.FC = () => {
       {/* --- Single Color Picker --- */}
       {mode === 'singleColorPicker' && (
         <div>
-          <h4 className="font-medium text-xs mb-1 text-[#5A6462] uppercase tracking-wider">Select Color</h4>
+          <h4 className="text-xs mb-1 text-[#5A6462] uppercase tracking-wider">Select Color</h4>
           <div className="flex items-center justify-start"> {/* Align left */}
             <input
               type="color"
@@ -275,7 +275,7 @@ const CustomizationControls: React.FC = () => {
           {/* Gradient Controls */}
           {collapsedGradients.length > 0 && (
             <div>
-              <h4 className="font-medium text-xs mb-1.5 text-[#5A6462] uppercase tracking-wider">Gradients</h4>
+              <h4 className="text-xs mb-1.5 text-[#5A6462] uppercase tracking-wider">Gradients</h4>
               <div className="space-y-3 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[#5A6462]/60 hover:scrollbar-thumb-[#5A6462]/90 scrollbar-track-transparent scrollbar-thumb-rounded-full">
                 {collapsedGradients.map((cGradient) => {
                   // Generate preview based on current effective colors and original offsets
@@ -315,10 +315,10 @@ const CustomizationControls: React.FC = () => {
 
           {/* HSL Shift Controls */}
           <div>
-            <h4 className="font-medium text-xs mb-1 text-[#5A6462] uppercase tracking-wider">Shift Colors (Chains & Socials only)</h4>
+            <h4 className="text-xs mb-1 text-[#5A6462] uppercase tracking-wider">Shift Colors (Chains & Socials only)</h4>
             <div className='space-y-2'>
               {/* Hue */}
-              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="hue-slider">Hue ({hslShifts.hue}°)</label>
+              <label className='block text-xs text-color-text-primary opacity-90' htmlFor="hue-slider">Hue ({hslShifts.hue}°)</label>
               <input
                 id="hue-slider"
                 type="range" min="-180" max="180" step="1" value={hslShifts.hue}
@@ -328,7 +328,7 @@ const CustomizationControls: React.FC = () => {
                 title='Shift Hue (-180 to 180). Double-click to reset.'
               />
               {/* Saturation */}
-              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="saturation-slider">Saturation ({hslShifts.saturation}%)</label>
+              <label className='block text-xs text-color-text-primary opacity-90' htmlFor="saturation-slider">Saturation ({hslShifts.saturation}%)</label>
               <input
                 id="saturation-slider"
                 type="range" min="-100" max="100" step="1" value={hslShifts.saturation}
@@ -338,7 +338,7 @@ const CustomizationControls: React.FC = () => {
                 title='Shift Saturation (-100% to 100%). Double-click to reset.'
               />
               {/* Lightness */}
-              <label className='block text-xs font-medium text-color-text-primary opacity-90' htmlFor="lightness-slider">Lightness ({hslShifts.lightness}%)</label>
+              <label className='block text-xs text-color-text-primary opacity-90' htmlFor="lightness-slider">Lightness ({hslShifts.lightness}%)</label>
               <input
                 id="lightness-slider"
                 type="range" min="-100" max="100" step="1" value={hslShifts.lightness}
@@ -356,7 +356,7 @@ const CustomizationControls: React.FC = () => {
       {hasCustomizations && (
         <button
           onClick={resetCustomizations}
-          className="mt-3 w-full px-3 py-1.5 text-xs font-medium rounded-full bg-red-800/60 hover:bg-red-800/90 text-red-100 transition-colors focus:outline-none focus:ring-1 focus:ring-red-600 focus:ring-offset-1 focus:ring-offset-[#151A19]"
+          className="mt-3 w-full px-3 py-1.5 text-xs rounded-full bg-red-800/60 hover:bg-red-800/90 text-red-100 transition-colors focus:outline-none focus:ring-1 focus:ring-red-600 focus:ring-offset-1 focus:ring-offset-[#151A19]"
         >
           Reset Customizations
         </button>

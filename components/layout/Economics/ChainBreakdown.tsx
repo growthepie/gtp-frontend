@@ -19,6 +19,8 @@ import { useTransition, animated } from "@react-spring/web";
 import { set, times } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
+import StickyHeader from "@/components/layout/StickyHeader";
+import ScrollerHeaderStandIn from "@/components/layout/ScrollerHeaderStandIn";
 
 import Container from "../Container";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
@@ -27,6 +29,7 @@ import { useMaster } from "@/contexts/MasterContext";
 import Link from "next/link";
 import { GTPIcon } from "../GTPIcon";
 import { useTheme } from "next-themes";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 const AnimatedDiv = animated.div as any;
 
@@ -146,11 +149,16 @@ export default function ChainBreakdown({
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   }
+  // Chains whose row has been expanded at least once. Their charts mount on the first expand and
+  // then stay mounted, so collapsing still animates them and reopening is instant.
+  const [openedChains, setOpenedChains] = useState<Record<string, boolean>>({});
+
   const toggleOpenChain = (key) => {
     setOpenChain((prevState) => ({
       ...prevState,
       [key]: !prevState[key],
     }));
+    setOpenedChains((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
   };
 
   const handleClick = (e, chain) => {
@@ -555,6 +563,381 @@ export default function ChainBreakdown({
 
   // console.log(allChainsDA);
 
+  // The column header, rendered twice: in the table, and as the stand-in that sticks below the
+  // top bar while the table scrolls by (the original sits inside the horizontal scroller)
+  const headerRef = useRef<HTMLDivElement>(null);
+  const headerGridClassName = `grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${isSidebarOpen
+    ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+    : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+    } min-w-[1125px]`;
+  const headerCells = (
+    <>
+      <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
+        <div
+          className="flex items-center group cursor-pointer  "
+          onClick={() => {
+            if (metricSort !== "chain") {
+              setSortOrder(true);
+              setMetricSort("chain");
+            } else {
+              setSortOrder(!sortOrder);
+            }
+          }}
+        >
+          <div className="text-xs group-hover:text-color-text-secondary">
+            Chain
+          </div>
+          <div>
+            <Icon
+              icon={
+                metricSort !== "chain"
+                  ? "formkit:arrowdown"
+                  : sortOrder
+                    ? "formkit:arrowdown"
+                    : "formkit:arrowup"
+              }
+              className={` w-[10px] h-[10px] ${metricSort === "chain"
+                ? "text-color-text-secondary opacity-100"
+                : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                } `}
+            />
+          </div>
+        </div>
+        <div
+          className={`flex items-center bg-color-bg-medium gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} has-[svg:hover]:bg-color-bg-medium`}
+          onClick={() => {
+            setEnableDASort(true);
+            if (DAIndex === allChainsDA.length - 1) {
+              setEnableDASort(false);
+              setDAIndex(0);
+            } else {
+              setDAIndex(DAIndex + 1);
+            }
+          }}
+        >
+          <div>Data Availability{DAIndex !== 0 ? ":" : ""}</div>
+          <div>{allChainsDA[DAIndex]}</div>
+
+          <Icon
+            icon={"gtp:in-button-close-monochrome"}
+            className={` dark:text-white text-black w-[10px] h-[10px] box-content p-[3px] -my-[3px] -mr-[3px] -ml-[5px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES} relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
+              }`}
+            onClick={(e) => {
+              setDAIndex(0);
+              setEnableDASort(false);
+              e.stopPropagation();
+            }}
+          />
+        </div>
+      </div>
+      <div className="flex items-center justify-end pr-[5px] ">
+        {" "}
+        <div
+          className="flex items-center group gap-x-[1px] cursor-pointer"
+          onClick={() => {
+            if (metricSort !== "revenue") {
+              setSortOrder(true);
+              setMetricSort("revenue");
+            } else {
+              setSortOrder(!sortOrder);
+            }
+          }}
+        >
+          <div className="text-xs group-hover:text-color-text-secondary">
+            Chain Revenue
+          </div>
+
+          <div>
+            <Icon
+              icon={
+                metricSort !== "revenue"
+                  ? "formkit:arrowdown"
+                  : sortOrder
+                    ? "formkit:arrowdown"
+                    : "formkit:arrowup"
+              }
+              className={` w-[10px] h-[10px] ${metricSort === "revenue"
+                ? "text-color-text-secondary opacity-100"
+                : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                } `}
+            />
+          </div>
+          <GTPTooltipNew
+            key={"revenue"}
+            placement="right"
+            allowInteract={false}
+            hoverOpenDelay={100}
+            trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+            positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            unstyled
+          >
+            <GTPTooltipGeneral width={260}>
+              <div className="pl-[20px]">
+                The sum of fees that were paid by users of the chain in gas fees.
+              </div>
+            </GTPTooltipGeneral>
+          </GTPTooltipNew>
+        </div>
+      </div>
+      <div className="flex items-center justify-end pr-[5px] gap-x-[5px]">
+        {" "}
+        <div className="flex items-center group gap-x-[1px]">
+          <div
+            className="text-xs group-hover:text-color-text-secondary cursor-pointer"
+            onClick={() => {
+              if (metricSort !== "costs") {
+                setSortOrder(true);
+                setMetricSort("costs");
+              } else {
+                setSortOrder(!sortOrder);
+              }
+            }}
+          >
+            Costs
+          </div>
+          <div>
+            <Icon
+              icon={
+                metricSort !== "costs"
+                  ? "formkit:arrowdown"
+                  : sortOrder
+                    ? "formkit:arrowdown"
+                    : "formkit:arrowup"
+              }
+              className={` w-[10px] h-[10px] ${metricSort === "costs"
+                ? "text-color-text-secondary opacity-100"
+                : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                } `}
+            />
+          </div>
+          <GTPTooltipNew
+            key={"costs"}
+            placement="right"
+            allowInteract={false}
+            hoverOpenDelay={100}
+            trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+            positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            unstyled
+          >
+            <GTPTooltipGeneral width={260}>
+              <div className="pl-[20px]">
+                The chains onchain expenses. L1 costs are gas fees paid to
+                Ethereum for posting proofs, states, and pointing to Blobs.
+                Blob costs are fees paid for data storage in Blobs (i.e.
+                EIP4844 or Celestia Blobs).
+              </div>
+            </GTPTooltipGeneral>
+          </GTPTooltipNew>
+        </div>
+        <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
+          <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
+            <div
+              className=" group-hover:text-color-text-secondary whitespace-nowrap"
+              onClick={() => {
+                if (metricSort !== "costs_l1") {
+                  setSortOrder(true);
+                  setMetricSort("costs_l1");
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+              }}
+            >
+              L1 Costs
+            </div>
+            <div>
+              <Icon
+                icon={
+                  metricSort !== "costs_l1"
+                    ? "formkit:arrowdown"
+                    : sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                }
+                className={` w-[10px] h-[10px] ${metricSort === "costs_l1"
+                  ? "text-color-text-secondary opacity-100"
+                  : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                  } `}
+              />
+            </div>
+          </div>
+          <div
+            className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[47px] px-[5px] cursor-pointer "
+            onClick={() => {
+              if (metricSort !== "costs_blobs") {
+                setSortOrder(true);
+                setMetricSort("costs_blobs");
+              } else {
+                setSortOrder(!sortOrder);
+              }
+            }}
+          >
+            <div className=" group-hover:text-color-text-secondary ">Blobs</div>
+            <div>
+              <Icon
+                icon={
+                  metricSort !== "costs_blobs"
+                    ? "formkit:arrowdown"
+                    : sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                }
+                className={` w-[10px] h-[10px] ${metricSort === "costs_blobs"
+                  ? "text-color-text-secondary opacity-100"
+                  : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                  } `}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-center gap-x-[5px] pl-[30.5px]">
+        {" "}
+        <div
+          className="flex items-center group cursor-pointer"
+          onClick={() => {
+            if (metricSort !== "profit") {
+              setSortOrder(true);
+              setMetricSort("profit");
+            } else {
+              setSortOrder(!sortOrder);
+            }
+          }}
+        >
+          <div className="text-xs group-hover:text-color-text-secondary">
+            Loss | Profit
+          </div>
+          <div>
+            <Icon
+              icon={
+                metricSort !== "profit"
+                  ? "formkit:arrowdown"
+                  : sortOrder
+                    ? "formkit:arrowdown"
+                    : "formkit:arrowup"
+              }
+              className={` w-[10px] h-[10px] ${metricSort === "profit"
+                ? "text-color-text-secondary opacity-100"
+                : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                } `}
+            />
+          </div>
+          <GTPTooltipNew
+            key={"profit"}
+            placement="right"
+            allowInteract={false}
+            hoverOpenDelay={100}
+            trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+            positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            unstyled
+          >
+            <GTPTooltipGeneral width={260}>
+              <div className="pl-[20px]">
+                The chains total revenue minus its costs.
+              </div>
+            </GTPTooltipGeneral>
+          </GTPTooltipNew>
+        </div>
+      </div>
+      <div
+        className="flex items-center justify-end pr-[5px]  gap-x-[5px] pl-[2px] cursor-pointer"
+        onClick={() => {
+          if (metricSort !== "profit_margin") {
+            setSortOrder(true);
+            setMetricSort("profit_margin");
+          } else {
+            setSortOrder(!sortOrder);
+          }
+        }}
+      >
+        {" "}
+        <div className="flex items-center group gap-x-[1px] ">
+          <div className="text-xs group-hover:text-color-text-secondary">
+            Margin
+          </div>
+          <div>
+            <Icon
+              icon={
+                metricSort !== "profit_margin"
+                  ? "formkit:arrowdown"
+                  : sortOrder
+                    ? "formkit:arrowdown"
+                    : "formkit:arrowup"
+              }
+              className={` w-[10px] h-[10px] ${metricSort === "profit_margin"
+                ? "text-color-text-secondary opacity-100"
+                : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+                } `}
+            />
+          </div>
+          <GTPTooltipNew
+            key={"margin"}
+            placement="right"
+            allowInteract={false}
+            hoverOpenDelay={100}
+            trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+            positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+            unstyled
+          >
+            <GTPTooltipGeneral width={260}>
+              <div className="pl-[20px]">
+                The profit margin of the chain calculated as (Revenue -
+                Costs) / Revenue
+              </div>
+            </GTPTooltipGeneral>
+          </GTPTooltipNew>
+        </div>
+      </div>
+      <div
+        className="flex items-center group gap-x-[1px] justify-end cursor-pointer pr-[8px]"
+        onClick={() => {
+          if (metricSort !== "size") {
+            setSortOrder(true);
+            setMetricSort("size");
+          } else {
+            setSortOrder(!sortOrder);
+          }
+        }}
+      >
+        <div className="text-xs group-hover:text-color-text-secondary">
+          {"Blob Data"}
+        </div>
+        <div>
+          <Icon
+            icon={
+              metricSort !== "size"
+                ? "formkit:arrowdown"
+                : sortOrder
+                  ? "formkit:arrowdown"
+                  : "formkit:arrowup"
+            }
+            className={` w-[10px] h-[10px] ${metricSort === "size"
+              ? "text-color-text-secondary opacity-100"
+              : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
+              } `}
+          />
+        </div>
+        <GTPTooltipNew
+          key={"size"}
+          placement="right"
+          allowInteract={false}
+          hoverOpenDelay={100}
+          trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
+          positionOffset={{ mainAxis: 5, crossAxis: 0 }}
+          unstyled
+        >
+          <GTPTooltipGeneral width={260}>
+            <div className="pl-[20px]">
+              The total amount of data that is stored in Blobs.
+            </div>
+          </GTPTooltipGeneral>
+        </GTPTooltipNew>
+      </div>
+      {/*END TOP ROW */}
+      {/*END TOP ROW */}
+      {/*END TOP ROW */}
+    </>
+  );
+
   return (
     <div className="h-full">
       {/* <div>xMax {new Date(timespans[selectedTimespan].xMax).toDateString()}</div>
@@ -562,379 +945,17 @@ export default function ChainBreakdown({
       {sortedChainData && (
         <div className="flex flex-col mb-[30px]">
 
+          <StickyHeader overlay>
+            <ScrollerHeaderStandIn originalRef={headerRef}>
+              <div className={headerGridClassName}>{headerCells}</div>
+            </ScrollerHeaderStandIn>
+          </StickyHeader>
           <HorizontalScrollContainer
             includeMargin={true}
             className="w-full flex flex-col "
           >
-            <div
-              className={`grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${isSidebarOpen
-                ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
-                } min-w-[1125px]`}
-            >
-              <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
-                <div
-                  className="flex items-center group cursor-pointer  "
-                  onClick={() => {
-                    if (metricSort !== "chain") {
-                      setSortOrder(true);
-                      setMetricSort("chain");
-                    } else {
-                      setSortOrder(!sortOrder);
-                    }
-                  }}
-                >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
-                    Chain
-                  </div>
-                  <div>
-                    <Icon
-                      icon={
-                        metricSort !== "chain"
-                          ? "formkit:arrowdown"
-                          : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                      }
-                      className={` w-[10px] h-[10px] ${metricSort === "chain"
-                        ? "text-color-text-secondary opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                        } `}
-                    />
-                  </div>
-                </div>
-                <div
-                  className="flex items-center bg-color-bg-medium gap-x-1 text-xxs rounded-full px-[5px] py-[2px] cursor-pointer"
-                  onClick={() => {
-                    setEnableDASort(true);
-                    if (DAIndex === allChainsDA.length - 1) {
-                      setEnableDASort(false);
-                      setDAIndex(0);
-                    } else {
-                      setDAIndex(DAIndex + 1);
-                    }
-                  }}
-                >
-                  <div>Data Availability{DAIndex !== 0 ? ":" : ""}</div>
-                  <div>{allChainsDA[DAIndex]}</div>
-
-                  <Icon
-                    icon={"gtp:in-button-close-monochrome"}
-                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${DAIndex !== 0 ? "block" : "hidden"
-                      }`}
-                    onClick={(e) => {
-                      setDAIndex(0);
-                      setEnableDASort(false);
-                      e.stopPropagation();
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-end pr-[5px] ">
-                {" "}
-                <div
-                  className="flex items-center group gap-x-[1px] cursor-pointer"
-                  onClick={() => {
-                    if (metricSort !== "revenue") {
-                      setSortOrder(true);
-                      setMetricSort("revenue");
-                    } else {
-                      setSortOrder(!sortOrder);
-                    }
-                  }}
-                >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
-                    Chain Revenue
-                  </div>
-
-                  <div>
-                    <Icon
-                      icon={
-                        metricSort !== "revenue"
-                          ? "formkit:arrowdown"
-                          : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                      }
-                      className={` w-[10px] h-[10px] ${metricSort === "revenue"
-                        ? "text-color-text-secondary opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                        } `}
-                    />
-                  </div>
-                  <GTPTooltipNew
-                    key={"revenue"}
-                    placement="right"
-                    allowInteract={false}
-                    hoverOpenDelay={100}
-                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
-                    unstyled
-                  >
-                    <GTPTooltipGeneral width={260}>
-                      <div className="pl-[20px]">
-                        The sum of fees that were paid by users of the chain in gas fees.
-                      </div>
-                    </GTPTooltipGeneral>
-                  </GTPTooltipNew>
-                </div>
-              </div>
-              <div className="flex items-center justify-end pr-[5px] gap-x-[5px]">
-                {" "}
-                <div className="flex items-center group gap-x-[1px]">
-                  <div
-                    className="text-xs group-hover:text-color-text-secondary font-bold cursor-pointer"
-                    onClick={() => {
-                      if (metricSort !== "costs") {
-                        setSortOrder(true);
-                        setMetricSort("costs");
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                    }}
-                  >
-                    Costs
-                  </div>
-                  <div>
-                    <Icon
-                      icon={
-                        metricSort !== "costs"
-                          ? "formkit:arrowdown"
-                          : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                      }
-                      className={` w-[10px] h-[10px] ${metricSort === "costs"
-                        ? "text-color-text-secondary opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                        } `}
-                    />
-                  </div>
-                  <GTPTooltipNew
-                    key={"costs"}
-                    placement="right"
-                    allowInteract={false}
-                    hoverOpenDelay={100}
-                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
-                    unstyled
-                  >
-                    <GTPTooltipGeneral width={260}>
-                      <div className="pl-[20px]">
-                        The chains onchain expenses. L1 costs are gas fees paid to
-                        Ethereum for posting proofs, states, and pointing to Blobs.
-                        Blob costs are fees paid for data storage in Blobs (i.e.
-                        EIP4844 or Celestia Blobs).
-                      </div>
-                    </GTPTooltipGeneral>
-                  </GTPTooltipNew>
-                </div>
-                <div className="flex items-center  gap-x-[1.5px] text-xxxs w-[104px] h-[16px] cursor-pointer">
-                  <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[72px] px-[5px]  ">
-                    <div
-                      className=" group-hover:text-color-text-secondary whitespace-nowrap"
-                      onClick={() => {
-                        if (metricSort !== "costs_l1") {
-                          setSortOrder(true);
-                          setMetricSort("costs_l1");
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      }}
-                    >
-                      L1 Costs
-                    </div>
-                    <div>
-                      <Icon
-                        icon={
-                          metricSort !== "costs_l1"
-                            ? "formkit:arrowdown"
-                            : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                        }
-                        className={` w-[10px] h-[10px] ${metricSort === "costs_l1"
-                          ? "text-color-text-secondary opacity-100"
-                          : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                          } `}
-                      />
-                    </div>
-                  </div>
-                  <div
-                    className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[47px] px-[5px] cursor-pointer "
-                    onClick={() => {
-                      if (metricSort !== "costs_blobs") {
-                        setSortOrder(true);
-                        setMetricSort("costs_blobs");
-                      } else {
-                        setSortOrder(!sortOrder);
-                      }
-                    }}
-                  >
-                    <div className=" group-hover:text-color-text-secondary ">Blobs</div>
-                    <div>
-                      <Icon
-                        icon={
-                          metricSort !== "costs_blobs"
-                            ? "formkit:arrowdown"
-                            : sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                        }
-                        className={` w-[10px] h-[10px] ${metricSort === "costs_blobs"
-                          ? "text-color-text-secondary opacity-100"
-                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                          } `}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-center gap-x-[5px] pl-[30.5px]">
-                {" "}
-                <div
-                  className="flex items-center group cursor-pointer"
-                  onClick={() => {
-                    if (metricSort !== "profit") {
-                      setSortOrder(true);
-                      setMetricSort("profit");
-                    } else {
-                      setSortOrder(!sortOrder);
-                    }
-                  }}
-                >
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
-                    Loss | Profit
-                  </div>
-                  <div>
-                    <Icon
-                      icon={
-                        metricSort !== "profit"
-                          ? "formkit:arrowdown"
-                          : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                      }
-                      className={` w-[10px] h-[10px] ${metricSort === "profit"
-                        ? "text-color-text-secondary opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                        } `}
-                    />
-                  </div>
-                  <GTPTooltipNew
-                    key={"profit"}
-                    placement="right"
-                    allowInteract={false}
-                    hoverOpenDelay={100}
-                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
-                    unstyled
-                  >
-                    <GTPTooltipGeneral width={260}>
-                      <div className="pl-[20px]">
-                        The chains total revenue minus its costs.
-                      </div>
-                    </GTPTooltipGeneral>
-                  </GTPTooltipNew>
-                </div>
-              </div>
-              <div
-                className="flex items-center justify-end pr-[5px]  gap-x-[5px] pl-[2px] cursor-pointer"
-                onClick={() => {
-                  if (metricSort !== "profit_margin") {
-                    setSortOrder(true);
-                    setMetricSort("profit_margin");
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                }}
-              >
-                {" "}
-                <div className="flex items-center group gap-x-[1px] ">
-                  <div className="text-xs group-hover:text-color-text-secondary font-bold">
-                    Margin
-                  </div>
-                  <div>
-                    <Icon
-                      icon={
-                        metricSort !== "profit_margin"
-                          ? "formkit:arrowdown"
-                          : sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                      }
-                      className={` w-[10px] h-[10px] ${metricSort === "profit_margin"
-                        ? "text-color-text-secondary opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                        } `}
-                    />
-                  </div>
-                  <GTPTooltipNew
-                    key={"margin"}
-                    placement="right"
-                    allowInteract={false}
-                    hoverOpenDelay={100}
-                    trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                    positionOffset={{ mainAxis: 5, crossAxis: 0 }}
-                    unstyled
-                  >
-                    <GTPTooltipGeneral width={260}>
-                      <div className="pl-[20px]">
-                        The profit margin of the chain calculated as (Revenue -
-                        Costs) / Revenue
-                      </div>
-                    </GTPTooltipGeneral>
-                  </GTPTooltipNew>
-                </div>
-              </div>
-              <div
-                className="flex items-center group gap-x-[1px] justify-end cursor-pointer pr-[8px]"
-                onClick={() => {
-                  if (metricSort !== "size") {
-                    setSortOrder(true);
-                    setMetricSort("size");
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                }}
-              >
-                <div className="text-xs group-hover:text-color-text-secondary font-bold">
-                  {"Blob Data"}
-                </div>
-                <div>
-                  <Icon
-                    icon={
-                      metricSort !== "size"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                          ? "formkit:arrowdown"
-                          : "formkit:arrowup"
-                    }
-                    className={` w-[10px] h-[10px] ${metricSort === "size"
-                      ? "text-color-text-secondary opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-color-text-secondary"
-                      } `}
-                  />
-                </div>
-                <GTPTooltipNew
-                  key={"size"}
-                  placement="right"
-                  allowInteract={false}
-                  hoverOpenDelay={100}
-                  trigger={<Icon icon="feather:info" className="w-[15px] h-[15px]" />}
-                  positionOffset={{ mainAxis: 5, crossAxis: 0 }}
-                  unstyled
-                >
-                  <GTPTooltipGeneral width={260}>
-                    <div className="pl-[20px]">
-                      The total amount of data that is stored in Blobs.
-                    </div>
-                  </GTPTooltipGeneral>
-                </GTPTooltipNew>
-              </div>
-              {/*END TOP ROW */}
-              {/*END TOP ROW */}
-              {/*END TOP ROW */}
+            <div ref={headerRef} className={headerGridClassName}>
+              {headerCells}
             </div>
             <div
               className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-500 `}
@@ -985,7 +1006,7 @@ export default function ChainBreakdown({
                         )} `}
                       >
                         <div
-                          className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-color-ui-active cursor-pointer"
+                          className={`relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-color-ui-active cursor-pointer transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                           onClick={(e) => {
                             handleClick(e, item.key);
                             e.stopPropagation();
@@ -1024,7 +1045,7 @@ export default function ChainBreakdown({
                         </div>
 
                         <div
-                          className="flex items-center bg-color-bg-medium gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px]"
+                          className={`flex items-center bg-color-bg-medium gap-x-1 h-[18px] text-xxs rounded-full px-[6px] py-[3px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                           key={localDataAvail.label}
                           onClick={(e) => {
                             if (
@@ -1392,6 +1413,7 @@ export default function ChainBreakdown({
                         }`}
                     >
                       <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                        {openedChains[item.key] && (
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
                           dailyData={
@@ -1403,6 +1425,7 @@ export default function ChainBreakdown({
                           isOpen={openChain[item.key]}
                           isMonthly={isMonthly}
                         />
+                        )}
                       </div>
                     </div>
                   </AnimatedDiv>

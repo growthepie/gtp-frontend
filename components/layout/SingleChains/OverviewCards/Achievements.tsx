@@ -1,8 +1,9 @@
 "use client";
 
 import { MasterResponse } from "@/types/api/MasterResponse";
-import ReactECharts from 'echarts-for-react';
-import { EChartsOption } from 'echarts';
+import ReactECharts from 'echarts-for-react/lib/core';
+import type { EChartsOption } from 'echarts';
+import { echarts } from '@/lib/echarts-setup';
 import { GTPIconName } from "@/icons/gtp-icon-names";
 import { GTPIcon } from "../../GTPIcon";
 import { useLocalStorage } from "usehooks-ts";
@@ -14,6 +15,7 @@ import { StreaksData } from "@/types/api/ChainOverviewResponse";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { GrayOverlay } from "@/components/layout/Backgrounds";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 // Helper hook to get CSS variable colors for ECharts (which renders to canvas and can't read CSS vars)
 const useCssColors = () => {
@@ -550,13 +552,14 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                     return (
                         <div className="flex flex-col flex-1 xs:flex-none items-center overflow-visible" key={key + "lifetime"}>
                             <div
-                                className="flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible cursor-pointer"
+                                className={`flex max-w-[100px] w-[80px] h-[80px] items-center justify-center relative overflow-visible cursor-pointer rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                                 onClick={() => setSelectedKey(key)}
                                 role="button"
                                 aria-label={`Enlarge ${master.metrics[key].name} achievement`}
                             >
                                 <div className="absolute w-[100px] h-[94px] flex items-center justify-center z-20 overflow-visible">
                                     <ReactECharts
+                                        echarts={echarts}
                                         option={getChartOptions(displayPercent, 80)}
                                         style={{ width: '80px', height: '80px', overflow: 'visible' }}
                                     />
@@ -564,6 +567,7 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                                 </div>
                                 <div className="absolute w-full h-full flex items-center justify-center bottom-[0.5px] right-[0.5px] z-10">
                                     <ReactECharts
+                                        echarts={echarts}
                                         option={transparentChartOptions(displayPercent, 68)}
                                         style={{ width: '68px', height: '68px', }}
                                     />
@@ -646,12 +650,14 @@ export const LifetimeAchievments = ({ data, master, chainKey }: { data: Achievme
                                     <div className="relative flex items-center justify-center overflow-visible" style={{ width: chartSize, height: chartSize }}>
                                         <div className="absolute inset-0 flex items-center justify-center z-20 overflow-visible">
                                             <ReactECharts
+                                                echarts={echarts}
                                                 option={getChartOptions(displayPercent, chartSize)}
                                                 style={{ width: chartSize, height: chartSize, overflow: 'visible' }}
                                             />
                                         </div>
                                         <div className="absolute inset-0 flex items-center justify-center z-10">
                                             <ReactECharts
+                                                echarts={echarts}
                                                 option={transparentChartOptions(displayPercent, innerSize)}
                                                 style={{ width: innerSize, height: innerSize }}
                                             />

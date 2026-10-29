@@ -13,7 +13,7 @@ import { getChainMetricURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ChainsData, MetricData, IntervalData } from "@/types/api/ChainResponse";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPButtonRow from "@/components/GTPComponents/ButtonComponents/GTPButtonRow";
 import GTPButtonContainer from "@/components/GTPComponents/ButtonComponents/GTPButtonContainer";
 import { GTPIconName } from "@/icons/gtp-icon-names";
@@ -30,6 +30,8 @@ import {
   isTouchPrimaryDevice,
   isTouchSession,
 } from "@/components/tooltip/touchSession";
+import LazyMount from "@/components/layout/LazyMount";
+import StickyHeader from "@/components/layout/StickyHeader";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -144,7 +146,7 @@ function formatNumberWithSI(num: number, decimals = 2): string {
     { value: 1e12, symbol: "T" },
     { value: 1e9, symbol: "B" },
     { value: 1e6, symbol: "M" },
-    { value: 1e3, symbol: "k" },
+    { value: 1e3, symbol: "K" },
   ];
   const tier = tiers.find((t) => absNum >= t.value);
   if (!tier) {
@@ -172,46 +174,6 @@ function formatNumberWithSI(num: number, decimals = 2): string {
   }
   return sign + formattedValue + tier.symbol;
 }
-
-// Lazy loading wrapper for charts - only renders when visible
-const LazyChart = memo(({ children, height = 224 }: { children: React.ReactNode; height?: number }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasBeenVisible, setHasBeenVisible] = useState(false);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const visible = entry.isIntersecting;
-        setIsVisible(visible);
-        if (visible && !hasBeenVisible) {
-          setHasBeenVisible(true);
-        }
-      },
-      {
-        rootMargin: "100px", // Start loading 100px before entering viewport
-        threshold: 0,
-      }
-    );
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [hasBeenVisible]);
-
-  return (
-    <div ref={containerRef} style={{ minHeight: height }}>
-      {hasBeenVisible ? children : (
-        <div
-          className="w-full rounded-2xl bg-color-bg-default animate-pulse"
-          style={{ height }}
-        />
-      )}
-    </div>
-  );
-});
 
 // Helper to create a diagonal hash pattern
 const createDiagonalPattern = (color: string) => {
@@ -257,8 +219,6 @@ const createDiagonalPattern = (color: string) => {
   };
 };
 
-
-LazyChart.displayName = "LazyChart";
 
 // Single chart component
 const MetricChart = memo(
@@ -853,12 +813,13 @@ const MetricChart = memo(
           hideDelay: isTouchPrimaryDevice ? 3000 : 50,
           enterable: false, // Don't need to enter tooltip, improves responsiveness
           transitionDuration: 0, // Disable animation for snappier feel
-          // Render the tooltip INSIDE the chart (not on document.body) and confine
-          // it to the chart bounds — on touch it rides the chart's scroll container
-          // instead of drifting in page space onto a neighbor; on desktop it stays
-          // clamped inside the plot rather than following the cursor past the edges.
-          appendToBody: false,
-          confine: true,
+          // Mouse: render the tooltip on the page and let it overflow the chart, placed
+          // beside the cursor (see `position`), so it never covers the hovered point, its
+          // line or its date the way a tooltip squeezed inside a 224px chart would.
+          // Touch: render it inside the chart, confined to it, so it rides the chart's
+          // scroll container instead of drifting onto a neighbor in the grid.
+          appendToBody: !isTouchPrimaryDevice,
+          confine: isTouchPrimaryDevice,
           backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
           borderWidth: 0,
           borderRadius: 17,
@@ -880,20 +841,18 @@ const MetricChart = memo(
             },
             handle: { show: false },
           },
-          // Touch: contain the tooltip inside the touched chart — the
-          // fundamentals grid stacks charts directly above/below each other,
-          // and the ECharts default follow-pointer placement drifts over
-          // neighbors. Mouse keeps the ECharts default: returning undefined
-          // falls through to it (TooltipView._updatePosition).
+          // Touch: contain the tooltip inside the touched chart — the fundamentals
+          // grid stacks charts directly above/below each other, and a tooltip
+          // drifting over a neighbor reads as that chart's. Mouse: beside the cursor,
+          // flipped to its other side at the screen edge, kept on screen.
           position: ((point: number[], _params: unknown, _el: unknown, _rect: unknown, size?: { contentSize?: number[] }) => {
-            if (!(isTouchPrimaryDevice || isTouchSession())) return undefined;
             return getViewportAwareTooltipLocalPosition({
               anchorLocalX: Number(point?.[0] ?? 0),
               anchorLocalY: Number(point?.[1] ?? 0),
               contentWidth: Number(size?.contentSize?.[0] ?? 0),
               contentHeight: Number(size?.contentSize?.[1] ?? 0),
               hostRect: touchHostRef.current?.getBoundingClientRect(),
-              isTouch: true,
+              isTouch: isTouchPrimaryDevice || isTouchSession(),
             });
           }) as any,
           formatter: (params: any) => {
@@ -1406,19 +1365,32 @@ const MetricChart = memo(
       };
     }, [drawLastPointLines, lineType]);
 
-    // On touch devices, hide this chart's tooltip as soon as the page scrolls:
-    // the body-appended tooltip does not travel with the chart, and once
-    // Safari claims a drag as a scroll gesture it stops delivering touch
-    // events, so the tooltip would strand over neighboring charts. Capture
-    // phase catches inner scroll containers too; mouse-primary devices are
-    // untouched.
+    // Hide this chart's tooltip as soon as the page scrolls. On touch, once Safari
+    // claims a drag as a scroll gesture it stops delivering touch events, so the
+    // tooltip would strand over neighboring charts. With a mouse the tooltip lives on
+    // the page and would stay put while the chart scrolls away under it; its pointer
+    // line goes too, and the next mouse move brings both back. Capture phase catches
+    // inner scroll containers too.
     useEffect(() => {
-      if (!isTouchPrimaryDevice) return;
+      // with a mouse, only a showing tooltip needs hiding: skip the work on every other scroll
+      const instance = chartRef.current?.getEchartsInstance();
+      let tooltipShown = false;
+      const onShowTip = () => { tooltipShown = true; };
+      const onHideTip = () => { tooltipShown = false; };
+      instance?.on("showtip", onShowTip);
+      instance?.on("hidetip", onHideTip);
       const onDocumentScroll = () => {
-        chartRef.current?.getEchartsInstance()?.dispatchAction({ type: "hideTip" });
+        if (!isTouchPrimaryDevice && !tooltipShown) return;
+        const current = chartRef.current?.getEchartsInstance();
+        current?.dispatchAction({ type: "hideTip" });
+        if (!isTouchPrimaryDevice) current?.dispatchAction({ type: "updateAxisPointer", currTrigger: "leave" });
       };
       document.addEventListener("scroll", onDocumentScroll, { capture: true, passive: true });
-      return () => document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+      return () => {
+        document.removeEventListener("scroll", onDocumentScroll, { capture: true });
+        instance?.off("showtip", onShowTip);
+        instance?.off("hidetip", onHideTip);
+      };
     }, []);
 
     // Touch: reliably auto-hide the tooltip AND the connect-shared axis-pointer
@@ -1755,6 +1727,15 @@ export default function ChainChartECharts({
     return metricItems.map((item) => item.key ?? "");
   }, []);
 
+  // The metrics this chain has, per master.json: the charts that will show, so their space can be
+  // reserved before the data arrives
+  const supportedMetricKeys = useMemo(
+    () => new Set<string>(master.chains[chainKey[0]]?.supported_metrics ?? []),
+    [master, chainKey],
+  );
+  // false until the chain's metric files have first arrived (or failed)
+  const [hasLoadedMetrics, setHasLoadedMetrics] = useState(false);
+
   // Available intervals
   const availableIntervals = useMemo(() => {
     const intervals = new Set<string>();
@@ -1828,6 +1809,8 @@ export default function ChainChartECharts({
       setData(responseData);
     } catch (error) {
       console.error("Error fetching chain data:", error);
+    } finally {
+      setHasLoadedMetrics(true);
     }
   }, [chainKey, cache, mutate, enabledFundamentalsKeys, master]);
 
@@ -2029,8 +2012,9 @@ export default function ChainChartECharts({
 
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
-      {/* Title and Compare Section */}
-      <div className="flex items-center justify-between mb-[15px]">
+      {/* Title and Compare Section. While the compare dropdown is open it sits above the
+          sticky controls below, which it opens over. */}
+      <div className={`relative flex items-center justify-between mb-[15px] ${compareTo ? "z-[60]" : ""}`}>
         <div className="flex gap-x-[8px] items-center scroll-mt-8" id="fundamentals">
           <GTPIcon icon="gtp-fundamentals" size="lg" className="!w-[32px] !h-[32px]" containerClassName="w-[36px] h-[36px]" />
           <Heading className="font-bold leading-[120%] text-[20px] md:text-[30px] break-inside-avoid" as="h2">
@@ -2047,12 +2031,12 @@ export default function ChainChartECharts({
             }}
           >
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
+              className={`rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default ${GTP_BUTTON_INTERACTION_CLASSES} dark:hover:bg-color-ui-hover dark:active:bg-color-ui-active transition-colors duration-200 flex items-center justify-center z-[15] hover:cursor-pointer`}
               onClick={handlePrevCompChain}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
-            <div className="flex flex-1 flex-col items-center justify-self-center gap-y-[1px]" onClick={() => setCompareTo(!compareTo)}>
+            <div className={`flex flex-1 flex-col items-center justify-self-center gap-y-[1px] rounded-full ${GTP_BUTTON_INTERACTION_CLASSES} transition-colors duration-200`} onClick={() => setCompareTo(!compareTo)}>
               <div
                 className={`font-[500] leading-[150%] text-[12px] ${
                   compChain
@@ -2074,7 +2058,7 @@ export default function ChainChartECharts({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default flex items-center justify-center z-[15] hover:cursor-pointer"
+              className={`rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-color-bg-default ${GTP_BUTTON_INTERACTION_CLASSES} dark:hover:bg-color-ui-hover dark:active:bg-color-ui-active transition-colors duration-200 flex items-center justify-center z-[15] hover:cursor-pointer`}
               onClick={handleNextCompChain}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -2142,69 +2126,76 @@ export default function ChainChartECharts({
         </div>
       </div>
 
-      {/* Controls */}
-      <GTPButtonContainer
-        className="relative mb-[15px]"
-        isWrapping={isTopBarWrapping}
-        setIsWrapping={setIsTopBarWrapping}
-      >
-        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
-          {availableIntervals.map((interval) => (
-            <GTPButton
-              key={interval}
-              label={interval.charAt(0).toUpperCase() + interval.slice(1)}
-              innerStyle={{ width: "100%" }}
-              className="w-full justify-center"
-              variant="primary"
-              size="sm"
-              clickHandler={() => startTransition(() => setSelectedTimeInterval(interval))}
-              isSelected={selectedTimeInterval === interval}
-            />
-          ))}
-        </GTPButtonRow>
-        <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
-          {!zoomed ? (
-            Object.keys(timespans)
-              .filter((timespan) =>
-                selectedTimeInterval === "daily"
-                  ? ["90d", "180d", "365d", "max"].includes(timespan)
-                  : selectedTimeInterval === "hourly"
-                  ? ["24h", "3d", "7d", "14d"].includes(timespan)
-                  : selectedTimeInterval === "weekly"
-                  ? ["12w", "24w", "52w", "maxW"].includes(timespan)
-                  : selectedTimeInterval === "monthly"
-                  ? ["6m", "12m", "maxM"].includes(timespan)
-                  : ["4q", "8q", "maxQ"].includes(timespan)
-              )
-              .map((timespan) => (
-                <GTPButton
-                  key={timespan}
-                  label={timespans[timespan].label}
-                  innerStyle={{ width: "100%" }}
-                  className="w-full justify-center"
-                  variant="primary"
-                  size="sm"
-                  clickHandler={() => setSelectedTimespan(timespan)}
-                  isSelected={selectedTimespan === timespan}
-                />
-              ))
-          ) : (
-            <GTPButton
-              label="Reset Zoom"
-              leftIcon={"feather:zoom-out" as GTPIconName}
-              size="sm"
-              variant="highlight"
-              visualState="default"
-              clickHandler={resetZoom}
-            />
-          )}
-        </GTPButtonRow>
-      </GTPButtonContainer>
+      {/* Controls: stay below the chain tab bar while the charts scroll by. Not on mobile,
+          where they wrap to two rows. */}
+      <StickyHeader stacked mobile={false} className="mb-[15px]">
+        <GTPButtonContainer
+          className="relative"
+          isWrapping={isTopBarWrapping}
+          setIsWrapping={setIsTopBarWrapping}
+        >
+          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+            {availableIntervals.map((interval) => (
+              <GTPButton
+                key={interval}
+                label={interval.charAt(0).toUpperCase() + interval.slice(1)}
+                innerStyle={{ width: "100%" }}
+                className="w-full justify-center"
+                variant="primary"
+                size="sm"
+                clickHandler={() => startTransition(() => setSelectedTimeInterval(interval))}
+                isSelected={selectedTimeInterval === interval}
+              />
+            ))}
+          </GTPButtonRow>
+          <GTPButtonRow style={{ width: isMobile ? "100%" : "auto" }}>
+            {!zoomed ? (
+              Object.keys(timespans)
+                .filter((timespan) =>
+                  selectedTimeInterval === "daily"
+                    ? ["90d", "180d", "365d", "max"].includes(timespan)
+                    : selectedTimeInterval === "hourly"
+                    ? ["24h", "3d", "7d", "14d"].includes(timespan)
+                    : selectedTimeInterval === "weekly"
+                    ? ["12w", "24w", "52w", "maxW"].includes(timespan)
+                    : selectedTimeInterval === "monthly"
+                    ? ["6m", "12m", "maxM"].includes(timespan)
+                    : ["4q", "8q", "maxQ"].includes(timespan)
+                )
+                .map((timespan) => (
+                  <GTPButton
+                    key={timespan}
+                    label={timespans[timespan].label}
+                    innerStyle={{ width: "100%" }}
+                    className="w-full justify-center"
+                    variant="primary"
+                    size="sm"
+                    clickHandler={() => setSelectedTimespan(timespan)}
+                    isSelected={selectedTimespan === timespan}
+                  />
+                ))
+            ) : (
+              <GTPButton
+                label="Reset Zoom"
+                leftIcon={"feather:zoom-out" as GTPIconName}
+                size="sm"
+                variant="highlight"
+                visualState="default"
+                clickHandler={resetZoom}
+              />
+            )}
+          </GTPButtonRow>
+        </GTPButtonContainer>
+      </StickyHeader>
 
       {/* Charts Grid */}
       <div className={`flex flex-col gap-y-[15px] transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}>
         {Object.keys(metricCategories)
           .filter((group) => group !== "gtpmetrics" && group !== "public-goods-funding" && group !== "developer")
+          // skip categories this chain has no metrics in, instead of showing an empty section
+          .filter((categoryKey) =>
+            enabledFundamentalsKeys.some((key) => getFundamentalsByKey[key]?.category === categoryKey && supportedMetricKeys.has(key)),
+          )
           .map((categoryKey) => (
             <ChainSectionHead
               title={metricCategories[categoryKey].label}
@@ -2225,10 +2216,16 @@ export default function ChainChartECharts({
                     .map((key) => {
                       const metricData = data[0]?.metrics?.[key];
                       const intervalData = metricData?.[selectedTimeInterval as keyof typeof metricData] as IntervalData | undefined;
-                      if (!intervalData?.data?.length) return null;
+                      if (!intervalData?.data?.length) {
+                        // hold the chart's place while the metric files load, like LazyMount does
+                        // until a chart scrolls near
+                        return !hasLoadedMetrics && supportedMetricKeys.has(key) ? (
+                          <div key={key} className="w-full rounded-2xl bg-color-bg-default motion-safe:animate-pulse" style={{ height: 224 }} />
+                        ) : null;
+                      }
 
                       return (
-                        <LazyChart key={key} height={224}>
+                        <LazyMount key={key} minHeight={224}>
                           <MetricChart
                             metricKey={key}
                             data={data}
@@ -2247,7 +2244,7 @@ export default function ChainChartECharts({
                             groupId="fundamentals-charts"
                             lineType={lineType}
                           />
-                        </LazyChart>
+                        </LazyMount>
                       );
                     })}
                 </div>

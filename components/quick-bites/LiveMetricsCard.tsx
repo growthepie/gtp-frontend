@@ -39,9 +39,9 @@ const MetricItem = ({ label, value, hoverLabel, align = "left", minWidthClassNam
     <div className={`flex flex-col gap-y-[2px] group ${alignClasses}`}>
       <div className="heading-small-xs numbers-sm">{value}</div>
       <div className={`relative ${minWidth}`}>
-        <div className={`heading-small-xxxs text-[#5A6462] ${labelClassName}`}>{label}</div>
+        <div className={`heading-small-xxxs text-color-text-secondary ${labelClassName}`}>{label}</div>
         {hoverLabel && (
-          <div className={`heading-small-xxxs text-[#5A6462] absolute top-0 ${hoverAlignClasses} ${hoverClassName} whitespace-nowrap`}>
+          <div className={`heading-small-xxxs text-color-text-secondary absolute top-0 ${hoverAlignClasses} ${hoverClassName} whitespace-nowrap`}>
             {hoverLabel}
           </div>
         )}
@@ -95,7 +95,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
                 {liveMetric.value}
               </div>
               {liveMetric.label && (
-                <div className="heading-small-xxxs text-nowrap text-[#5A6462] whitespace-nowrap">
+                <div className="heading-small-xxxs text-nowrap text-color-text-secondary whitespace-nowrap">
                   {liveMetric.label}
                 </div>
               )}
@@ -125,7 +125,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
                 {liveMetric.value}
               </div>
               {liveMetric.label && (
-                <div className="heading-small-xxxs text-nowrap text-[#5A6462] whitespace-nowrap">
+                <div className="heading-small-xxxs text-nowrap text-color-text-secondary whitespace-nowrap">
                   {liveMetric.label}
                 </div>
               )}
@@ -156,7 +156,7 @@ const LiveMetricsCard: React.FC<LiveMetricsCardProps> = ({
                       {liveMetric.value}
                     </div>
                     {liveMetric.label && (
-                      <div className="heading-small-xxxs text-[#5A6462] group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">
+                      <div className="heading-small-xxxs text-color-text-secondary group-hover:h-[10px] h-[0px] overflow-hidden transition-height duration-200">
                         {liveMetric.label}
                       </div>
                     )}

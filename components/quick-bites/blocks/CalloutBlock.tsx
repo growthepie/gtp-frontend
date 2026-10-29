@@ -39,10 +39,10 @@ export const CalloutBlock: React.FC<CalloutBlockProps> = ({ block }) => {
   const contentWithLinks = parseMarkdownLinksToHtml(block.content);
   
   return (
-    <div className={`my-6 p-[15px] bg-color-bg-default rounded-[25px] border-l-4 text-xs md:text-sm md:w-auto w-full border-color-ui-hover ${block.className || ''}`}>
+    <div className={`my-8 p-[15px] bg-color-bg-default rounded-[15px] border-l-4 text-md md:w-auto w-full border-color-ui-hover ${block.className || ''}`}>
       <div className="flex items-start gap-3">
         {block.icon && (
-          <div className="flex-shrink-0 mt-0.5">
+          <div className="flex-shrink-0 mt-[4px]">
             <GTPIcon icon={block.icon as any} size="sm" />
           </div>
         )}

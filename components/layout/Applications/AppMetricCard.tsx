@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import { echarts } from "@/lib/echarts-setup";
 import { GTPIcon } from "@/components/layout/GTPIcon";
@@ -27,6 +27,18 @@ const formatLargeNumber = (value: number, decimals = 2): string => {
   return value.toFixed(decimals);
 };
 
+// Up to 2 decimals, but a small non-zero change (e.g. +0.0024%) gets enough
+// decimals to show its first two significant digits instead of rounding to 0.0%.
+const formatChangePct = (value: number): string => {
+  const abs = Math.abs(value);
+  const smallDecimals = abs > 0 && abs < 0.05 ? Math.min(20, 1 - Math.floor(Math.log10(abs))) : 0;
+  return Intl.NumberFormat("en-US", {
+    maximumFractionDigits: Math.max(2, smallDecimals),
+    minimumFractionDigits: Math.max(1, smallDecimals),
+    signDisplay: "exceptZero",
+  }).format(value);
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface GTPMetricCardProps {
@@ -37,22 +49,59 @@ export interface GTPMetricCardProps {
   value: number;
   /** Value one week ago — used to compute WoW %. Ignored when wowChange is provided. */
   prevValue?: number;
-  /** Pre-computed WoW % change (e.g. 5.2 for +5.2%). Takes precedence over prevValue. */
-  wowChange?: number;
+  /** Pre-computed WoW % change (e.g. 5.2 for +5.2%). Takes precedence over prevValue. Null hides the change. */
+  wowChange?: number | null;
   prefix?: string;
   suffix?: string;
   /** Raw array of values, newest last */
   sparkline: number[];
   /** Timestamps aligned with sparkline values. Generated if not provided. */
   timestamps?: string[];
+  /** dayjs format for the sparkline tooltip's date. Defaults to "DD MMM YYYY". */
+  tooltipDateFormat?: string;
   /** Brand / accent color for the chart line and value */
   color: string;
   onClick?: () => void;
   /** Custom left-side element. Replaces the default GTPIcon when provided. */
   leftIcon?: React.ReactNode;
+  /** Decimal places for the value and sparkline tooltip. Defaults to 2. */
+  decimals?: number;
+  /** Move the suffix onto its own line when the card is narrower than 400px, instead of wrapping by chance. */
+  stackSuffixWhenNarrow?: boolean;
+  /**
+   * Let the sparkline fill the card instead of stopping at 160px. The value column is
+   * then a fixed width, so every card's sparkline starts and ends at the same points
+   * (measured from the card edges) whatever the length of its value.
+   */
+  fillSparkline?: boolean;
+  /**
+   * For cards that don't link anywhere: no hover background, pointer cursor, chevron,
+   * value shift (the 20px that makes room for the chevron) or value colour change.
+   */
+  nonInteractive?: boolean;
+  /** Custom value format and an extra row for the sparkline tooltip. */
+  tooltip?: SparklineTooltipOptions;
+  /**
+   * Opt-in smooth switching: when this changes (e.g. the selected timeframe), the
+   * sparkline is redrawn from the left instead of morphing point by point, and its end
+   * dot fades in once the line reaches it. Without it, the chart behaves as before.
+   */
+  sparklineTransitionKey?: string;
+  /** Pulse the sparkline's end dot, e.g. for a value that updates live. */
+  pulseEndDot?: boolean;
+  /** Replaces the default `prefix + compact value + suffix` for the card's value. */
+  formatValue?: (value: number) => string;
 }
 
 // ─── Sparkline chart ──────────────────────────────────────────────────────────
+
+/** Overrides for the sparkline tooltip, for series whose rounded value barely moves. */
+export interface SparklineTooltipOptions {
+  /** Replaces the default `prefix + compact value + suffix`. */
+  formatValue?: (value: number) => string;
+  /** An extra row under the value, e.g. the change since the first point. Without a label, the value sits alone on the right. */
+  detail?: (index: number) => { label?: string; value: string };
+}
 
 interface SparklineChartProps {
   values: number[];
@@ -61,13 +110,34 @@ interface SparklineChartProps {
   label: string;
   prefix: string;
   suffix: string;
+  height?: number;
+  decimals?: number;
+  /**
+   * Draw the line from the very first to the very last pixel. By default ECharts leaves
+   * half a category of padding at each end, so series with fewer points look shorter.
+   */
+  edgeToEdge?: boolean;
+  /** dayjs format for the tooltip's date. */
+  tooltipDateFormat?: string;
+  tooltip?: SparklineTooltipOptions;
+  /** Draw the line in from the left on mount, and fade the end dot in once it's drawn. */
+  revealOnMount?: boolean;
+  /** Pulse the end dot (not while hovering, when the dot follows the pointer). */
+  pulseEndDot?: boolean;
 }
 
-const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: SparklineChartProps) => {
+export const SparklineChart = ({ values, timestamps, color, label, prefix, suffix, height = 40, decimals = 2, edgeToEdge = false, tooltipDateFormat = "DD MMM YYYY", tooltip, revealOnMount = false, pulseEndDot = false }: SparklineChartProps) => {
   const chartRef = useRef<ReactEChartsCore>(null);
 
   const [circlePosition, setCirclePosition] = useState<{ x: number; y: number } | null>(null);
   const [isHovering, setIsHovering] = useState(false);
+  // With revealOnMount the end dot waits for the line's draw-in to finish.
+  const [lineDrawn, setLineDrawn] = useState(!revealOnMount);
+  const onEvents = useMemo(() => (revealOnMount ? { finished: () => setLineDrawn(true) } : undefined), [revealOnMount]);
+  const dotColor =
+    typeof window !== "undefined"
+      ? getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "#fff"
+      : "#fff";
 
   const [customTooltip, setCustomTooltip] = useState<{
     visible: boolean;
@@ -75,7 +145,8 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
     y: number;
     value: number;
     date: string;
-  }>({ visible: false, x: 0, y: 0, value: 0, date: "" });
+    index: number;
+  }>({ visible: false, x: 0, y: 0, value: 0, date: "", index: 0 });
 
   const updateCirclePosition = useCallback(
     (index: number) => {
@@ -93,6 +164,21 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
     return () => clearTimeout(id);
   }, [values, updateCirclePosition, isHovering]);
 
+  // ECharts doesn't reliably notice when only its container (not the window) changes
+  // size — e.g. a grid switching column count — so the canvas kept its old width and
+  // spilled over the value. Resize it ourselves and move the end-point dot with it.
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      chartRef.current?.getEchartsInstance().resize();
+      updateCirclePosition(values.length - 1);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [updateCirclePosition, values.length]);
+
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
   const yAxisMin =
@@ -101,7 +187,7 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
       : minValue - (maxValue - minValue) * 0.15;
 
   const option = {
-    xAxis: { type: "category", data: timestamps, show: false },
+    xAxis: { type: "category", data: timestamps, show: false, ...(edgeToEdge ? { boundaryGap: false } : {}) },
     yAxis: { type: "value", show: false, min: yAxisMin },
     grid: { left: 0, right: 0, top: 0, bottom: 0 },
     tooltip: {
@@ -112,6 +198,7 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
       borderWidth: 0,
       axisPointer: { type: "line", lineStyle: { color: "#CDD8D3", width: 1, type: "solid" } },
     },
+    ...(revealOnMount ? { animationDuration: 700, animationEasing: "cubicOut" } : {}),
     series: [
       {
         data: values,
@@ -144,7 +231,7 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
     if (dp && dp[0] >= 0 && dp[0] < values.length) {
       const idx = Math.round(dp[0]);
       updateCirclePosition(idx);
-      setCustomTooltip({ visible: true, x, y, value: values[idx], date: timestamps[idx] });
+      setCustomTooltip({ visible: true, x, y, value: values[idx], date: timestamps[idx], index: idx });
       setIsHovering(true);
     } else {
       setCustomTooltip((p) => ({ ...p, visible: false }));
@@ -159,7 +246,9 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
 
   return (
     <div
-      className="h-[40px] relative w-full z-10 overflow-visible"
+      ref={containerRef}
+      className="relative w-full z-10 overflow-visible"
+      style={{ height }}
       onMouseMove={(e) => handleInteract(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect())}
       onMouseLeave={handleEnd}
       onTouchMove={(e) => handleInteract(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget.getBoundingClientRect())}
@@ -170,6 +259,7 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
         ref={chartRef}
         option={option}
         style={{ height: "100%", width: "100%" }}
+        onEvents={onEvents}
         opts={{
           renderer: "canvas",
           devicePixelRatio: typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
@@ -179,17 +269,19 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
       {/* Dot at current / hovered data point */}
       {circlePosition && (
         <div
-          className="absolute w-[10px] h-[10px] rounded-full pointer-events-none z-[60]"
+          className="absolute w-[10px] h-[10px] pointer-events-none z-[60]"
           style={{
             left: circlePosition.x - 5,
             top: circlePosition.y - 5,
-            backgroundColor:
-              typeof window !== "undefined"
-                ? getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "#fff"
-                : "#fff",
-            opacity: 0.6,
+            opacity: lineDrawn ? 0.6 : 0,
+            ...(revealOnMount ? { transition: "opacity 250ms ease-out" } : {}),
           }}
-        />
+        >
+          {pulseEndDot && !isHovering && (
+            <div className="absolute inset-0 rounded-full motion-safe:animate-ping" style={{ backgroundColor: dotColor }} />
+          )}
+          <div className="absolute inset-0 rounded-full" style={{ backgroundColor: dotColor }} />
+        </div>
       )}
 
       {/* Tooltip */}
@@ -203,17 +295,26 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
           }}
         >
           <div className="heading-small-xs text-color-text-primary mb-2 pl-[21px]">
-            {dayjs.utc(customTooltip.date).format("DD MMM YYYY")}
+            {dayjs.utc(customTooltip.date).format(tooltipDateFormat)}
           </div>
           <div className="flex justify-between items-center gap-x-[10px] h-[12px]">
             <div className="flex items-center gap-1">
               <div className="w-4 h-2 rounded-r-full" style={{ backgroundColor: color }} />
               <span className="text-xs whitespace-nowrap text-color-text-primary">{label}</span>
             </div>
-            <span className="numbers-xs text-color-text-primary font-medium">
-              {prefix}{formatLargeNumber(customTooltip.value, 2)}{suffix}
+            <span className={`numbers-xs text-color-text-primary ${edgeToEdge ? "whitespace-nowrap" : ""}`}>
+              {tooltip?.formatValue ? tooltip.formatValue(customTooltip.value) : <>{prefix}{formatLargeNumber(customTooltip.value, decimals)}{suffix}</>}
             </span>
           </div>
+          {tooltip?.detail && (() => {
+            const detail = tooltip.detail(customTooltip.index);
+            return (
+              <div className="flex justify-end items-center gap-x-[10px] h-[12px] mt-[6px]">
+                {detail.label && <span className="flex-1 text-xs whitespace-nowrap text-color-text-primary/70 pl-[20px]">{detail.label}</span>}
+                <span className="numbers-xs text-color-text-primary/70 whitespace-nowrap">{detail.value}</span>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -221,6 +322,17 @@ const SparklineChart = ({ values, timestamps, color, label, prefix, suffix }: Sp
 };
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
+
+// fillSparkline sizing, measured against the card itself (not the label/value text).
+// The sparkline area spans from the label column to 20px before the 100px value column,
+// and the line is centred in it at clamp(25% of the card, the whole area, 300px).
+// 25cqw = 25% of the card's width (the card is an @container). Keep the minimum at or
+// below the area on the narrowest card, or the line spills over the label/value:
+// at 420px (/eth's narrowest 2-column card) the area is 105px = 25%. Written out in full so
+// Tailwind can see the classes.
+const FILL_SPARKLINE_AREA =
+  "absolute top-0 bottom-0 left-[95px] xs:left-[90px] md:left-[185px] right-[135px] xs:right-[130px] flex justify-center items-center overflow-visible";
+const FILL_SPARKLINE_WIDTH = "w-[clamp(25cqw,100%,300px)]";
 
 export default function GTPMetricCard({
   label,
@@ -231,15 +343,24 @@ export default function GTPMetricCard({
   suffix = "",
   sparkline,
   timestamps: timestampsProp,
+  tooltipDateFormat,
   color,
   onClick,
   leftIcon,
+  decimals = 2,
+  stackSuffixWhenNarrow = false,
+  fillSparkline = false,
+  nonInteractive = false,
+  tooltip,
+  sparklineTransitionKey,
+  pulseEndDot = false,
+  formatValue,
 }: GTPMetricCardProps) {
   const computedWowChange =
     wowChangeProp !== undefined
       ? wowChangeProp
       : 0;
-  const isPositive = computedWowChange >= 0;
+  const isPositive = (computedWowChange ?? 0) >= 0;
 
   const timestamps =
     timestampsProp ??
@@ -251,7 +372,7 @@ export default function GTPMetricCard({
 
   return (
     <div
-      className="group relative rounded-[15px] bg-color-bg-default hover:bg-color-ui-hover xs:p-[10px] p-[15px]  flex justify-between h-2xl transition-colors duration-200 cursor-pointer"
+      className={`@container group relative rounded-[15px] bg-color-bg-default ${nonInteractive ? "" : "hover:bg-color-ui-hover cursor-pointer"} xs:p-[10px] p-[15px]  flex justify-between h-2xl transition-colors duration-200`}
       onClick={onClick}
     >
       {/* Left: icon + label */}
@@ -266,41 +387,87 @@ export default function GTPMetricCard({
         <div className="heading-large-xxs xs:heading-large-xs">{label}</div>
       </div>
 
-      {/* Middle: sparkline */}
-      <div className="flex-1 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible ">
-        <SparklineChart
-          values={sparkline}
-          timestamps={timestamps}
-          color={color}
-          label={label}
-          prefix={prefix}
-          suffix={suffix}
-        />
-      </div>
+      {/* Middle: sparkline. With fillSparkline its area is pinned to fixed distances from
+          the card's own edges and the line is centred in it, so the label and value text
+          can't move it and every card's line starts and ends at the same x. */}
+      {fillSparkline ? (
+        <div className={FILL_SPARKLINE_AREA}>
+          <div className={FILL_SPARKLINE_WIDTH}>
+            <SparklineChart
+              key={sparklineTransitionKey}
+              revealOnMount={sparklineTransitionKey !== undefined}
+              values={sparkline}
+              timestamps={timestamps}
+              color={color}
+              label={label}
+              prefix={prefix}
+              suffix={suffix}
+              decimals={decimals}
+              edgeToEdge
+              tooltipDateFormat={tooltipDateFormat}
+              tooltip={tooltip}
+              pulseEndDot={pulseEndDot}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 min-w-0 flex justify-center items-center max-w-[95px] xs:max-w-[160px] overflow-visible">
+          <SparklineChart
+            key={sparklineTransitionKey}
+            revealOnMount={sparklineTransitionKey !== undefined}
+            values={sparkline}
+            timestamps={timestamps}
+            color={color}
+            label={label}
+            prefix={prefix}
+            suffix={suffix}
+            decimals={decimals}
+            tooltipDateFormat={tooltipDateFormat}
+            tooltip={tooltip}
+            pulseEndDot={pulseEndDot}
+          />
+        </div>
+      )}
 
       {/* Right: value + WoW */}
-      <div className="flex flex-col gap-y-[2px] justify-center items-end min-w-[80px] md:min-w-[90px] pl-[5px] group-hover:pr-[20px] transition-all duration-200 ">
-        <div className="numbers-sm xs:numbers-md group-hover:!text-color-text-primary" style={{ color }}>
-          {prefix}{formatLargeNumber(value, 2)}{suffix}
-        </div>
+      <div
+        className={`flex flex-col gap-y-[2px] justify-center items-end pl-[5px] ${nonInteractive ? "" : "group-hover:pr-[20px]"} transition-all duration-200 ${
+          fillSparkline ? "w-[100px] shrink-0" : "min-w-[80px] md:min-w-[90px]"
+        }`}
+      >
         <div
-          className="numbers-xxs"
-          style={{ color: isPositive ? "rgb(var(--positive))" : "rgb(var(--negative))" }}
+          className={`numbers-sm xs:numbers-md ${nonInteractive ? "" : "group-hover:!text-color-text-primary"} ${fillSparkline ? "whitespace-nowrap" : ""}`}
+          style={{ color }}
         >
-          {Intl.NumberFormat("en-US", {
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 1,
-            signDisplay: "exceptZero",
-          }).format(computedWowChange)}%
+          {formatValue ? (
+            formatValue(value)
+          ) : stackSuffixWhenNarrow ? (
+            <>
+              <span className="whitespace-nowrap">{prefix}{formatLargeNumber(value, decimals)}</span>
+              <span className="block @[400px]:inline whitespace-nowrap text-right">{suffix}</span>
+            </>
+          ) : (
+            <>{prefix}{formatLargeNumber(value, decimals)}{suffix}</>
+          )}
         </div>
+        {computedWowChange !== null && (
+          <div
+            className="numbers-xxs"
+            style={{ color: isPositive ? "rgb(var(--positive))" : "rgb(var(--negative))" }}
+          >
+            {formatChangePct(computedWowChange)}%
+          </div>
+        )}
       </div>
 
       {/* Hover chevron */}
-      <div className="absolute right-[10px] top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="16" viewBox="0 0 9 16" fill="none" className="text-color-text-primary">
-          <path d="M0.662115 2.29808C0.293362 1.89949 0.278805 1.2785 0.645793 0.862551C1.01283 0.44657 1.63111 0.383401 2.07253 0.699746L2.15833 0.767964L7.62295 5.58974C9.02778 6.82932 9.07141 8.99007 7.75437 10.2872L7.62295 10.4103L2.15833 15.232L2.07253 15.3003C1.63111 15.6166 1.01283 15.5534 0.645793 15.1375C0.278805 14.7215 0.293362 14.1005 0.662115 13.7019L0.740378 13.6249L6.205 8.80356L6.24895 8.76255C6.68803 8.33017 6.67331 7.60965 6.205 7.19644L0.740378 2.37508L0.662115 2.29808Z" fill="currentColor"/>
-        </svg>
-      </div>
+      {!nonInteractive && (
+        <div className="absolute right-[10px] top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" width="9" height="16" viewBox="0 0 9 16" fill="none" className="text-color-text-primary">
+            <path d="M0.662115 2.29808C0.293362 1.89949 0.278805 1.2785 0.645793 0.862551C1.01283 0.44657 1.63111 0.383401 2.07253 0.699746L2.15833 0.767964L7.62295 5.58974C9.02778 6.82932 9.07141 8.99007 7.75437 10.2872L7.62295 10.4103L2.15833 15.232L2.07253 15.3003C1.63111 15.6166 1.01283 15.5534 0.645793 15.1375C0.278805 14.7215 0.293362 14.1005 0.662115 13.7019L0.740378 13.6249L6.205 8.80356L6.24895 8.76255C6.68803 8.33017 6.67331 7.60965 6.205 7.19644L0.740378 2.37508L0.662115 2.29808Z" fill="currentColor"/>
+          </svg>
+        </div>
+      )}
     </div>
   );
 }

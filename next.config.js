@@ -198,6 +198,17 @@ const nextConfig = {
     
     return [
       {
+        source: "/eth-the-asset",
+        destination: "/eth",
+        permanent: true,
+      },
+      {
+        // The Glo Dollar tracker is now a Quick Bite.
+        source: "/trackers/glodollar",
+        destination: "/quick-bites/glo-dollar",
+        permanent: true,
+      },
+      {
         source: "/new-apps/:slug",
         destination: "/applications/:slug",
         permanent: true,
@@ -300,6 +311,8 @@ const nextConfig = {
   },
   images: {
     dangerouslyAllowSVG: true,
+    // 90 for Quick Bite images (ImageBlock), 75 is the default everywhere else.
+    qualities: [75, 90],
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
       {

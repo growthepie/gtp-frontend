@@ -5,14 +5,15 @@ import { prefetchDNS } from 'react-dom';
 const Fusaka: QuickBiteData = {
   title: "Fusaka Upgrade: Committing to Sustained Scaling",
   shortTitle: "Fusaka Upgrade",
+  themes: ["scaling"],
   subtitle: "Expanding Ethereum’s throughput while preserving fee stability",
   content: [
-    "# Introduction:",
-    "Activated on December 3rd, 2025 and including 12 EIPs, the Fusaka upgrade advances both Ethereum’s L1 scaling and its blob scaling roadmap. Fusaka also signals Ethereum’s commitment to sustainable fee dynamics and the long-term monetization of blobs.",
+    "Fusaka went live on December 3rd, 2025 with 12 EIPs. It scales both Ethereum Mainnet and blobs, and makes sure growing blob use contributes to the network's economics.",
 
     "# Scaling Blobs", 
-    "Fusaka scales blob capacity through Blob-Parameter-Only (BPO) upgrades (EIP-7892), specifically BPO1 and BPO2. These updates are complemented by PeerDAS (EIP-7594), which introduces Peer Data Availability Sampling. While BPO increases the target blob count, PeerDAS ensures the network can handle this increased data load by allowing nodes to verify blobs without downloading them in their entirety.",
-    "BPO upgrades are lightweight protocol updates that adjust only blob-related parameters without introducing broader execution or consensus changes. These upgrades increase Ethereum’s data availability capacity, supporting rollups and other L2 systems that rely on blobs for data availability. BPO1 activated on the 9th of December 2025, increasing the target blob count per block from 6 to 10 (with a maximum of 15). BPO2 activated on the 7th of January 2026, further raising the target from 10 to 14 blobs per block (with a maximum of 21).", 
+    "Blob capacity grows in steps through Blob-Parameter-Only (BPO) upgrades (EIP-7892): small forks that change only blob parameters, giving rollups more room for data. PeerDAS (EIP-7594) makes the extra load safe, because nodes verify blobs by sampling them instead of downloading them in full.",
+    "- **BPO1** (December 9th, 2025): target raised from 6 to 10 blobs per block, maximum 15.",
+    "- **BPO2** (January 7th, 2026): target raised from 10 to 14 blobs per block, maximum 21.",
 
     "```chart-toggle",
     JSON.stringify({

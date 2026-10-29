@@ -4,7 +4,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
 import { GTPIcon } from "@/components/layout/GTPIcon";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { validateAddressForChain } from "@openlabels/oli-sdk/validation";
 import type { AttestationRowInput, BulkOnchainSubmitResult, OnchainSubmitResult, PreparedAttestation, ProjectRecord } from "@openlabels/oli-sdk";
 import type { QueueEditableField, QueueSubmitPreview, SearchDropdownOption } from "./types";
@@ -97,9 +97,6 @@ type ContractsStepProps = {
   bulkSubmitResult: BulkOnchainSubmitResult | null;
   lastSubmitChainId: string;
 
-  // Survey
-  onSurveySubmit?: (data: { teamSize: string; goal: string; metric: string; other: string }) => void;
-
   // Step gating
   isMetadataSubmitted: boolean;
 };
@@ -164,7 +161,6 @@ export function ContractsStep({
   singleSubmitResult,
   bulkSubmitResult,
   lastSubmitChainId,
-  onSurveySubmit,
   isMetadataSubmitted,
 }: ContractsStepProps) {
   const [duplicateMemoOpen, setDuplicateMemoOpen] = useState(true);
@@ -174,12 +170,6 @@ export function ContractsStep({
   const [rowDropdownQuery, setRowDropdownQuery] = useState<Record<string, string>>({});
   const [tableContainerWidth, setTableContainerWidth] = useState(9999);
   const [nameColWidth, setNameColWidth] = useState(80);
-
-  // Survey state
-  const [surveyTeamSize, setSurveyTeamSize] = useState("");
-  const [surveyGoal, setSurveyGoal] = useState("");
-  const [surveyMetric, setSurveyMetric] = useState("");
-  const [surveyOther, setSurveyOther] = useState("");
 
   // Tracks whether the user has explicitly proceeded through step 3 via the "Continue to review" button
   const [step3Completed, setStep3Completed] = useState(false);
@@ -424,7 +414,7 @@ export function ContractsStep({
               className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 2 ? "rotate-180" : ""}`}
             />
           </div>
-          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs transition-colors ${
             (singleSubmitResult || bulkSubmitResult) || (queueHasValidationResult && queueStats.errors === 0 && meaningfulRows.length > 0 && activeStep > 2)
               ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
               : activeStep === 2
@@ -437,7 +427,7 @@ export function ContractsStep({
           </div>
           <GTPIcon icon="gtp-label-add" size="sm" className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Add contracts</div>
+            <div className="text-sm">Add contracts</div>
             {activeStep !== 2 && (
               <div className="text-xs text-color-text-secondary mt-[2px] truncate">
                 {meaningfulRows.length > 0
@@ -478,7 +468,7 @@ export function ContractsStep({
                   <div className="mb-[10px] flex items-center gap-[8px]">
                     <GTPIcon icon="gtp-technology-monochrome" size="sm" className="shrink-0" />
                     <div className="min-w-0 flex flex-wrap items-center gap-[6px]">
-                      <span className="text-xs font-medium text-color-text-primary">Smart Paste</span>
+                      <span className="text-xs text-color-text-primary">Smart Paste</span>
                     </div>
                   </div>
 
@@ -930,6 +920,7 @@ export function ContractsStep({
                                 variant="primary"
                                 size="sm"
                                 leftIcon="in-button-close"
+                                ariaLabel="Remove row"
                                 clickHandler={() => removeQueueRow(rowIndex)}
                               />
                             </div>
@@ -939,7 +930,7 @@ export function ContractsStep({
                           <tr>
                             <td colSpan={7} className="px-[8px] pb-[2px] pt-0">
                               <div className="flex items-start gap-x-[6px] pl-[2px]">
-                                <div className="shrink-0 rounded-full border border-color-negative/50 bg-color-bg-default px-[7px] py-[2px] text-xxs font-semibold text-color-negative leading-[1.6]">
+                                <div className="shrink-0 rounded-full border border-color-negative/50 bg-color-bg-default px-[7px] py-[2px] text-xxs text-color-negative leading-[1.6]">
                                   #{rowIndex + 1}
                                 </div>
                                 <div className="flex min-w-0 flex-1 flex-wrap gap-[4px]">
@@ -983,7 +974,7 @@ export function ContractsStep({
                 >
                   <div className="mb-[4px] flex items-center gap-x-[8px]">
                     <Icon icon="feather:alert-triangle" className="size-[16px] shrink-0 text-color-text-primary" />
-                    <div className="text-sm font-semibold">Duplicate attestation found</div>
+                    <div className="text-sm">Duplicate attestation found</div>
                   </div>
 
                   <p className="mb-[12px] text-sm text-color-text-secondary">
@@ -1015,7 +1006,7 @@ export function ContractsStep({
                     <div className="overflow-hidden rounded-[10px] border border-color-ui-shadow/30 bg-color-bg-medium">
                       <button
                         type="button"
-                        className="flex w-full items-center gap-x-[10px] px-[12px] py-[10px] text-left"
+                        className={`flex w-full items-center gap-x-[10px] px-[12px] py-[10px] text-left transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                         onClick={() => setDuplicateDetailsOpen((v) => !v)}
                       >
                         <Icon icon="feather:edit-2" className="mt-[1px] size-[13px] shrink-0 text-color-text-primary" />
@@ -1035,12 +1026,12 @@ export function ContractsStep({
                   <div className="mb-[16px] overflow-hidden rounded-[10px] border border-color-negative/30 bg-color-negative/10">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-x-[6px] px-[12px] py-[8px]"
+                      className={`flex w-full items-center justify-between gap-x-[6px] px-[12px] py-[8px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                       onClick={() => setDuplicateIssueOpen((v) => !v)}
                     >
                       <div className="flex items-center gap-x-[6px]">
                         <Icon icon="feather:alert-circle" className="size-[12px] shrink-0 text-color-negative" />
-                        <span className="text-xs font-medium text-color-negative">
+                        <span className="text-xs text-color-negative">
                           Duplicate blocked <span className="font-normal opacity-70">({pendingDuplicates.size} item{pendingDuplicates.size !== 1 ? "s" : ""})</span>
                         </span>
                       </div>
@@ -1115,7 +1106,7 @@ export function ContractsStep({
               className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 3 ? "rotate-180" : ""}`}
             />
           </div>
-          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs transition-colors ${
             step3Completed && !!walletAddress
               ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
               : activeStep === 3
@@ -1126,7 +1117,7 @@ export function ContractsStep({
           </div>
           <GTPIcon icon="gtp-wallet" size="sm" className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Connect wallet</div>
+            <div className="text-sm">Connect wallet</div>
             {activeStep !== 3 && (
               <div className="text-xs text-color-text-secondary mt-[2px] truncate">
                 {walletAddress
@@ -1162,64 +1153,6 @@ export function ContractsStep({
               </div>
             </div>
 
-            {/* Survey */}
-            <div className="border-t border-color-ui-shadow/40 pt-[16px] flex flex-col gap-y-[12px]">
-              <div className="text-sm font-medium">A few quick questions</div>
-
-              <div className="flex flex-col gap-y-[10px]">
-                {/* Team size */}
-                <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">How big is your team?</label>
-                  <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
-                    <input
-                      value={surveyTeamSize}
-                      onChange={(e) => setSurveyTeamSize(e.target.value)}
-                      placeholder="e.g. Solo, 2–5, 10+"
-                      className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                    />
-                  </div>
-                </div>
-
-                {/* Goal */}
-                <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">What's your goal with submitting your labels?</label>
-                  <textarea
-                    value={surveyGoal}
-                    onChange={(e) => setSurveyGoal(e.target.value)}
-                    placeholder="e.g. Improve data accuracy, get visibility for our project..."
-                    className="w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-none text-color-text-primary placeholder-color-text-secondary min-h-[72px]"
-                  />
-                </div>
-
-                {/* Most important metric */}
-                <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">What's the most important metric you are tracking?</label>
-                  <div className="flex w-full items-center bg-color-bg-medium rounded-[22px] h-[44px] px-[14px]">
-                    <input
-                      value={surveyMetric}
-                      onChange={(e) => setSurveyMetric(e.target.value)}
-                      placeholder="e.g. TVL, daily active users, transaction volume..."
-                      className="flex-1 h-full bg-transparent border-none outline-none text-sm text-color-text-primary placeholder-color-text-secondary"
-                    />
-                  </div>
-                </div>
-
-                {/* Anything else */}
-                <div>
-                  <label className="mb-[6px] block text-xs font-medium text-color-text-primary">
-                    Anything else you'd like to tell us?{" "}
-                    <span className="font-normal text-color-text-secondary">(what you miss on growthepie, etc.)</span>
-                  </label>
-                  <textarea
-                    value={surveyOther}
-                    onChange={(e) => setSurveyOther(e.target.value)}
-                    placeholder="Share any feedback or feature requests..."
-                    className="w-full rounded-[22px] bg-color-bg-medium px-[14px] py-[12px] text-sm border-none outline-none resize-none text-color-text-primary placeholder-color-text-secondary min-h-[72px]"
-                  />
-                </div>
-              </div>
-            </div>
-
             <div className="mt-[4px] flex items-center justify-end gap-x-[8px]">
               <GTPButton
                 label="Continue to review"
@@ -1227,15 +1160,10 @@ export function ContractsStep({
                 size="sm"
                 rightIcon={"in-button-right" as any}
                 clickHandler={() => {
-                  onSurveySubmit?.({ teamSize: surveyTeamSize, goal: surveyGoal, metric: surveyMetric, other: surveyOther });
                   setStep3Completed(true);
                   setActiveStep(4);
                 }}
-                className={
-                  surveyTeamSize.trim() && surveyGoal.trim() && surveyMetric.trim()
-                    ? "bg-color-text-primary text-color-bg-default"
-                    : "border border-color-ui-shadow bg-color-bg-default"
-                }
+                className="bg-color-text-primary text-color-bg-default"
               />
             </div>
           </div>
@@ -1257,7 +1185,7 @@ export function ContractsStep({
               className={`size-[14px] text-color-text-secondary transition-transform ${activeStep === 4 ? "rotate-180" : ""}`}
             />
           </div>
-          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+          <div className={`shrink-0 size-[26px] rounded-full flex items-center justify-center text-xs transition-colors ${
             (singleSubmitResult || bulkSubmitResult)
               ? "bg-color-positive/15 border border-color-positive/30 text-color-positive"
               : activeStep === 4
@@ -1268,7 +1196,7 @@ export function ContractsStep({
           </div>
           <GTPIcon icon={"gtp-checkmark-checked" as any} size="sm" className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Review & submit</div>
+            <div className="text-sm">Review & submit</div>
             {activeStep !== 4 && (
               <div className="text-xs text-color-text-secondary mt-[2px] truncate">
                 {singleSubmitResult || bulkSubmitResult
@@ -1347,7 +1275,7 @@ export function ContractsStep({
                       <div className="px-[12px] py-[10px]">
                         <div className="flex items-center gap-x-[7px]">
                           <Icon icon="feather:alert-triangle" className="size-[13px] shrink-0 text-amber-400" />
-                          <span className="text-xs font-semibold text-amber-400">
+                          <span className="text-xs text-amber-400">
                             {pendingDuplicates.size === 1 ? "1 contract" : `${pendingDuplicates.size} contracts`} already attested by your wallet
                           </span>
                         </div>
@@ -1398,10 +1326,10 @@ export function ContractsStep({
                 <button
                   type="button"
                   onClick={() => setErrorExpanded((v) => !v)}
-                  className="flex w-full items-center gap-x-[8px] text-left"
+                  className={`flex w-[calc(100%+8px)] -m-[4px] p-[4px] rounded-[6px] items-center gap-x-[8px] text-left transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                 >
                   <Icon icon="feather:alert-circle" className="size-[14px] text-color-negative shrink-0" />
-                  <div className="font-medium text-sm text-color-negative flex-1">Transaction failed</div>
+                  <div className="text-sm text-color-negative flex-1">Transaction failed</div>
                   <Icon
                     icon="feather:chevron-down"
                     className={`size-[14px] text-color-negative shrink-0 transition-transform ${errorExpanded ? "rotate-180" : ""}`}
@@ -1421,7 +1349,7 @@ export function ContractsStep({
                 <div className="rounded-[10px] border border-color-positive/30 bg-color-positive/10 p-[12px]">
                   <div className="flex items-center gap-x-[8px]">
                     <Icon icon="feather:check-circle" className="size-[14px] text-color-positive shrink-0" />
-                    <div className="font-medium text-sm text-color-positive">Attestation submitted</div>
+                    <div className="text-sm text-color-positive">Attestation submitted</div>
                   </div>
                   <p className="mt-[4px] text-xs text-color-text-primary">Status: {result.status}</p>
                   <div className="mt-[8px] flex flex-wrap gap-[6px]">

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { ApplicationDetailsDataProvider } from "../_contexts/ApplicationDetailsDataContext";
 import { ChartSyncProvider } from "../_contexts/GTPChartSyncContext";
 import { TimespanProvider } from "../_contexts/TimespanContext";
@@ -207,6 +208,14 @@ export default async function Layout(
           <ApplicationDetailsDataProvider owner_project={owner_project}>
             <ChartSyncProvider>
               {children}
+              {/* Quick Bites whose topics link to this application (/applications/<owner_project>). */}
+              <MetricRelatedQuickBites
+                metricKey={owner_project}
+                metricType="applications"
+                includePageContainer={true}
+                title={`Quick Bites on ${projectName}`}
+                description={`Data stories and trackers that cover ${projectName}, backed by live data.`}
+              />
             </ChartSyncProvider>
           </ApplicationDetailsDataProvider>
         </TimespanProvider>

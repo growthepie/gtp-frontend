@@ -785,7 +785,7 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         return null;
       }
 
-      const { url, pathToRowData, pathToColumnKeys } = tableConfig.jsonData;
+      const { url, pathToRowData, pathToColumnKeys, recordKeyColumn } = tableConfig.jsonData;
       if (!url || !pathToRowData) {
         console.error('Error parsing table data: jsonData must include url and pathToRowData');
         return null;
@@ -803,9 +803,11 @@ function parseTableBlock(jsonString: string): ContentBlock | null {
         jsonData: {
           url,
           pathToRowData,
-          pathToColumnKeys // Optional - component will auto-discover if not provided
+          pathToColumnKeys, // Optional - component will auto-discover if not provided
+          recordKeyColumn, // Optional - row data is an object of records keyed into this column
         },
         scrollable: tableConfig.scrollable,
+        maxHeight: tableConfig.maxHeight,
         rowBar: tableConfig.rowBar || undefined,
         cardView: tableConfig.cardView || undefined,
         showInMenu: parseShowInMenu(tableConfig),

@@ -40,6 +40,8 @@ interface QuickBiteCardProps {
     url: string;
   }[];
   topicFilter?: string[];
+  /** Trackers show a pulsing "Live" instead of the date; reports get a badge on the banner. */
+  kind?: "article" | "tracker" | "report";
 }
 
 const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
@@ -54,7 +56,8 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
   className = '',
   isRelatedPage = false,
   mainTopics,
-  topicFilter
+  topicFilter,
+  kind,
 }) => {
   const { AllChainsByKeys } = useMaster();
   const handleAuthorClick = (e: React.MouseEvent) => {
@@ -77,14 +80,29 @@ const QuickBiteCard: React.FC<QuickBiteCardProps> = ({
         <div className='flex flex-col'>
           <div className='flex justify-between h-[51px] gap-x-[15px]'>
             <div className='heading-small-xs group-hover:underline line-clamp-3'>{title}</div>
-            <div className="text-xs align-start whitespace-nowrap">
-              <time dateTime={date}>{formatDate(date)}</time>
-            </div>
+            {kind === "tracker" ? (
+              // Trackers update continuously, so instead of the publish date they show the
+              // platform's pulsing real-time icon (as on the TPS / tx cost cards).
+              <div className="flex items-center gap-x-[5px] h-fit text-xs whitespace-nowrap" title={`Live tracker, published ${formatDate(date)}`}>
+                <GTPIcon icon="gtp-realtime" size="sm" className="animate-pulse" />
+                Live
+              </div>
+            ) : (
+              <div className="text-xs align-start whitespace-nowrap">
+                <time dateTime={date}>{formatDate(date)}</time>
+              </div>
+            )}
           </div>
           <div className='text-xs leading-[15px] h-[30px] line-clamp-2'>{subtitle}</div>
         </div>
         <div className='flex flex-1 justify-between items-center gap-x-[15px]'>
           <div className='relative bg-color-ui-hover rounded-[15px] w-full h-full'>
+            {kind === "report" ? (
+              <span className="absolute top-[8px] left-[8px] z-10 flex items-center gap-x-[5px] rounded-full bg-color-bg-default/90 px-[8px] py-[3px] heading-small-xxxs">
+                <GTPIcon icon="gtp-calendar-clean-monochrome" size="sm" className="!size-[12px]" containerClassName="!size-[12px]" />
+                Report
+              </span>
+            ) : null}
             <Image
               src={bannerImage}
               alt={title}

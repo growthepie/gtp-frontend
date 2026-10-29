@@ -436,12 +436,11 @@ export const jsonLdFaq = generateJsonLdFaq(faqItems);
 const CompilerTvs: QuickBiteData = {
   title: "Programming Languages Securing Ethereum's Value",
   shortTitle: "TVS by Compiler",
+  themes: ["developers-ai"],
   subtitle: "Analyzing the top 1,000 Ethereum contracts by Total Value Secured across smart contract languages and compiler versions.",
   content: [
     "# Solidity and Vyper: Ethereum's Dominant Smart Contract Languages",
-    "Most value on Ethereum is held by smart contracts, making it critical that the programming languages used to build them are safe and secure. Two languages dominate: Solidity, a statically typed language with syntax influenced by JavaScript and C++ and Vyper, a Pythonic language designed for simplicity and auditability. The detection of the languages was made possible by a simple heuristic analysis of bytecode patterns (more in the methodology section).",
-    "In this analysis, we use [Sourcify](https://sourcify.dev)-verified contracts to identify the programming language of each contract. For contracts that aren't verified on Sourcify, we try identifying the language through heuristics on the bytecode. Otherwise we mark the contract language as 'unknown'.",
-    "The analysis focuses on the top 1,000 smart contracts on Ethereum by Total Value Secured (TVS) in each timeframe. TVS is calculated by tracking balances of a defined set of tokens, including native ETH. More on the methodology can be found at the end of this quick bite.",
+    "Most value on Ethereum sits in smart contracts, so the languages they're written in need to be safe. Two dominate: Solidity, with syntax influenced by JavaScript and C++, and Vyper, a Pythonic language built for auditability. We track the top 1,000 contracts by Total Value Secured (TVS); how we detect each contract's language is explained in the methodology at the end.",
     ...TvsCompilerLineChart,
 
     "## Top 1,000 Ethereum Contracts by TVS",

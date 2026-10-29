@@ -11,7 +11,6 @@ import DABreakdownCharts from "@/components/layout/DA-Overview/DATableCharts";
 import useSWR from "swr";
 import { DATimeseriesResponse } from "@/types/api/DATimeseriesResponse";
 import { DATimeseriesURL } from "@/lib/urls";
-import { chart } from "highcharts";
 // import ShowLoading from "@/components/layout/ShowLoading";
 import DATableCharts from "@/components/layout/DA-Overview/DATableCharts";
 import Image from "next/image";
@@ -57,11 +56,17 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
     return initialState;
   });
 
+  // DA layers whose row has been expanded at least once (Ethereum blobs starts open). Their charts
+  // mount on the first expand and then stay mounted, so collapsing still animates them and
+  // reopening is instant.
+  const [openedDA, setOpenedDA] = useState<Record<string, boolean>>({ da_ethereum_blobs: true });
+
   const toggleOpenDA = (key) => {
     setOpenDA((prevState) => ({
       ...prevState,
       [key]: !prevState[key],
     }));
+    setOpenedDA((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
   };
 
   const handleClick = (e, da) => {
@@ -460,7 +465,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
             : "xl:grid-cols-[auto_200px_199px_94px_215px_46px] grid-cols-[auto_200px_199px_94px_215px_46px]"
             } min-w-[970px] `}
         >
-          <div className="heading-small-xxs font-bold flex items-center cursor-pointer" onClick={() => {
+          <div className="heading-small-xxs flex items-center cursor-pointer" onClick={() => {
             if (selectedCategory !== "name") {
               setSortOrder(true);
               setSelectedCategory("name");
@@ -483,7 +488,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                 } `}
             />
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer" onClick={() => {
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer" onClick={() => {
             if (selectedCategory !== "size") {
               setSortOrder(true);
               setSelectedCategory("size");
@@ -519,7 +524,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "fees") {
                 setSortOrder(true);
@@ -557,7 +562,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "fees_per_mb") {
                 setSortOrder(true);
@@ -595,7 +600,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
               </GTPTooltipGeneral>
             </GTPTooltipNew>
           </div>
-          <div className="w-full flex justify-end items-center heading-small-xxs font-bold pr-1 cursor-pointer"
+          <div className="w-full flex justify-end items-center heading-small-xxs pr-1 cursor-pointer"
             onClick={() => {
               if (selectedCategory !== "da_consumers") {
                 setSortOrder(true);
@@ -665,7 +670,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     </TooltipContent>
                   </Tooltip>
                 </div>  */}
-          <div className="heading-small-xxs flex font-bold items-center pl-0.5 ">
+          <div className="heading-small-xxs flex items-center pl-0.5 ">
 
           </div>
         </div>
@@ -849,7 +854,7 @@ export default function DATable({ breakdown_data, selectedTimespan, isMonthly }:
                     }`}
                 >
                   <div className="w-[97.5%] bg-color-bg-default rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-color-text-secondary">
-                    {chart_data && master && (
+                    {chart_data && master && openedDA[item.key] && (
                       <DATableCharts
                         data={chart_data.data.da_layers[item.key]}
                         selectedTimespan={selectedTimespan}

@@ -125,7 +125,7 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
   const isMobile = useMediaQuery("(max-width: 768px)");
   const ExpandButton = (
     <div
-      className="expandable-card-expand-button absolute bottom-0 left-0 right-0 w-full py-[10px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
+      className="expandable-card-expand-button group/expand absolute bottom-0 left-0 right-0 w-full py-[10px] px-[15px] h-fit flex items-center justify-center cursor-pointer"
       role="button"
       tabIndex={0}
       aria-expanded={isExpanded}
@@ -150,13 +150,13 @@ export const ExpandableCardContainer: React.FC<ExpandableCardContainerProps> = (
       <div className="flex items-center justify-between w-full">
         <div className="w-[15px] h-fit" />
         <div
-          className={`pointer-events-none transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+          className={`pointer-events-none p-[4px] -m-[4px] rounded-full transition-[transform,background-color] duration-300 group-hover/expand:bg-color-ui-hover group-active/expand:bg-color-ui-active ${isExpanded ? 'rotate-180' : ''}`}
           style={!isExpanded ? { transform: `translateY(${collapsedChevronOffset}px)` } : undefined}
         >
           <GTPIcon
             icon="in-button-down-monochrome"
             size="md"
-            className="text-color-text-secondary group-hover/card:text-color-ui-hover transition-colors"
+            className="text-color-text-secondary group-hover/card:text-color-ui-hover group-hover/expand:!text-color-text-primary transition-colors"
           />
         </div>
 

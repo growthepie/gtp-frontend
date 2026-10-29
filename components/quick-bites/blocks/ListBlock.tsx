@@ -56,7 +56,7 @@ const parseBoldTextAndLinks = (text: string): React.ReactElement[] => {
 
 export const ListBlock: React.FC<ListBlockProps> = ({ block }) => {
   return (
-    <ul className="list-disc pl-3.5 my-4  text-xs md:text-sm space-y-2">
+    <ul className="list-disc pl-[20px] my-[15px] text-md space-y-[6px]">
       {block.items.map((item, index) => (
         <li key={index} className="">
           {parseBoldTextAndLinks(item)}

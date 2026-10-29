@@ -123,6 +123,10 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
           attribute="class"
           defaultTheme="dark"
           disableTransitionOnChange
+          // React 19 warns when a client render creates an executable <script>. The
+          // server HTML keeps the real script (it runs before paint); a client render
+          // marks it as data, which never runs there anyway.
+          scriptProps={{ type: typeof window === "undefined" ? "text/javascript" : "application/json" }}
         >
           <SWRConfig
             value={{

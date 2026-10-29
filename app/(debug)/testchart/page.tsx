@@ -85,7 +85,7 @@ function ShowcaseSection({
 function ChartContainer({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-medium text-color-text-secondary uppercase tracking-[0.08em]">{label}</h3>
+      <h3 className="text-xs text-color-text-secondary uppercase tracking-[0.08em]">{label}</h3>
       <div className="rounded-[14px] border border-color-bg-default overflow-hidden" style={{ height: 360 }}>
         {children}
       </div>
@@ -322,7 +322,7 @@ export default function TestChartPage() {
             </ChartContainer>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-color-text-secondary uppercase tracking-[0.08em]">
+              <h3 className="text-xs text-color-text-secondary uppercase tracking-[0.08em]">
                 Mini Area Sparkline
               </h3>
               <div

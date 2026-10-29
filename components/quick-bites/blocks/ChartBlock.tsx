@@ -11,6 +11,8 @@ import { GTPIcon } from '@/components/layout/GTPIcon';
 import GTPButtonRow from '@/components/GTPComponents/ButtonComponents/GTPButtonRow';
 import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import fiatData from '@/public/dicts/fiat.json';
+import ChartSkeleton from '@/components/quick-bites/ChartSkeleton';
+import { useInViewOnce } from '@/hooks/useInViewOnce';
 
 /* 
 Mustache.js example for dynamic values
@@ -31,9 +33,13 @@ const getNestedValue = (obj: any, path: string) => {
 };
 
 // Dynamically import ChartWrapper to avoid SSR issues
-const ChartWrapper = dynamic(() => import('../ChartWrapper'), { 
+const loadChartWrapper = () => import('../ChartWrapper');
+const ChartWrapper = dynamic(loadChartWrapper, {
   ssr: false,
-  loading: () => <div className="w-full h-[300px] transparent"></div>
+  // Shown while the chart code downloads. The dynamic import gets no props, so it can't
+  // match the chart's height; ChartBlock starts the download on mount (below), so by the
+  // time the data is in, the code usually is too and this rarely shows.
+  loading: () => <ChartSkeleton height={400} inset />
 });
 
 interface ChartBlockProps {
@@ -71,6 +77,13 @@ const CHAIN_QUICK_BITES_TAB_CONTAINER_HEIGHT = 587;
 const CHAIN_QUICK_BITES_TAB_HEADER_HEIGHT = 81;
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTopBar, chainQuickBitesTitleSuffix }) => {
+  // Charts further down the page fetch their data and mount only once the reader gets near them;
+  // until then the skeleton holds their space.
+  const [blockRef, inView] = useInViewOnce<HTMLDivElement>();
+  // Fetch the chart code alongside the data instead of after it.
+  React.useEffect(() => {
+    if (inView) void loadChartWrapper();
+  }, [inView]);
   const { sharedState } = useQuickBite();
   const isChainQuickBitesTabChart = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_BLOCK_CLASS);
   const isChainQuickBitesTabRightFlush = (block.className || "").split(/\s+/).includes(CHAIN_QUICK_BITES_TAB_RIGHT_FLUSH_CLASS);
@@ -162,14 +175,15 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
   const swrKey = dynamicSeriesConfig ? dynamicSeriesUrl : (processedUrls.length > 0 ? processedUrls : null);
   const {
     data: unProcessedData,
+    error: chartError,
     isLoading: isChartLoading,
     isValidating: isChartValidating,
-  } = useSWR(swrKey, { keepPreviousData: true });
+  } = useSWR(inView ? swrKey : null, { keepPreviousData: true });
   const {
     data: unProcessedPieData,
     isLoading: isPieLoading,
     isValidating: isPieValidating,
-  } = useSWR(pieDataUrl, { keepPreviousData: true });
+  } = useSWR(inView ? pieDataUrl : null, { keepPreviousData: true });
 
   const dynamicDerived = React.useMemo(() => {
     if (!dynamicSeriesConfig || !unProcessedData) return null;
@@ -375,6 +389,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
   const effectiveMeta = dynamicSeriesConfig ? (dynamicDerived?.meta || []) : (resolvedJsonMeta || metaList || []);
   const hasPieData = block.chartType === 'pie' && resolvedPieData.length > 0;
   const canRenderChart = (Boolean(passChartData) || hasPieData) && (!dynamicSeriesConfig || effectiveMeta.length > 0 || hasPieData);
+  const showChart = inView && canRenderChart;
   const showInitialLoadingState =
     (Boolean(swrKey) && isChartLoading && !unProcessedData) ||
     (Boolean(pieDataUrl) && isPieLoading && !unProcessedPieData);
@@ -384,17 +399,17 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
 
   // Don't render the chart if there's a filter key but no data yet.
   // This handles the initial state where a dropdown selection is needed.
-  if (block.filterOnStateKey && !unProcessedData && !showInitialLoadingState) {
+  if (inView && block.filterOnStateKey && !unProcessedData && !showInitialLoadingState) {
     const title = block.title && block.title.includes("{{") ? Mustache.render(block.title, sharedState) : block.title;
     const emptyStateWrapperClassName = `${isChainQuickBitesTabChart ? '' : 'my-8'} ${block.className || ''}`.trim();
     return (
       <div className={emptyStateWrapperClassName}>
         <div
-          className="w-full flex flex-col items-center justify-center bg-forest-50 dark:bg-forest-900/50 rounded-lg"
+          className="w-full flex flex-col items-center justify-center gap-y-[5px] bg-color-bg-default rounded-[18px]"
           style={{ height: block.height ?? 400 }}
         >
-          <h3 className="text-lg font-bold text-forest-900 dark:text-forest-100">{title}</h3>
-          <p className="text-forest-700 dark:text-forest-400">Please make a selection to view the chart.</p>
+          <h3 className="heading-small-sm text-color-text-primary">{title}</h3>
+          <p className="text-xs text-color-text-secondary">Please make a selection to view the chart.</p>
         </div>
       </div>
     );
@@ -549,6 +564,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
   return (
     <>
     <div
+      ref={blockRef}
       className={`${wrapperClassName} relative ${isChainQuickBitesTabChart ? "flex flex-col" : ""}`}
       style={isChainQuickBitesTabChart ? { height: `${CHAIN_QUICK_BITES_TAB_CONTAINER_HEIGHT}px` } : undefined}
       aria-busy={showUpdatingState}
@@ -573,15 +589,11 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
           ) : null}
         </div>
       ) : null}
-      {showInitialLoadingState && !canRenderChart ? (
-        <div
-          className="w-full flex items-center justify-center rounded-[15px] bg-color-bg-default text-xs text-color-text-secondary"
-          style={{ height: block.height ?? 400 }}
-        >
-          Loading chart...
-        </div>
+      {/* Also covers the moment before the request starts, so the area is never blank. */}
+      {(!inView || showInitialLoadingState || (Boolean(swrKey) && !unProcessedData && !chartError)) && !showChart ? (
+        <ChartSkeleton height={block.height || 400} inset={block.margins !== 'none' && !isChainQuickBitesTabChart} />
       ) : null}
-      {canRenderChart && (
+      {showChart && (
         <div className={`transition-opacity duration-200 ${showUpdatingState ? 'opacity-60' : 'opacity-100'} ${isChainQuickBitesTabChart ? 'flex-1 min-h-0' : ''}`}>
           <ChartWrapper
             chartType={block.chartType}
@@ -631,7 +643,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block, chainQuickBitesTo
         </div>
       )}
       {block.caption && !isChainQuickBitesTabChart && (
-        <figcaption className="text-center text-xs mt-2 text-forest-700 dark:text-forest-400 italic">
+        <figcaption className="text-center text-xs mt-[10px] text-color-text-secondary">
           {resolvedCaption}
         </figcaption>
       )}

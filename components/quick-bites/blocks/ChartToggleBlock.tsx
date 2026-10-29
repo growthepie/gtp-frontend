@@ -4,6 +4,7 @@ import React from 'react';
 import { ChartBlock as ChartBlockType, ChartToggleBlock as ChartToggleBlockType } from '@/lib/types/blockTypes';
 import { ChartBlock } from './ChartBlock';
 import GTPButtonRow from '@/components/GTPComponents/ButtonComponents/GTPButtonRow';
+import GTPButtonContainer from '@/components/GTPComponents/ButtonComponents/GTPButtonContainer';
 import { GTPButton } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 
 interface ChartToggleBlockProps {
@@ -32,8 +33,6 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
   }, [block.defaultIndex, charts.length]);
 
   const [activeIndex, setActiveIndex] = React.useState(initialIndex);
-  const optionsContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [hasMultipleOptionRows, setHasMultipleOptionRows] = React.useState(false);
 
   React.useEffect(() => {
     setActiveIndex((prev) => clampIndex(prev, charts.length));
@@ -43,42 +42,6 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
     setActiveIndex(clampIndex(typeof block.defaultIndex === 'number' ? block.defaultIndex : 0, charts.length));
   }, [block.defaultIndex, charts.length]);
 
-  const detectMultipleRows = React.useCallback(() => {
-    if (!isChainQuickBitesTabBlock) {
-      setHasMultipleOptionRows(false);
-      return;
-    }
-
-    const container = optionsContainerRef.current;
-    if (!container) {
-      setHasMultipleOptionRows(false);
-      return;
-    }
-
-    const buttons = Array.from(container.querySelectorAll("button"));
-    if (buttons.length <= 1) {
-      setHasMultipleOptionRows(false);
-      return;
-    }
-
-    const firstRowTop = buttons[0].offsetTop;
-    const multiRow = buttons.some((button) => button.offsetTop > firstRowTop + 1);
-    setHasMultipleOptionRows(multiRow);
-  }, [isChainQuickBitesTabBlock]);
-
-  React.useEffect(() => {
-    detectMultipleRows();
-
-    const container = optionsContainerRef.current;
-    if (!container) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      detectMultipleRows();
-    });
-
-    resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
-  }, [detectMultipleRows, activeIndex, charts.length]);
 
   if (!charts.length) {
     return null;
@@ -91,11 +54,6 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
   const isChainQuickBitesTabSideBySide = isChainQuickBitesTabBlock && (isChainQuickBitesTabRightFlush || isChainQuickBitesTabLeftFlush);
   const showControls = !isChainQuickBitesTabBlock || charts.length > 1 || isChainQuickBitesTabSideBySide;
   const showExternalControls = showControls && !isChainQuickBitesTabBlock;
-  const segmentedLayoutClass = block.layout === 'segmented'
-    ? hasMultipleOptionRows && isChainQuickBitesTabBlock
-      ? 'bg-color-bg-default rounded-[20px] p-1'
-      : 'bg-color-bg-default rounded-2xl md:rounded-full p-1'
-    : '';
 
   const { sideChart: rawSideChart, ...mainChartProps } = (selectedChart ?? {}) as ChartBlockType & { sideChart?: ChartBlockType };
 
@@ -118,7 +76,7 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
     : undefined;
 
   const chainQuickBitesTopBar = showControls && isChainQuickBitesTabBlock ? (
-    <div ref={optionsContainerRef}>
+    <div>
       <GTPButtonRow wrap className="!w-auto">
         {charts.map((chart, index) => {
           const isActive = index === activeIndex;
@@ -190,30 +148,24 @@ export const ChartToggleBlock: React.FC<ChartToggleBlockProps> = ({ block, chain
       {showExternalControls && (
         <div className={controlsWrapperClass}>
           <div className="max-w-full" style={{ width: selectedChartWidth }}>
-            <div
-              ref={optionsContainerRef}
-              className={`flex flex-wrap md:items-start items-center w-full md:justify-normal justify-evenly gap-2 ${segmentedLayoutClass}`}
-            >
-              {charts.map((chart, index) => {
-                const isActive = index === activeIndex;
-                const label = chart.toggleLabel || chart.title || `Chart ${index + 1}`;
-                return (
-                  <button
-                    key={chart.id || `${label}-${index}`}
-                    type="button"
-                    className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                      isActive
-                        ? 'bg-color-ui-active'
-                        : 'bg-color-bg-default hover:bg-color-ui-hover'
-                    }`}
-                    onClick={() => setActiveIndex(index)}
-                    aria-pressed={isActive}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* The platform's tab bar (as on the fundamentals charts): one look for every
+                toggle, whatever its `layout`; it rounds itself to 15px if it wraps. */}
+            <GTPButtonContainer>
+              <GTPButtonRow wrap autoFill>
+                {charts.map((chart, index) => {
+                  const label = chart.toggleLabel || chart.title || `Chart ${index + 1}`;
+                  return (
+                    <GTPButton
+                      key={chart.id || `${label}-${index}`}
+                      label={label}
+                      size="sm"
+                      isSelected={index === activeIndex}
+                      clickHandler={() => setActiveIndex(index)}
+                    />
+                  );
+                })}
+              </GTPButtonRow>
+            </GTPButtonContainer>
           </div>
         </div>
       )}

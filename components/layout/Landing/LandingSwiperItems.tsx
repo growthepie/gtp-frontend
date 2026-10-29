@@ -17,18 +17,16 @@ import { getQuickBiteBySlug } from "@/lib/quick-bites/quickBites";
 import { QuickBiteData } from "@/lib/types/quickBites";
 import { TitleButtonLink } from "../TextHeadingComponents";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTPIcon } from "@/components/layout/GTPIcon";
 import { useMaster } from "@/contexts/MasterContext";
 import { Carousel } from "@/components/Carousel";
 import { useUIContext } from "@/contexts/UIContext";
 import LandingAppHighlight from "./LandingAppHighlight";
 import LandingEcosystemTPSCard from "./LandingEcosystemTPSCard";
+import LandingEthAssetCard from "./LandingEthAssetCard";
 import Container from "../Container";
-import { ApplicationsDataProvider } from "@/app/(layout)/applications/_contexts/ApplicationsDataContext";
 import { ProjectsMetadataProvider } from "@/app/(layout)/applications/_contexts/ProjectsMetadataContext";
 import { PageTitleAndDescriptionAndControls } from "@/app/(layout)/applications/_components/Components";
-import { SortProvider } from "@/app/(layout)/applications/_contexts/SortContext";
-import { MetricsProvider } from "@/app/(layout)/applications/_contexts/MetricsContext";
-import { TimespanProvider } from "@/app/(layout)/applications/_contexts/TimespanContext";
 
 const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: { metric_id: string, landing: any, master: MasterResponse, chartId: number }) {
   const [focusEnabled] = useLocalStorage("focusEnabled", false);
@@ -80,7 +78,7 @@ const SwiperItem = function SwiperItem({ metric_id, landing, master, chartId }: 
   );
 };
 
-const quickBiteIds: string[] = ["ethereum-quarterly-report-2026-q3"];
+const quickBiteIds: string[] = [];
 
 const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite: QuickBiteData, slug: string, forceLightText?: boolean }) => {
  
@@ -97,8 +95,11 @@ const QuickBiteCard = ({ quickBite, slug, forceLightText = false }: { quickBite:
           <div className="pl-[38px] md:pl-0 select-none">
             <div className="flex items-center justify-center p-[1px] rounded-full bg-[#263130] w-fit">
               <div className="flex items-center pl-[15px] py-[4px] gap-x-[8px] bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300 pr-[5px]">
+                {quickBite.kind === "tracker" && (
+                  <GTPIcon icon="gtp-realtime" size="sm" className="animate-pulse" />
+                )}
                 <div className="transition-all duration-300 whitespace-nowrap overflow-hidden heading-small-xs">
-                  Full Article
+                  {quickBite.kind === "tracker" ? "Live Tracker" : "Full Article"}
                 </div>
                 <div className="size-[24px] bg-color-bg-medium rounded-full flex items-center justify-center">
                   <Icon icon="feather:arrow-right" className="w-4 h-4" />
@@ -168,6 +169,9 @@ export default function LandingSwiperItems() {
       desktopRightPadding
       bottomOffset={-28}
     >
+      <div className="group w-full">
+        <LandingEthAssetCard />
+      </div>
       {quickBiteItems.map(({slug, quickBite}) => (
         <div key={slug} className="group w-full">
           <QuickBiteCard quickBite={quickBite} slug={slug} forceLightText={true} />
@@ -178,56 +182,9 @@ export default function LandingSwiperItems() {
       </div>
       <div className="h-full pb-[30px]">
 
-      <TimespanProvider timespans={{
-        "1d": {
-          shortLabel: "1d",
-          label: "1 day",
-          value: 1,
-        },
-        "7d": {
-          shortLabel: "7d",
-          label: "7 days",
-          value: 7,
-        },
-        "30d": {
-          shortLabel: "30d",
-          label: "30 days",
-          value: 30,
-        },
-        "90d": {
-          shortLabel: "90d",
-          label: "90 days",
-          value: 90,
-        },
-        "365d": {
-          shortLabel: "1y",
-          label: "1 year",
-          value: 365,
-        },
-        max: {
-          shortLabel: "Max",
-          label: "Max",
-          value: 0,
-        },
-      } as {
-        [key: string]: {
-          label: string;
-          shortLabel: string;
-          value: number;
-        };
-      }}>
-        <MetricsProvider>
-          <SortProvider defaultOrder="desc" defaultKey="txcount">
-            <ProjectsMetadataProvider>
-              <ApplicationsDataProvider disableShowLoading={true}>
-                
-                <LandingAppHighlight />
-
-              </ApplicationsDataProvider>
-            </ProjectsMetadataProvider>
-          </SortProvider>
-        </MetricsProvider>
-      </TimespanProvider>
+        <ProjectsMetadataProvider>
+          <LandingAppHighlight />
+        </ProjectsMetadataProvider>
       </div>
       {filteredMetricIds.map(
         (metric_id, index) => (

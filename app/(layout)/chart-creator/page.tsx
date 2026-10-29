@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import GTPChart from "@/components/GTPComponents/GTPChart";
 import type { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
-import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
+import { GTPButton, GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import GTPDropdown from "@/components/GTPComponents/GTPDropdown";
 import type { GTPIconName } from "@/icons/gtp-icon-names";
 import { DEFAULT_COLORS } from "@/lib/echarts-utils";
@@ -291,7 +291,7 @@ function pickColor(index: number): string {
 }
 
 function fmtDate(ts: number): string {
-  return new Date(ts).toLocaleDateString("en-US", {
+  return new Date(ts).toLocaleDateString("en-GB", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -357,14 +357,18 @@ function SeriesRow({
       <div className="flex items-center gap-2 mb-2">
         <button
           onClick={() => onChange({ visible: !entry.visible })}
-          className="h-2.5 w-2.5 rounded-full flex-shrink-0 border-2 transition-opacity"
-          style={{
-            backgroundColor: entry.visible ? entry.color : "transparent",
-            borderColor: entry.color,
-            opacity: entry.visible ? 1 : 0.4,
-          }}
+          className={`flex flex-shrink-0 rounded-full p-[4px] -m-[4px] transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
           title={entry.visible ? "Hide series" : "Show series"}
-        />
+        >
+          <span
+            className="block h-2.5 w-2.5 rounded-full border-2 transition-opacity"
+            style={{
+              backgroundColor: entry.visible ? entry.color : "transparent",
+              borderColor: entry.color,
+              opacity: entry.visible ? 1 : 0.4,
+            }}
+          />
+        </button>
         <input
           className="flex-1 min-w-0 bg-transparent text-xs text-color-text-primary outline-none border-b border-transparent focus:border-color-ui-hover transition-colors"
           value={entry.name}
@@ -434,7 +438,7 @@ function SeriesRow({
       </div>
 
       <p className="text-[10px] text-color-text-secondary mt-1.5">
-        {entry.data.length.toLocaleString()} pts ·{" "}
+        {entry.data.length.toLocaleString("en-GB")} pts ·{" "}
         {entry.source === "gtp" ? "growthepie" : entry.sourceLabel}
       </p>
     </div>
@@ -458,7 +462,7 @@ function ScaleToggle({ value, onChange }: { value: Scale; onChange: (s: Scale) =
         <button
           key={opt.key}
           onClick={() => onChange(opt.key)}
-          className={`px-3 py-1 text-xs font-medium transition-colors ${
+          className={`px-3 py-1 text-xs transition-colors ${
             value === opt.key
               ? "bg-color-text-primary text-color-bg-default"
               : "text-color-text-secondary hover:text-color-text-primary"
@@ -801,7 +805,7 @@ export default function ChartCreatorPage() {
           <h1 className="text-[24px] md:text-[30px] font-bold leading-tight text-color-text-primary">
             Chart Creator
           </h1>
-          <span className="rounded-full border border-color-ui-hover/40 px-2.5 py-0.5 text-xs font-medium text-color-text-secondary">
+          <span className="rounded-full border border-color-ui-hover/40 px-2.5 py-0.5 text-xs text-color-text-secondary">
             Internal
           </span>
         </div>
@@ -918,7 +922,7 @@ export default function ChartCreatorPage() {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                 />
               </svg>
-              <p className="text-xs font-medium text-color-text-primary text-center">
+              <p className="text-xs text-color-text-primary text-center">
                 Drag & drop or click to upload
               </p>
               <p className="text-[10px] text-color-text-secondary mt-0.5">
@@ -932,11 +936,11 @@ export default function ChartCreatorPage() {
             {uploadState && (
               <div className="space-y-[10px]">
                 <div className="flex items-baseline justify-between">
-                  <p className="text-xs font-medium text-color-text-primary truncate max-w-[200px]">
+                  <p className="text-xs text-color-text-primary truncate max-w-[200px]">
                     {uploadState.filename}
                   </p>
                   <p className="text-[10px] text-color-text-secondary flex-shrink-0 ml-2">
-                    {uploadState.rows.length.toLocaleString()} rows
+                    {uploadState.rows.length.toLocaleString("en-GB")} rows
                   </p>
                 </div>
 
@@ -997,7 +1001,7 @@ export default function ChartCreatorPage() {
                       {uploadState.rows.length > 5 && (
                         <tr>
                           <td colSpan={2} className="px-2 py-1 text-center text-color-text-secondary">
-                            +{(uploadState.rows.length - 5).toLocaleString()} more rows
+                            +{(uploadState.rows.length - 5).toLocaleString("en-GB")} more rows
                           </td>
                         </tr>
                       )}
@@ -1011,7 +1015,7 @@ export default function ChartCreatorPage() {
 
                 <div className="flex gap-2">
                   <GTPButton
-                    label={`Add${previewData.length > 0 ? ` (${uploadState.rows.length.toLocaleString()} pts)` : ""}`}
+                    label={`Add${previewData.length > 0 ? ` (${uploadState.rows.length.toLocaleString("en-GB")} pts)` : ""}`}
                     clickHandler={addUploadedSeries}
                     variant="primary"
                     size="sm"
@@ -1076,7 +1080,7 @@ export default function ChartCreatorPage() {
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              <p className="text-sm font-medium text-color-text-primary">
+              <p className="text-sm text-color-text-primary">
                 No data yet
               </p>
               <p className="text-xs mt-1 text-color-text-secondary text-center max-w-[220px]">
@@ -1236,7 +1240,7 @@ export default function ChartCreatorPage() {
                             </div>
                           </td>
                           <td className="px-4 py-2 text-right text-color-text-secondary">
-                            {s.data.length.toLocaleString()}
+                            {s.data.length.toLocaleString("en-GB")}
                           </td>
                           <td className="px-4 py-2 text-right text-color-text-secondary hidden sm:table-cell">
                             {fmtDate(s.data[0][0])}

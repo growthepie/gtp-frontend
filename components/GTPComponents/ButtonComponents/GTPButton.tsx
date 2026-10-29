@@ -14,8 +14,11 @@ export interface GTPButtonProps {
   children?: React.ReactNode;
   label?: string;
   labelDisplay?: "always" | "active" | "hover";
+  /** Accessible name; required for icon-only buttons, which have no visible label. */
+  ariaLabel?: string;
   rightIcon?: GTPIconName;
   leftIcon?: GTPIconName;
+  /** When passed, it is also exposed to assistive tech as `aria-pressed`. */
   isSelected?: boolean;
   disabled?: boolean;
   gradientOutline?: boolean;
@@ -43,6 +46,13 @@ export interface GTPButtonProps {
   onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
 }
+
+/**
+ * GTPButton's hover and press fill. Button-like controls that can't render GTPButton
+ * itself (the 44px floating-bar buttons, menu triggers, toggles, icon buttons) use
+ * the same classes, so every button on the platform reacts the same way on hover.
+ */
+export const GTP_BUTTON_INTERACTION_CLASSES = "hover:bg-color-ui-hover active:bg-color-ui-active";
 
 const FIGMA_BUTTON_SIZE = {
   xs: {
@@ -158,9 +168,10 @@ export const GTPButton = ({
   children,
   label,
   labelDisplay = "always",
+  ariaLabel,
   rightIcon,
   leftIcon,
-  isSelected = false,
+  isSelected,
   disabled = false,
   gradientOutline = false,
   variant,
@@ -232,7 +243,7 @@ export const GTPButton = ({
         : "linear-gradient(180deg, rgb(var(--accent-red)) 0%, rgb(var(--accent-yellow)) 100%)";
 
   const interactiveFillClassName =
-    resolvedState === "default" ? "hover:bg-color-ui-hover active:bg-color-ui-active" : "";
+    resolvedState === "default" ? GTP_BUTTON_INTERACTION_CLASSES : "";
 
   const displayLeftIcon =
     iconVariant === "left" || iconVariant === "both" || (iconVariant === "alone" && Boolean(leftIcon ?? rightIcon));
@@ -274,7 +285,8 @@ export const GTPButton = ({
         } ${interactiveFillClassName} ${
           isDisabled ? "cursor-not-allowed text-color-text-secondary" : "cursor-pointer text-color-text-primary"
         }`}
-        aria-label={isAnimatedLabelMode && !shouldShowLabel ? label : undefined}
+        aria-label={ariaLabel ?? (isAnimatedLabelMode && !shouldShowLabel ? label : undefined)}
+        aria-pressed={isSelected}
         onClick={clickHandler}
         onMouseEnter={(e) => {
           if (labelDisplay === "hover") setIsHovered(true);

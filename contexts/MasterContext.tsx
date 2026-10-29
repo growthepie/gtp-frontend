@@ -1,11 +1,12 @@
 "use client";
 import { Chain, Get_AllChainsByKeys, Get_AllChainsNavigationItems, Get_SupportedChainKeys } from "@/lib/chains";
-import { GloHolderURL, MasterURL } from "@/lib/urls";
+import { MasterURL } from "@/lib/urls";
 import { DataAvailabilityLayerData, DataAvailabilityLayers, MasterResponse, Metrics, MetricInfo, UnitSchema, Chains, ChainInfo } from "@/types/api/MasterResponse";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ImportChainIcons } from "@/lib/chainIcons";
 import { ImportDaIcons } from "@/lib/daIcons";
 import useSWR from "swr";
+import ErrorState from "@/components/ErrorState";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type DALayerWithKey = (DataAvailabilityLayerData & { key: string, label: string });
@@ -76,7 +77,7 @@ const MasterContext = createContext<MasterContextType | null>({
 });
 
 export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
-  const { data, isLoading } = useSWR<MasterResponse>(MasterURL);
+  const { data, isLoading, error, mutate } = useSWR<MasterResponse>(MasterURL);
   const [AllChains, setAllChains] = useState<Chain[]>([]);
   const [AllChainsByKeys, setAllChainsByKeys] = useState<{ [key: string]: Chain }>({});
   const [AllChainsByStacks, setAllChainsByStacks] = useState<{ [key: string]: ChainInfo[] }>({});
@@ -206,7 +207,18 @@ export const MasterProvider = ({ children }: { children: React.ReactNode }) => {
         da_layers: data?.da_layers || {},
       }}
     >
-      {data && !isLoading && AllChains.length > 0 ? children : null}
+      {data && !isLoading && AllChains.length > 0 ? (
+        children
+      ) : error && !data ? (
+        // Every page needs master.json, so without it there is nothing to show but this.
+        // SWR keeps retrying in the background; the button retries right away.
+        <ErrorState
+          fullPage
+          title="We couldn't load growthepie's data"
+          message="Our data service didn't respond. Check your connection and try again in a moment."
+          onRetry={() => mutate()}
+        />
+      ) : null}
     </MasterContext.Provider>
   );
 };

@@ -1,7 +1,8 @@
 "use client";
 
-import ReactECharts, { EChartsOption } from 'echarts-for-react';
-import * as echarts from 'echarts';
+import ReactECharts from 'echarts-for-react/lib/core';
+import type { EChartsOption } from 'echarts-for-react';
+import { echarts } from '@/lib/echarts-setup';
 import {
   useState,
   useEffect,
@@ -1288,6 +1289,7 @@ const ChainComponent = function ChainComponent({
         <div className="absolute w-full h-full bg-color-bg-default rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <ReactECharts
+            echarts={echarts}
             ref={chartRef}
             opts={{
               devicePixelRatio: window.devicePixelRatio || 1,
@@ -1321,7 +1323,7 @@ const ChainComponent = function ChainComponent({
               containerClassName='!size-[15px] flex items-center justify-center bg-color-bg-medium rounded-full' 
             />
           </Link>
-          <div className="numbers-lg leading-snug h-[20px] font-medium flex items-center">
+          <div className="numbers-lg leading-snug h-[20px] flex items-center">
             <div>{displayValues[category].prefix}</div>
             <div>{displayValues[category].value}</div>
             <div className="text-base pl-0.5">

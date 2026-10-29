@@ -1,5 +1,6 @@
 "use client";
 import { useMemo } from "react";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
 
@@ -114,8 +115,8 @@ export function StepSwitch({
     >
       <button
         type="button"
-        className={`flex items-center justify-center rounded-full shrink-0 ${config.button} ${fgClassName} ${
-          !canDecrement || disabled ? "opacity-30 cursor-default" : "cursor-pointer"
+        className={`flex items-center justify-center rounded-full shrink-0 transition-colors duration-200 ${config.button} ${fgClassName} ${
+          !canDecrement || disabled ? "opacity-30 cursor-default" : `cursor-pointer ${GTP_BUTTON_INTERACTION_CLASSES}`
         }`}
         onClick={handleDecrement}
         disabled={!canDecrement || disabled}
@@ -141,8 +142,8 @@ export function StepSwitch({
 
       <button
         type="button"
-        className={`flex items-center justify-center rounded-full shrink-0 ${config.button} ${fgClassName} ${
-          !canIncrement || disabled ? "opacity-30 cursor-default" : "cursor-pointer"
+        className={`flex items-center justify-center rounded-full shrink-0 transition-colors duration-200 ${config.button} ${fgClassName} ${
+          !canIncrement || disabled ? "opacity-30 cursor-default" : `cursor-pointer ${GTP_BUTTON_INTERACTION_CLASSES}`
         }`}
         onClick={handleIncrement}
         disabled={!canIncrement || disabled}

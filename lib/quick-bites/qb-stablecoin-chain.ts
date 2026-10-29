@@ -180,6 +180,8 @@ const mainContent = [
 const StablecoinChain: QuickBiteData = {
   title: "Stablecoin Supply Breakdown for Chains",
   shortTitle: "Stablecoins by Chain",
+  themes: ["stablecoins"],
+  kind: "tracker",
   subtitle: "Analyzing the composition and trends of stablecoins across different chains.",
   content: [
     ...mainContent,

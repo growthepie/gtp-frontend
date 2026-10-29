@@ -9,6 +9,7 @@ import {
 } from "@openlabels/oli-sdk";
 import { commitFilesToBranch, submitProjectEditContribution } from "@openlabels/oli-sdk/contributions";
 import type { GitHubRepositoryRef } from "@openlabels/oli-sdk/contributions";
+import { OWNER_PROJECT_PATTERN } from "@/app/(layout)/applications/_components/_edit/constants";
 
 // ---------------------------------------------------------------------------
 // In-memory rate limiter — 5 requests per IP per hour
@@ -204,6 +205,13 @@ export async function POST(request: Request) {
     if (!ownerProject || !displayName) {
       return NextResponse.json(
         { error: "owner_project and display_name are required." },
+        { status: 400 },
+      );
+    }
+    // owner_project ends up in repo file paths (e.g. data/logos/<c>/<slug>.<ext>)
+    if (!OWNER_PROJECT_PATTERN.test(ownerProject)) {
+      return NextResponse.json(
+        { error: "owner_project must be lowercase letters, numbers, '-' or '_'." },
         { status: 400 },
       );
     }

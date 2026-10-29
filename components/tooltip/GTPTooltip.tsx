@@ -64,6 +64,9 @@ export const GTPTooltipNew = ({
   // Ref for the tooltip node itself, required by CSSTransition
   const tooltipNodeRef = useRef<HTMLDivElement | null>(null); // <-- Add ref for tooltip node
 
+  // whether keyboard focus (rather than hover or a click) opened the tooltip
+  const [openedByFocus, setOpenedByFocus] = useState(false);
+
   const handleOpenChange = (nextOpen: boolean) => {
     // call onOpenChange if it is defined
     if (onOpenChange) {
@@ -78,7 +81,7 @@ export const GTPTooltipNew = ({
     // and pass the new `isOpen` prop down for the animation to trigger.
   };
 
-  const { refs, floatingStyles, context, update } = useFloating({
+  const { refs, elements, floatingStyles, context, update } = useFloating({
     open: isOpen,
     placement,
     middleware: [
@@ -241,6 +244,25 @@ export const GTPTooltipNew = ({
           }
           // Call original handler if it exists
           (trigger as React.ReactElement<any>).props.onClick?.(e);
+        },
+        // Keyboard focus on the trigger (or a link/button inside it) opens the tooltip like hover
+        // does. Only :focus-visible, so a click or tap keeps today's toggle behaviour.
+        onFocus: (e: React.FocusEvent) => {
+          if (enableHover && (e.target as HTMLElement).matches?.(":focus-visible")) {
+            setOpenedByFocus(true);
+            handleOpenChange(true);
+          }
+          (trigger as React.ReactElement<any>).props.onFocus?.(e);
+        },
+        onBlur: (e: React.FocusEvent) => {
+          // only undo what focus opened: a tooltip opened by click stays open while its content is used
+          const next = e.relatedTarget as Node | null;
+          const movesInside = !!next && (e.currentTarget.contains(next) || !!elements.floating?.contains(next));
+          if (openedByFocus && !movesInside) {
+            setOpenedByFocus(false);
+            handleOpenChange(false);
+          }
+          (trigger as React.ReactElement<any>).props.onBlur?.(e);
         },
       } as React.HTMLAttributes<HTMLElement> & { ref: React.Ref<HTMLElement> }
     );

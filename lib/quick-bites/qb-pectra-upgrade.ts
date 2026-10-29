@@ -5,19 +5,19 @@ const pectraUpgrade: QuickBiteData = createQuickBite({
   title: "Pectra: The People's Upgrade",
   subtitle: "Track the Adoption of Pectras UX + Scaling Improvements",
   shortTitle: "Pectra Upgrade",
+  themes: ["scaling"],
   content: [
-    "> Less clicks, less signatures, more Blobs. Many past Ethereum upgrades focused on technical improvements, but Pectra is different. It aims to enhance the user experience for everyday users, making it easier and cheaper to interact with the Ethereum ecosystem.",
+    "> Fewer clicks, fewer signatures, more blobs. Pectra is an upgrade for everyday users: it makes Ethereum easier and cheaper to use.",
 
-    "# What is part of the Pectra upgrade?",
-    "Pectra introduces several key features designed to simplify the user experience:",
-    "- **EIP-7691: Boost Rollups through more Blobs** - Rollups have been operating at Blob capacity for a while. Now we get more Blobs! This means cheaper transactions and more space for Rollups.",
-    "- **EIP-7702: Smarter Wallets** - Enables wallets (EOAs) to act as smart accounts, unlocking features like sponsorship, delegation transactions, paying gas in other tokens, and much more.",
-    "- **EIP-7252, 7002, 6110: ETH Staking Upgrades** - The validator's effective staking limit was raised from 32 ETH to 2,048 ETH, meaning your rewards can compound. The withdrawal process is simplified - simpler is better.",
-    "...and 6 more EIPs that include various improvements to the Ethereum protocol.",
+    "# What's in Pectra",
+    "- **EIP-7691, more blobs:** cheaper transactions and more room for Layer 2s, which had been running at blob capacity.",
+    "- **EIP-7702, smarter wallets:** regular wallets (EOAs) can act as smart accounts, for example to pay gas in other tokens or have fees sponsored.",
+    "- **EIP-7251, 7002, 6110, staking upgrades:** validators can hold up to 2,048 ETH instead of 32, so rewards compound, and withdrawals are simpler.",
+    "- …plus 6 more EIPs with smaller protocol improvements.",
 
     "## EIP-7691: More Blobs",
-    "The Blob target was doubled from 3 to 6, and the limit was raised from 6 to 9. This means more blobs for Layer 2s and it takes longer for the Blob fee market to kick in.",
-    "The following chart shows how close we are to the new Blob target. When the number of blobs submitted per block exceeds the target, the Blob fee market will kick in and increase the cost per blob (using the EIP-1559 mechanism).",
+    "The blob target doubled from 3 to 6 and the limit rose from 6 to 9, so Layer 2s get more blobs before the blob fee market kicks in.",
+    "The chart shows how close blocks get to the new target. Above it, the cost per blob starts rising (the EIP-1559 mechanism).",
 
     "```chart",
     JSON.stringify({

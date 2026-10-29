@@ -47,6 +47,7 @@ const robinhoodQuarterlyReport2026Q3: QuickBiteData = createQuickBite({
   title: "Robinhood Chain Quarterly Report: Q3 2026",
   subtitle: "A data-led review of Robinhood Chain's first quarter after its public mainnet launch, from 01 July to 30 September 2026.",
   shortTitle: "Report: HOOD Q3 2026",
+  kind: "report",
   summary: "Robinhood Chain processed 793.7M transactions in its launch quarter, Uniswap led app activity, and a 12-day surge generated 74% of the quarter's fees.",
   showInMenu: true,
   content: [

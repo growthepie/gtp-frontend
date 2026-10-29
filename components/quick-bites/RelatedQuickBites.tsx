@@ -37,6 +37,7 @@ const RelatedQuickBites: React.FC<RelatedQuickBitesProps> = ({ relatedQuickBites
             date={QuickBite.date}
             icon={QuickBite.icon}
             slug={QuickBite.slug}
+            kind={QuickBite.kind}
             author={QuickBite.author}
             topics={QuickBite.topics?.map(topic => ({
               ...topic,

@@ -5,6 +5,7 @@ import GTPButtonDropdown from "@/components/GTPComponents/ButtonComponents/GTPBu
 import type { GTPButtonProps } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import VerticalScrollContainer from "@/components/VerticalScrollContainer";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { GTPIconName } from "@/icons/gtp-icon-names";
 
 export type GTPDropdownContentSize = "sm" | "md";
@@ -77,6 +78,20 @@ const TRIGGER_PANEL_GAP_BY_BUTTON_SIZE: Record<NonNullable<GTPButtonProps["size"
   lg: 8,
 };
 
+// Right edge of the clear button: the trigger's 1px wrapper, its right padding, the
+// chevron and the icon gap (see FIGMA_BUTTON_SIZE in GTPButton).
+const CLEAR_BUTTON_RIGHT_BY_BUTTON_SIZE: Record<NonNullable<GTPButtonProps["size"]>, number> = {
+  xs: 1 + 3 + 12 + 2,
+  sm: 1 + 5 + 16 + 4,
+  md: 1 + 5 + 24 + 4,
+  lg: 1 + 5 + 28 + 6,
+};
+
+// Longer lists only render the rows in view (virtualized), so opening the dropdown is
+// instant even with thousands of options; shorter lists render every row as before.
+const VIRTUALIZE_OPTIONS_ABOVE = 50;
+const OPTION_ROW_GAP = 5;
+
 const getFirstEnabledIndex = (options: GTPDropdownOption[]) => options.findIndex((option) => !option.disabled);
 
 const getNextEnabledIndex = (
@@ -110,6 +125,8 @@ export interface GTPDropdownOption {
   value: string;
   label: string;
   icon?: GTPIconName;
+  /** Image (e.g. a project logo) shown instead of an icon. */
+  imageUrl?: string;
   disabled?: boolean;
   keywords?: string[];
   iconClassName?: string;
@@ -137,6 +154,8 @@ export interface GTPDropdownProps {
   size?: NonNullable<GTPButtonProps["size"]>;
   searchSize?: GTPDropdownContentSize;
   optionSize?: GTPDropdownContentSize;
+  /** Shows a clear (×) button on the trigger while a value is selected. */
+  onClear?: () => void;
 }
 
 export default function GTPDropdown({
@@ -158,6 +177,7 @@ export default function GTPDropdown({
   size = "md",
   searchSize = "sm",
   optionSize,
+  onClear,
 }: GTPDropdownProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
   const [searchValue, setSearchValue] = useState("");
@@ -209,7 +229,7 @@ export default function GTPDropdown({
   }, [options, searchValue]);
 
   const hasOptionIcons = useMemo(
-    () => options.some((option) => Boolean(option.icon)),
+    () => options.some((option) => Boolean(option.icon || option.imageUrl)),
     [options],
   );
 
@@ -241,6 +261,18 @@ export default function GTPDropdown({
     return Math.min(Math.max(totalHeight, rowHeight), 240);
   }, [filteredOptions.length, resolvedOptionSize]);
 
+  const optionListRef = useRef<HTMLDivElement | null>(null);
+  const isVirtualized = filteredOptions.length > VIRTUALIZE_OPTIONS_ABOVE;
+  const optionRowHeight = OPTION_ROW_HEIGHT_BY_SIZE[resolvedOptionSize];
+  const virtualizer = useVirtualizer({
+    count: filteredOptions.length,
+    getScrollElement: () => optionListRef.current,
+    estimateSize: () => optionRowHeight,
+    gap: OPTION_ROW_GAP,
+    overscan: 8,
+    enabled: isOpen && isVirtualized,
+  });
+
   const selectOption = useCallback(
     (option: GTPDropdownOption) => {
       if (option.disabled) {
@@ -271,10 +303,16 @@ export default function GTPDropdown({
       return;
     }
 
+    if (isVirtualized) {
+      // The row may not be rendered yet: let the virtualizer scroll to it.
+      virtualizer.scrollToIndex(highlightedIndex, { align: "auto" });
+      return;
+    }
+
     optionRefs.current[highlightedIndex]?.scrollIntoView({
       block: "nearest",
     });
-  }, [highlightedIndex]);
+  }, [highlightedIndex, isVirtualized, virtualizer]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -319,8 +357,12 @@ export default function GTPDropdown({
   }, [filteredOptions, highlightedIndex, isOpen, selectOption, setOpen]);
 
   const triggerLabel = selectedOption?.label ?? placeholder;
+  const showClear = Boolean(onClear && selectedOption && !disabled && !isOpen);
   const triggerLeftIconOverride =
-    selectedOption?.icon && hasOptionIcons ? (
+    selectedOption?.imageUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={selectedOption.imageUrl} alt="" className={joinClassNames("shrink-0 rounded-full object-contain", triggerIconClassName)} />
+    ) : selectedOption?.icon && hasOptionIcons ? (
       <GTPIcon
         icon={selectedOption.icon}
         size="sm"
@@ -330,8 +372,67 @@ export default function GTPDropdown({
       />
     ) : undefined;
 
+  const renderOption = (option: GTPDropdownOption, index: number, style?: CSSProperties) => {
+    const isSelected = option.value === value;
+    const isHighlighted = index === highlightedIndex;
+
+    return (
+      <button
+        // Values can repeat in data (e.g. two stocks with the same ticker).
+        key={`${option.value}-${index}`}
+        ref={(node) => {
+          optionRefs.current[index] = node;
+        }}
+        type="button"
+        style={style}
+        role="option"
+        aria-selected={isSelected}
+        disabled={option.disabled}
+        onClick={() => selectOption(option)}
+        onMouseEnter={() => {
+          if (!option.disabled) {
+            setHighlightedIndexOverride(index);
+          }
+        }}
+        className={joinClassNames(
+          "flex w-full items-center rounded-full text-left transition-colors",
+          optionSizeStyles.rowClassName,
+          option.disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:bg-color-bg-medium",
+          (isHighlighted || isSelected) && "bg-color-bg-medium",
+        )}
+      >
+        {option.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={option.imageUrl}
+            alt=""
+            className={joinClassNames("shrink-0 rounded-full object-contain", optionSizeStyles.iconClassName)}
+          />
+        ) : option.icon ? (
+          <GTPIcon
+            icon={option.icon}
+            size="sm"
+            style={(isHighlighted || isSelected) && option.iconHighlightStyle ? option.iconHighlightStyle : option.iconStyle}
+            className={joinClassNames(optionSizeStyles.iconClassName, option.iconClassName)}
+            containerClassName={joinClassNames(
+              optionSizeStyles.iconClassName,
+              "shrink-0",
+              option.iconContainerClassName,
+            )}
+          />
+        ) : hasOptionIcons ? (
+          <span className={joinClassNames("shrink-0", optionSizeStyles.iconPlaceholderClassName)} aria-hidden="true" />
+        ) : null}
+
+        <span className={joinClassNames("min-w-0 truncate text-color-text-primary", optionSizeStyles.textClassName)}>
+          {option.label}
+        </span>
+      </button>
+    );
+  };
+
   return (
-    <div className={joinClassNames("w-full", className)}>
+    <div className={joinClassNames("relative w-full", className)}>
       <GTPButtonDropdown
         className="w-full"
         dropdownClassName={joinClassNames("bg-color-bg-default", dropdownClassName)}
@@ -352,7 +453,10 @@ export default function GTPDropdown({
           variant: "primary",
           disabled,
           className: buttonClassName,
-          textClassName: "text-left",
+          // Room for the clear button, which sits just left of the chevron.
+          // Long labels (e.g. "MSTU | T-Rex 2X Long MSTR Daily Target ETF") truncate instead
+          // of pushing the chevron out; with a clear button there's room left for it too.
+          textClassName: joinClassNames("text-left min-w-0 truncate", showClear && "pr-[24px]"),
           rightIconContainerClassName: joinClassNames("ml-auto transition-transform duration-200", isOpen && "rotate-180"),
           innerStyle: {
             justifyContent: "flex-start",
@@ -414,72 +518,58 @@ export default function GTPDropdown({
 
             <div role="listbox">
               <VerticalScrollContainer
+                ref={optionListRef}
                 height={optionListHeight}
                 className="w-full"
                 scrollbarPosition="right"
                 scrollbarWidth="6px"
                 paddingRight={2}
               >
-                <div className="flex flex-col gap-[5px]">
-                  {filteredOptions.length === 0 ? (
-                    <div className="px-[15px] py-[5px] text-sm text-color-text-secondary">{emptyStateLabel}</div>
-                  ) : (
-                    filteredOptions.map((option, index) => {
-                      const isSelected = option.value === value;
-                      const isHighlighted = index === highlightedIndex;
-
-                      return (
-                        <button
-                          key={option.value}
-                          ref={(node) => {
-                            optionRefs.current[index] = node;
-                          }}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          disabled={option.disabled}
-                          onClick={() => selectOption(option)}
-                          onMouseEnter={() => {
-                            if (!option.disabled) {
-                              setHighlightedIndexOverride(index);
-                            }
-                          }}
-                          className={joinClassNames(
-                            "flex w-full items-center rounded-full text-left transition-colors",
-                            optionSizeStyles.rowClassName,
-                            option.disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:bg-color-bg-medium",
-                            (isHighlighted || isSelected) && "bg-color-bg-medium",
-                          )}
-                        >
-                          {option.icon ? (
-                            <GTPIcon
-                              icon={option.icon}
-                              size="sm"
-                              style={(isHighlighted || isSelected) && option.iconHighlightStyle ? option.iconHighlightStyle : option.iconStyle}
-                              className={joinClassNames(optionSizeStyles.iconClassName, option.iconClassName)}
-                              containerClassName={joinClassNames(
-                                optionSizeStyles.iconClassName,
-                                "shrink-0",
-                                option.iconContainerClassName,
-                              )}
-                            />
-                          ) : hasOptionIcons ? (
-                            <span className={joinClassNames("shrink-0", optionSizeStyles.iconPlaceholderClassName)} aria-hidden="true" />
-                          ) : null}
-
-                          <span className={joinClassNames("min-w-0 truncate text-color-text-primary", optionSizeStyles.textClassName)}>
-                            {option.label}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
+                {filteredOptions.length === 0 ? (
+                  <div className="px-[15px] py-[5px] text-sm text-color-text-secondary">{emptyStateLabel}</div>
+                ) : isVirtualized ? (
+                  <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+                    {virtualizer.getVirtualItems().map((item) =>
+                      renderOption(filteredOptions[item.index], item.index, {
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        height: optionRowHeight,
+                        transform: `translateY(${item.start}px)`,
+                      }),
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-[5px]">
+                    {filteredOptions.map((option, index) => renderOption(option, index))}
+                  </div>
+                )}
               </VerticalScrollContainer>
             </div>
           </div>
         )}
       />
+      {/* z-[11]: above GTPButtonDropdown's trigger (z-10). */}
+      {showClear ? (
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onClear?.();
+          }}
+          className="absolute z-[11] top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full p-[3px] transition-opacity hover:opacity-80"
+          style={{ right: CLEAR_BUTTON_RIGHT_BY_BUTTON_SIZE[size] }}
+        >
+          <GTPIcon
+            icon={"in-button-close-monochrome" as GTPIconName}
+            size="sm"
+            className="!w-[12px] !h-[12px] text-color-text-secondary"
+            containerClassName="!w-[12px] !h-[12px]"
+          />
+        </button>
+      ) : null}
     </div>
   );
 }

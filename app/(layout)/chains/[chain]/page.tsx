@@ -4,8 +4,8 @@ import Container from "@/components/layout/Container";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useMaster } from "@/contexts/MasterContext";
-import { useState, useMemo, memo, useEffect, use, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo, memo, useEffect, use, useRef, useCallback } from "react";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { ChainInfo } from "@/types/api/MasterResponse";
 import ChainTabs from "@/components/layout/SingleChains/ChainTabs";
 import ChainChartECharts from "@/components/layout/SingleChains/ChainChartECharts";
@@ -25,7 +25,6 @@ import ShowLoading from "@/components/layout/ShowLoading";
 import { ChainData, Chains } from "@/types/api/ChainOverviewResponse";
 import { ChainsData } from "@/types/api/ChainResponse";
 import ChainsOverview from "@/components/layout/SingleChains/ChainsOverview";
-import RelatedQuickBites from "@/components/RelatedQuickBites";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { ChainOverview } from "@/lib/chains";
 import UserInsights from "@/components/layout/SingleChains/UserInsights";
@@ -34,11 +33,13 @@ import { processDynamicContent } from "@/lib/utils/dynamicContent";
 import { processMarkdownContent } from "@/lib/utils/markdownParser";
 import { ContentBlock } from "@/lib/types/blockTypes";
 import Block from "@/components/quick-bites/Block";
+import MetricRelatedQuickBites from "@/components/MetricRelatedQuickBites";
 import { QuickBiteProvider } from "@/contexts/QuickBiteContext";
 import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { GTPButton } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useUIContext } from "@/contexts/UIContext";
+import StickyHeader, { StickyHeaderHandle } from "@/components/layout/StickyHeader";
 
 // Fetcher function for API calls
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -609,6 +610,15 @@ const OverviewContent = memo(({ chainKey, chain, master }: { chainKey: string, c
   return (
     <>
           <ChainsOverview chainKey={chainKey} chainData={chainData} master={master} chainDataOverview={chainDataOverview} />
+          {/* Quick Bites whose topics link to this chain (/chains/<url_key>). */}
+          <div className="flex flex-col gap-y-[15px] pt-[45px]">
+            <MetricRelatedQuickBites
+              metricKey={chainData.url_key}
+              metricType="chains"
+              title={`Quick Bites on ${chainData.name}`}
+              description={`Data stories and trackers that cover ${chainData.name}, backed by live data.`}
+            />
+          </div>
     </>
   );
 });
@@ -897,6 +907,7 @@ const QuickBitesContent = memo(({ chainKey, master }: { chainKey: string, master
                   variant="primary"
                   visualState="active"
                   leftIcon="in-button-right-monochrome"
+                  ariaLabel="Open Quick Bite"
                   clickHandler={() => router.push(`/quick-bites/${group.slug}`)}
                   className="cursor-pointer"
                 />
@@ -954,7 +965,7 @@ const EconomicsContent = memo(({ chainKey, master }: { chainKey: string, master:
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Economics</h2>
+      <h2 className="text-xl">Economics</h2>
       <div className="p-8 text-center text-gray-500">
         Economics content will be implemented here
       </div>
@@ -1159,6 +1170,10 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         : "",
     );
 
+    // A chain that isn't in master.json gets the 404 page instead of an empty page that
+    // requests /chains//… for every section
+    if (!chainKey) notFound();
+
     // Disable the global ETH/USD switch while on the Quick Bites tab — quick bites
     // are USD-only by default, matching the standalone /quick-bites pages. Cleanup
     // re-enables the switch when leaving the tab or unmounting the page.
@@ -1170,6 +1185,14 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         setEthUsdSwitchEnabled(true);
       };
     }, [selectedTab, setEthUsdSwitchEnabled]);
+
+    // Switching tabs while the tab bar is stuck starts the new tab right below it,
+    // instead of at the old tab's scroll position
+    const tabsRef = useRef<StickyHeaderHandle>(null);
+    const selectTab = useCallback((tab: string) => {
+      setSelectedTab(tab);
+      tabsRef.current?.scrollToStart();
+    }, []);
 
     // Update URL when selectedTab changes
     useEffect(() => {
@@ -1225,16 +1248,17 @@ const Chain = (props: { params: Promise<{ chain: string }> }) => {
         <Container className="flex flex-col gap-y-[15px] pt-[45px] md:pt-[30px] select-none"
      
         >
-            <ChainTabs 
-              chainInfo={master.chains[chainKey]} 
-              selectedTab={selectedTab} 
-              setSelectedTab={setSelectedTab} 
-              fillWidth
-            />
+            <StickyHeader ref={tabsRef}>
+              <ChainTabs
+                chainInfo={master.chains[chainKey]}
+                selectedTab={selectedTab}
+                setSelectedTab={selectTab}
+                fillWidth
+              />
+            </StickyHeader>
             <div className={`${selectedTab !== "overview" ? "pt-[15px]" : ""}`}  >
               {TabContent}
             </div>
-            <RelatedQuickBites slug={AllChainsByKeys[chainKey].label} isTopic={true} />
         </Container>
     )
 }

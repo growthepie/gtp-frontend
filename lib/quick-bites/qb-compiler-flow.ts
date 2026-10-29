@@ -273,6 +273,7 @@ export const jsonLdFaq = generateJsonLdFaq(faqItems);
 const CompilerFlow: QuickBiteData = {
   title: "Programming Languages That Power Onchain Activity",
   shortTitle: "Activity by Compiler",
+  themes: ["developers-ai"],
   subtitle: "Analysing active contract interactions to reveal compiler and language usage in production environments.",
   content: [
 

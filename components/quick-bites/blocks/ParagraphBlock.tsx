@@ -44,7 +44,7 @@ export const ParagraphBlock: React.FC<ParagraphBlockProps> = ({ block }) => {
   const Tag = pathname.startsWith('/answers/') ? 'p' : 'div';
   return (
     <Tag
-      className={`my-[15px] text-xs md:text-sm leading-[1.5] ${block.className || ''}`}
+      className={`my-[15px] text-md ${block.className || ''}`}
       dangerouslySetInnerHTML={{ __html: contentWithLinks }}
     />
   );

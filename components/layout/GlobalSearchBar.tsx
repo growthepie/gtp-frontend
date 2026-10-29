@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { GTP_BUTTON_INTERACTION_CLASSES } from '@/components/GTPComponents/ButtonComponents/GTPButton';
 import { useIsStaleSession } from '@/hooks/useIsStaleSession';
 import { FloatingBarContainer } from './FloatingBar/FloatingBarContainer';
 import { Badge } from './FloatingBar/Badge';
@@ -602,7 +603,7 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   <div onClick={handleWorkWithUsMenuToggle} className="relative pointer-events-auto shrink-0">
                     <button
                       type="button"
-                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200`}
+                      className={`relative flex items-center w-full h-[44px] rounded-full overflow-hidden bg-color-bg-default transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                       aria-label="Work with us"
                     >
                       <GTPIcon 
@@ -634,7 +635,11 @@ export default function GlobalFloatingBar(props: GlobalFloatingBarProps = {}) {
                   <GTPLogoOld />
                   <div 
                     // style={{ transform: `rotate(${rotation}deg)` }}
-                    className={`relative flex w-[20px] h-[20px] top-[1px] cursor-pointer transition-transform duration-sidebar ease-sidebar !size-[13.15px] ${isSidebarOpen ? "rotate-180" : "rotate-0"}`}
+                    // box-content + p/-m: a circular hover area around the 13px icon, same
+                    // hover fill as GTPButton, without moving the logo row.
+                    role="button"
+                    aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                    className={`relative flex box-content p-[6px] -m-[6px] rounded-full top-[1px] cursor-pointer transition-[transform,background-color] duration-sidebar ease-sidebar !size-[13.15px] ${GTP_BUTTON_INTERACTION_CLASSES} ${isSidebarOpen ? "rotate-180" : "rotate-0"}`}
                     onClick={() => {
                       track("clicked Sidebar Close", {
                         location: "desktop sidebar",
@@ -955,7 +960,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               stroke="rgb(var(--text-primary))"
             />
           </svg>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Move</div>
         </div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px] flex-[1_0_0]">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="21" viewBox="0 0 22 21" fill="none">
@@ -969,7 +974,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
             <path d="M16 5.5V12.5C16 13.0523 15.5523 13.5 15 13.5H9" stroke="rgb(var(--text-primary))" strokeWidth="2" />
             <path d="M10.3336 15.5581L5.83821 13.9715C5.39343 13.8145 5.39343 13.1855 5.83822 13.0285L10.3336 11.4419C10.6589 11.3271 11 11.5684 11 11.9134L11 15.0866C11 15.4316 10.6589 15.6729 10.3336 15.5581Z" fill="rgb(var(--text-primary))" stroke="rgb(var(--text-primary))" />
           </svg>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Select</div>
         </div>
         <div className="w-[7px] h-[8px]"></div>
         <div className="flex h-[21px] py-[2px] px-0 items-center gap-[5px]">
@@ -978,7 +983,7 @@ const SearchContainer = ({ children }: { children: React.ReactNode }) => {
               ESC
             </div>
           </div>
-          <div className="text-color-text-primary font-raleway text-xs font-medium leading-[150%] font-feature-lining font-feature-proportional cursor-default">Back</div>
+          <div className="text-color-text-primary font-raleway text-xs leading-[150%] font-feature-lining font-feature-proportional cursor-default">Back</div>
         </div>
       </div>
     </div>

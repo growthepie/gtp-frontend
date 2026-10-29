@@ -700,7 +700,7 @@ const buildTvsReplacements = (data: L2TvsRanking): Record<string, string> => {
     if (n == null || !Number.isFinite(n)) return '—';
     if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
     if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'k';
+    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
     return '$' + n.toFixed(2);
   };
   return {
@@ -794,14 +794,14 @@ const buildDefiReplacements = (data: DefiL1VsL2): Record<string, string> => {
     if (n == null || !Number.isFinite(n)) return 'unavailable';
     if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
     if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-    if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'k';
+    if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'K';
     return Math.round(n).toString();
   };
   const fmtUsd = (n: number | null): string => {
     if (n == null || !Number.isFinite(n)) return 'unavailable';
     if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
     if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'k';
+    if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
     return '$' + n.toFixed(2);
   };
   const fmtShare = (n: number | null): string => {

@@ -51,7 +51,7 @@ const formatNumber = (number: number, decimals: number = 2): string => {
   if (absNumber >= 1e12) return (number / 1e12).toFixed(decimals) + "T";
   if (absNumber >= 1e9) return (number / 1e9).toFixed(decimals) + "B";
   if (absNumber >= 1e6) return (number / 1e6).toFixed(decimals) + "M";
-  if (absNumber >= 1e3) return (number / 1e3).toFixed(decimals) + "k";
+  if (absNumber >= 1e3) return (number / 1e3).toFixed(decimals) + "K";
 
   return number.toFixed(decimals);
 };
@@ -375,7 +375,7 @@ export const EthereumEcosystemTPSCard = React.memo(({
             yAxisLabelFormatter={(v) => {
               if (v === 0) return "";
               if (Math.abs(v) >= 1_000_000) return `${+(v / 1_000_000).toPrecision(3)}M`;
-              if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}k`;
+              if (Math.abs(v) >= 1_000) return `${+(v / 1_000).toPrecision(3)}K`;
               return String(Math.round(v));
             }}
             seriesOverrides={(s) => ({

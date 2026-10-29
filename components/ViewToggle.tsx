@@ -1,6 +1,7 @@
 "use client";
 import { GTPIcon } from "./layout/GTPIcon";
 import { GTPIconName } from "@/icons/gtp-icon-names";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 
 interface ViewToggleProps {
   showTable: boolean;
@@ -24,14 +25,14 @@ export default function ViewToggle({
       className="relative flex items-center gap-x-[5px] bg-color-bg-medium rounded-full p-[2px]"
       onClick={() => setShowTable(!showTable)}
     >
-      {/* Left option (Table) */}
-      <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+      {/* Left option (Table). The option you'd switch to gets GTPButton's hover fill. */}
+      <div className={`flex items-center gap-x-[10px] px-[15px] py-[5px] z-20 rounded-full transition-colors duration-200 ${showTable ? "" : GTP_BUTTON_INTERACTION_CLASSES}`}>
         <GTPIcon icon={leftIcon} size="sm" className="text-color-text-primary" />
         <div className="text-sm">{leftLabel}</div>
       </div>
 
       {/* Right option (Map) */}
-      <div className="flex items-center gap-x-[10px] px-[15px] py-[5px] z-20">
+      <div className={`flex items-center gap-x-[10px] px-[15px] py-[5px] z-20 rounded-full transition-colors duration-200 ${showTable ? GTP_BUTTON_INTERACTION_CLASSES : ""}`}>
         <GTPIcon icon={rightIcon} size="sm" className="text-color-text-primary" />
         <div className="text-sm">{rightLabel}</div>
       </div>

@@ -5,6 +5,7 @@ const txCostsVsActivity: QuickBiteData = createQuickBite({
   title: "Transaction Costs vs Activity",
   subtitle: "Exploring how transaction fees relate to chain activity and value capture across the ecosystem",
   shortTitle: "Tx Costs vs Activity",
+  themes: ["activity"],
   content: [
     "## Transaction Costs Across Chains",
     "Transaction fees are one of the most directly felt aspects of a blockchain for everyday users. Lower fees tend to attract more users and higher volumes — but the relationship is more nuanced than it first appears. High-fee chains can still command large user bases if they offer unique value, while cheap chains don't automatically generate activity.",

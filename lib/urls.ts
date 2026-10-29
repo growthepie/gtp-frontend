@@ -111,13 +111,22 @@ export const DATimeseriesURL =
 
 export const EconomicsURL = "https://api.growthepie.com/v1/economics.json";
 
+export const EthSupplyURL = "https://api.growthepie.com/v1/eim/eth_supply.json";
+
+// "ETH the asset" page data, in two bundles. Each holds several sections under
+// data.<section>, identical to the single files they replace (see useEthAssetSection).
+export const EthAssetURLs = {
+  /** Hourly: kpis, stats, properties, productive_asset. */
+  live: "https://api.growthepie.com/v1/eth_asset/live.json",
+  /** Daily: purchasing_power, supply_flow, today, market_caps. */
+  daily: "https://api.growthepie.com/v1/eth_asset/daily.json",
+};
+
 export const LandingURL = "https://api.growthepie.com/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.com/v1/master.json";
 
 export const ContractsURL = "https://api.growthepie.com/v1/contracts.json";
-
-export const GloHolderURL = "https://api.growthepie.com/v1/glo_dollar.json";
 
 export const EthAggURL = "https://api.growthepie.com/v1/ecosystem/overview.json";
 

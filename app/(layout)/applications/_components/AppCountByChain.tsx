@@ -5,6 +5,7 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { GTPIcon } from "@/components/layout/GTPIcon";
 import { GTPTooltipNew } from "@/components/tooltip/GTPTooltip";
 import { GTPTooltipGeneral } from "@/components/GTPComponents/GTPTooltip";
+import { GTP_BUTTON_INTERACTION_CLASSES } from "@/components/GTPComponents/ButtonComponents/GTPButton";
 import { animated, useTransition } from "@react-spring/web";
 import ChainAnimations from "@/components/layout/ChainAnimations";
 import { ChainSelectionDivider, ChainSelectionToggle } from "@/components/layout/ChainSelectionControls";
@@ -170,8 +171,8 @@ export default function AppCountByChain({
           placement="top-start"
           unstyled
           trigger={
-            <button type="button" aria-label="About application counts" className="flex size-[15px] shrink-0 items-center justify-center">
-              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover" />
+            <button type="button" aria-label="About application counts" className={`group/info box-content flex size-[15px] shrink-0 items-center justify-center p-[4px] -m-[4px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}>
+              <GTPIcon icon="gtp-info-monochrome" size="sm" className="text-color-ui-hover transition-colors duration-200 group-hover/info:text-color-text-primary" />
             </button>
           }
         >

@@ -1,4 +1,5 @@
 import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
+import LandingEventsChart from "@/components/home/LandingEventsChart";
 import Container from "@/components/layout/Container";
 import Heading from "@/components/layout/Heading";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
@@ -11,7 +12,6 @@ import {LandingFirstHeaders, LandingSecondHeaders} from "@/components/home/Landi
 import { getPageMetadata } from "@/lib/metadata";
 import QuickBitesSection from "@/components/home/QuickBitesSection"; // Import the new component
 import { LinkButton } from "@/components/layout/LinkButton";
-import { IS_PRODUCTION } from "@/lib/helpers";
 import dynamic from "next/dynamic";
 const LandingSwiperItems = dynamic(() => import("@/components/layout/Landing/LandingSwiperItems"), { ssr: true });
 
@@ -73,7 +73,7 @@ export default async function Page() {
         </Heading>
         <div className="flex items-center gap-[10px]">
           <Subheading className="text-lg md:text-xl">
-            Ethereum is more than one blockchain. It&apos;s many.
+            Ethereum is more than just a blockchain.
           </Subheading>
           <LinkButton href="https://ethereum.org/" icon="ethereum-logo-monochrome" iconClassName="text-chains-ethereum">
             What is Ethereum?
@@ -98,10 +98,14 @@ export default async function Page() {
 
       <LandingSwiperItems />
 
-      <LandingUserBaseChart />
-      {/* {!IS_PRODUCTION && ( */}
+      <Container className="w-full">
+        <LandingEventsChart />
+      </Container>
+
+      {/* Quick Bites between Trending Topics and the chains, so it's seen sooner. */}
       <QuickBitesSection />
-      {/* )} */}
+
+      <LandingUserBaseChart />
 
       <Container>
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">

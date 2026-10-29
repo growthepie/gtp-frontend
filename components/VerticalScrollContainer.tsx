@@ -6,6 +6,10 @@ import { mergeRefs } from 'react-merge-refs';
 
 type ScrollbarPosition = 'left' | 'right';
 
+// Default scroll bar look, shared with other custom scroll bars so they match.
+export const SCROLL_THUMB_COLOR = "rgb(var(--text-primary) / 0.11)";
+export const SCROLL_TRACK_COLOR = "rgb(var(--ui-shadow) / 0.33)";
+
 type VerticalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
@@ -37,8 +41,8 @@ export default forwardRef(function VerticalScrollContainer(
     scrollbarPosition = 'right',
     scrollbarAbsolute = false,
     scrollbarWidth = "8px",
-    scrollThumbColor = "rgb(var(--text-primary) / 0.11)",
-    scrollTrackColor = "rgb(var(--ui-shadow) / 0.33)",
+    scrollThumbColor = SCROLL_THUMB_COLOR,
+    scrollTrackColor = SCROLL_TRACK_COLOR,
     header,
     enableTopShadow = false,
     enableDragScroll = false,

@@ -18,13 +18,15 @@ import { ContainerBlock } from './blocks/ContainerBlock';
 import { TitleButtonBlock } from './blocks/TitleButtonBlock';
 import FaqBlock from './blocks/FaqBlock';
 import { SpacerBlock } from './blocks/SpacerBlock';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import ErrorState from '@/components/ErrorState';
 
 interface BlockProps {
   block: ContentBlock;
   chainQuickBitesTitleSuffix?: string;
 }
 
-const Block: React.FC<BlockProps> = ({ block, chainQuickBitesTitleSuffix }) => {
+const BlockContent: React.FC<BlockProps> = ({ block, chainQuickBitesTitleSuffix }) => {
  
   
   // Check if block should be hidden from menu
@@ -71,6 +73,26 @@ const Block: React.FC<BlockProps> = ({ block, chainQuickBitesTitleSuffix }) => {
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;
   }
+};
+
+// One block that fails to render shows an error in its place instead of taking down the article
+const Block: React.FC<BlockProps> = (props) => {
+  const height = "height" in props.block ? (props.block as { height?: number }).height : undefined;
+  return (
+    <ErrorBoundary
+      fallback={(reset) => (
+        <ErrorState
+          title="This part couldn't be displayed"
+          message="Something went wrong while showing this section. The rest of the page is unaffected."
+          onRetry={reset}
+          minHeight={height}
+          className="my-[15px]"
+        />
+      )}
+    >
+      <BlockContent {...props} />
+    </ErrorBoundary>
+  );
 };
 
 export default Block;

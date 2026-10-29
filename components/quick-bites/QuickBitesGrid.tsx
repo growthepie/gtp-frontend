@@ -41,6 +41,7 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
               date={QuickBite.date}
               icon={QuickBite.icon}
               slug={QuickBite.slug}
+            kind={QuickBite.kind}
               author={QuickBite.author}
               topics={QuickBite.topics?.map(topic => ({
                 ...topic,
@@ -67,6 +68,7 @@ const QuickBitesGrid: React.FC<QuickBitesGridProps> = ({ QuickBites, IsLanding =
             date={QuickBite.date}
             icon={QuickBite.icon}
             slug={QuickBite.slug}
+            kind={QuickBite.kind}
             author={QuickBite.author}
             topics={QuickBite.topics?.map(topic => ({
               ...topic,

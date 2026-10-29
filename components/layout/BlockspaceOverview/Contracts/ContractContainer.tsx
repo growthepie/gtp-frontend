@@ -26,7 +26,6 @@ export default function ContractContainer() {
   const [showUsd] = useLocalStorage("showUsd", true); // Keep for display logic if needed
   const { theme } = useTheme(); // Keep for styling potentially in row
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
-  const [selectedContract, setSelectedContract] = useState<ContractInfo | null>(null);
 
   // const [sort, setSort] = useState<{ metric: string; sortOrder: "asc" | "desc" }>({
   //   metric: "txcount",
@@ -284,12 +283,6 @@ export default function ContractContainer() {
 
   return (
     <>
-      {/* Modal backdrop */}
-      <div
-        className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract ? "bg-black opacity-50" : "opacity-0 pointer-events-none"
-          }`}
-        onClick={() => setSelectedContract(null)}
-      ></div>
       {/* Container for table */}
       <div className="flex flex-col w-[100%] mx-auto min-w-[880px] mb-[15px]">
         {/* Grid Table Header */}
@@ -355,9 +348,7 @@ export default function ContractContainer() {
                 key={key}
                 rowKey={key}
                 i={i}
-                selectedContract={selectedContract}
                 sortedContracts={sortedContracts}
-                setSelectedContract={setSelectedContract}
               />
             ))}
 
