@@ -57,15 +57,23 @@ export default function RankingSection() {
   const [ratioSpan, setRatioSpan] = useState<RatioSpan>("1y");
   const [ratioSpansWrapping, setRatioSpansWrapping] = useState(false);
   // A 1px marker right after ETH's row, at the bottom of where the row sits in the
-  // list. While it's scrolled out of view, the sticky row is pinned over other rows.
+  // list. While it's below the visible part of the list, a copy of ETH's row is pinned
+  // over the bottom of the list (ScrollArea's `pinned`). Once scrolled to, the real row
+  // lines up exactly under the copy, which then hides. Not position: sticky, which
+  // pinned the row too high in some Android in-app browsers.
   const [ethEnd, setEthEnd] = useState<HTMLDivElement | null>(null);
+  const [listViewport, setListViewport] = useState<HTMLDivElement | null>(null);
   const [ethPinned, setEthPinned] = useState(false);
   useEffect(() => {
-    if (!ethEnd) return;
-    const observer = new IntersectionObserver(([entry]) => setEthPinned(!entry.isIntersecting));
+    if (!ethEnd || !listViewport) return;
+    const observer = new IntersectionObserver(
+      ([entry]) =>
+        setEthPinned(!entry.isIntersecting && !!entry.rootBounds && entry.boundingClientRect.top >= entry.rootBounds.bottom),
+      { root: listViewport },
+    );
     observer.observe(ethEnd);
     return () => observer.disconnect();
-  }, [ethEnd]);
+  }, [ethEnd, listViewport]);
   const { resolvedTheme } = useTheme();
   const hex = ACCENT_HEX[(resolvedTheme as "light" | "dark") ?? "dark"];
   const { data, isLoading } = useEthAssetSection("market_caps");
@@ -117,6 +125,33 @@ export default function RankingSection() {
       : "since " + new Date(ratioSeries[0].data[0][0]).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" })
     : null;
   const showsOffScale = rows.some((r) => OFF_SCALE_KEYS.includes(r.key));
+  const ethRow = rows.find((r) => r.key === "eth");
+
+  const renderRow = (r: Asset, i: number, className: string) => (
+    <BarRow
+      rank={i + 1}
+      label={r.name}
+      value={r.cap}
+      display={formatCap(r.cap)}
+      max={max}
+      color={r.key === "eth" ? "turquoise" : "neutral"}
+      emphasis={r.key === "eth"}
+      accentLabel={r.key === "eth"}
+      hint={
+        r.key !== "eth" ? (
+          <span className="flex flex-col gap-y-[5px]">
+            {ethCap && <span className="font-semibold">{comparison(r, ethCap)}</span>}
+            {r.method && <span>{r.method}</span>}
+          </span>
+        ) : (
+          r.method
+        )
+      }
+      icon={r.logo}
+      iconInvertDark={BLACK_LOGO_KEYS.includes(r.key)}
+      className={className}
+    />
+  );
 
   // Side by side, the two columns share one set of rows (subgrid: title,
   // description, button bar, card), so the cards are always the same height even
@@ -155,44 +190,28 @@ export default function RankingSection() {
               </InfoButton>
             </span>
           </div>
-          <ScrollArea className="flex-1">
+          <ScrollArea
+            className="flex-1"
+            viewportRef={setListViewport}
+            // The rows just above the pinned copy fade out behind it.
+            pinned={
+              ethPinned &&
+              ethRow &&
+              renderRow(
+                ethRow,
+                ethRank - 1,
+                "py-[4px] relative bg-color-bg-default before:absolute before:inset-x-0 before:bottom-full before:h-[32px] before:bg-gradient-to-t before:from-color-bg-default before:to-color-bg-default/0 before:pointer-events-none",
+              )
+            }
+          >
             {/* Rows touch (4px padding each instead of an 8px gap), so moving down the
                 list never leaves a row and the hover-coloured logos don't flicker. */}
             <div className="flex flex-col">
               {rows.map((r, i) => (
                 <Fragment key={r.key}>
-                <BarRow
-                  rank={i + 1}
-                  label={r.name}
-                  value={r.cap}
-                  display={formatCap(r.cap)}
-                  max={max}
-                  color={r.key === "eth" ? "turquoise" : "neutral"}
-                  emphasis={r.key === "eth"}
-                  accentLabel={r.key === "eth"}
-                  hint={
-                    r.key !== "eth" ? (
-                      <span className="flex flex-col gap-y-[5px]">
-                        {ethCap && <span className="font-semibold">{comparison(r, ethCap)}</span>}
-                        {r.method && <span>{r.method}</span>}
-                      </span>
-                    ) : (
-                      r.method
-                    )
-                  }
-                  icon={r.logo}
-                  iconInvertDark={BLACK_LOGO_KEYS.includes(r.key)}
-                  // ETH stays in view: while its row is below the fold it sticks to the
-                  // bottom of the list, then scrolls up with the rest once reached. While
-                  // pinned, the rows just above it fade out behind it.
-                  className={
-                    r.key === "eth"
-                      ? `py-[4px] sticky bottom-0 z-[1] bg-color-bg-default before:absolute before:inset-x-0 before:bottom-full before:h-[32px] before:bg-gradient-to-t before:from-color-bg-default before:to-color-bg-default/0 before:pointer-events-none before:transition-opacity before:duration-200 ${ethPinned ? "before:opacity-100" : "before:opacity-0"}`
-                      : "py-[4px]"
-                  }
-                />
-                {/* -mt pulls the marker up inside the bottom of ETH's row. */}
-                {r.key === "eth" && <div ref={setEthEnd} aria-hidden className="h-[1px] -mt-[1px]" />}
+                  {renderRow(r, i, "py-[4px]")}
+                  {/* -mt pulls the marker up inside the bottom of ETH's row. */}
+                  {r.key === "eth" && <div ref={setEthEnd} aria-hidden className="h-[1px] -mt-[1px]" />}
                 </Fragment>
               ))}
             </div>

@@ -13,9 +13,23 @@ const MIN_THUMB = 20;
  * content, styled like VerticalScrollContainer's. The native bar is hidden: macOS
  * overlay scroll bars only appear while scrolling and draw over the content.
  * Drag the thumb to scroll; click the track to move a page. Hidden when everything fits.
+ *
+ * `pinned` is drawn over the bottom of the content, outside the scrolling box, so it
+ * stays put however the list scrolls. (position: sticky inside the box pinned too high
+ * in some Android in-app browsers.) `viewportRef` hands out the scrolling box.
  */
-export default function ScrollArea({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const viewport = useRef<HTMLDivElement>(null);
+export default function ScrollArea({
+  children,
+  className = "",
+  pinned,
+  viewportRef,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  pinned?: React.ReactNode;
+  viewportRef?: (el: HTMLDivElement | null) => void;
+}) {
+  const viewport = useRef<HTMLDivElement | null>(null);
   const track = useRef<HTMLDivElement>(null);
   const [thumb, setThumb] = useState<{ top: number; height: number } | null>(null);
 
@@ -70,8 +84,18 @@ export default function ScrollArea({ children, className = "" }: { children: Rea
 
   return (
     <div className={`flex min-h-0 ${className}`}>
-      <div ref={viewport} onScroll={update} className="flex-1 min-w-0 overflow-y-auto scrollbar-none">
-        {children}
+      <div className="relative flex-1 min-w-0">
+        <div
+          ref={(el) => {
+            viewport.current = el;
+            viewportRef?.(el);
+          }}
+          onScroll={update}
+          className="absolute inset-0 overflow-y-auto scrollbar-none"
+        >
+          {children}
+        </div>
+        {pinned && <div className="absolute inset-x-0 bottom-0">{pinned}</div>}
       </div>
       {thumb && (
         <div className="flex-shrink-0 pl-[10px]">
