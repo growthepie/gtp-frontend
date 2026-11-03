@@ -448,7 +448,7 @@ const ApplicationsTableHeader = memo(() => {
                 </div>
               }
             >
-              {metricsDef[metric].name} {Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
+              {metricsDef[metric].name} {metric !== "stables_balance" && Object.keys(metricsDef[metric].units).includes("eth") && <>({showUsd ? "USD" : "ETH"})</>}
             </GridTableHeaderCell>
           </div>
         )
