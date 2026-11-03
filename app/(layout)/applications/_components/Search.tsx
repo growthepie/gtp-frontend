@@ -24,7 +24,7 @@ type SearchProps = {
 };
 
 const METRIC_FILTER_REGEX = /^\s*([a-zA-Z0-9_]+)\s*(<=|>=|!=|==|=|<|>)\s*([0-9,._]+)\s*$/;
-const EXTRA_METRIC_KEYS = ["num_contracts", "gas_fees_usd", "gas_fees_eth"];
+const EXTRA_METRIC_KEYS = ["num_contracts", "gas_fees_usd", "gas_fees_eth", "stables_balance_usd", "stables_balance_eth"];
 
 const parseMetricFilter = (input: string, allowedMetrics: Set<string>) => {
   const match = input.match(METRIC_FILTER_REGEX);

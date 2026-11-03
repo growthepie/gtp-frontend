@@ -128,10 +128,14 @@ export default function Page() {
 
     const medianValue = medianMetricValues[Math.floor(medianMetricValues.length / 2)];
     const convertToETH = showUsd ? true : false;
+    // Stablecoin balance only ships a previous USD value (used for both units).
+    const prevKey = medianMetricKey.startsWith("stables_balance")
+      ? "prev_stables_balance_usd"
+      : "prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey);
 
     // filter out applications with < median value of selected metric and with previous value of 0
     const filteredApplications = applicationDataAggregatedAndFiltered
-      .filter((application) => application[medianMetricKey] > medianValue && application["prev_" + (convertToETH ? "gas_fees_eth" : medianMetricKey)] > 0);
+      .filter((application) => application[medianMetricKey] > medianValue && application[prevKey] > 0);
 
     const changePctKey = medianMetricKey + "_change_pct";
 
@@ -655,11 +659,14 @@ const areTableRowPropsEqual = (
     prevApp.gas_fees_usd !== nextApp.gas_fees_usd ||
     prevApp.txcount !== nextApp.txcount ||
     prevApp.daa !== nextApp.daa ||
+    prevApp.stables_balance_usd !== nextApp.stables_balance_usd ||
+    prevApp.stables_balance_eth !== nextApp.stables_balance_eth ||
     // Compare change percentages
     prevApp.gas_fees_eth_change_pct !== nextApp.gas_fees_eth_change_pct ||
     prevApp.gas_fees_usd_change_pct !== nextApp.gas_fees_usd_change_pct ||
     prevApp.txcount_change_pct !== nextApp.txcount_change_pct ||
-    prevApp.daa_change_pct !== nextApp.daa_change_pct
+    prevApp.daa_change_pct !== nextApp.daa_change_pct ||
+    prevApp.stables_balance_usd_change_pct !== nextApp.stables_balance_usd_change_pct
   ) {
     return false;
   }

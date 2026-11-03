@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import useSWR, { useSWRConfig } from "swr";
 import { useLocalStorage } from "usehooks-ts";
 import { useTimespan } from "./TimespanContext";
-import { useMetrics } from "./MetricsContext";
+import { getMetricDataKey, useMetrics } from "./MetricsContext";
 import { useProjectsMetadata } from "./ProjectsMetadataContext";
 import { useSort } from "./SortContext";
 import { SortConfig, sortItems, SortOrder, SortType } from "@/lib/sorter";
@@ -26,14 +26,22 @@ export type AggregatedDataRow = {
   prev_txcount: number;
   daa: number;
   prev_daa: number;
+  // Optional so partial rows built for tooltips/cards elsewhere don't need them.
+  stables_balance_usd?: number;
+  prev_stables_balance_usd?: number;
+  stables_balance_eth?: number;
   gas_fees_eth_change_pct: number;
   gas_fees_usd_change_pct: number;
   txcount_change_pct: number;
   daa_change_pct: number;
+  stables_balance_usd_change_pct?: number;
+  stables_balance_eth_change_pct?: number;
   rank_gas_fees_eth: number;
   rank_gas_fees_usd: number;
   rank_txcount: number;
   rank_daa: number;
+  rank_stables_balance_usd?: number;
+  rank_stables_balance_eth?: number;
 }
 
 const memoizedResults = new Map<string, {
@@ -50,6 +58,9 @@ const METRIC_FILTER_ALLOWLIST = new Set([
   "gas_fees_eth",
   "txcount",
   "daa",
+  "stables_balance",
+  "stables_balance_usd",
+  "stables_balance_eth",
   "num_contracts",
 ]);
 const METRIC_FILTER_REGEX = /^\s*([a-zA-Z0-9_]+)\s*(<=|>=|!=|==|=|<|>)\s*([0-9,._]+)\s*$/;
@@ -79,7 +90,7 @@ function parseMetricFilters(rawFilters: string[], showUsd: boolean): MetricFilte
       const operator = match[2];
       const value = Number(match[3].replace(/[, _]/g, ""));
       if (!Number.isFinite(value)) return null;
-      const metric = metricRaw === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metricRaw;
+      const metric = getMetricDataKey(metricRaw, showUsd);
       return { metric, operator, value };
     })
     .filter((filter): filter is MetricFilter => filter !== null);
@@ -185,6 +196,9 @@ function aggregateProjectData(
     prev_txcount: typesArr.indexOf("prev_txcount"),
     daa: typesArr.indexOf("daa"),
     prev_daa: typesArr.indexOf("prev_daa"),
+    stables_balance_usd: typesArr.indexOf("stables_balance_usd"),
+    prev_stables_balance_usd: typesArr.indexOf("prev_stables_balance_usd"),
+    stables_balance_eth: typesArr.indexOf("stables_balance_eth"),
   };
 
   // Pre-filter data 
@@ -240,6 +254,9 @@ function aggregateProjectData(
         prev_txcount: 0,
         daa: 0,
         prev_daa: 0,
+        stables_balance_usd: 0,
+        prev_stables_balance_usd: 0,
+        stables_balance_eth: 0,
       });
     }
 
@@ -252,6 +269,10 @@ function aggregateProjectData(
     const prevTxCount = entry[typeIndexes.prev_txcount] as number || 0;
     const daa = entry[typeIndexes.daa] as number || 0;
     const prevDaa = entry[typeIndexes.prev_daa] as number || 0;
+    // Stablecoin balance is an end-of-day snapshot: summing across chains is fine, never across time.
+    const stablesUsd = entry[typeIndexes.stables_balance_usd] as number || 0;
+    const prevStablesUsd = entry[typeIndexes.prev_stables_balance_usd] as number || 0;
+    const stablesEth = entry[typeIndexes.stables_balance_eth] as number || 0;
 
     // Aggregate metrics
     const acc = aggregation.get(owner);
@@ -263,6 +284,9 @@ function aggregateProjectData(
     acc.prev_txcount += prevTxCount;
     acc.daa += daa;
     acc.prev_daa += prevDaa;
+    acc.stables_balance_usd += stablesUsd;
+    acc.prev_stables_balance_usd += prevStablesUsd;
+    acc.stables_balance_eth += stablesEth;
   }
 
   // Convert to final array format and calculate percentage changes
@@ -271,6 +295,8 @@ function aggregateProjectData(
     const gasEthChangePct = calculatePercentageChange(metrics.gas_fees_eth, metrics.prev_gas_fees_eth);
     const txCountChangePct = calculatePercentageChange(metrics.txcount, metrics.prev_txcount);
     const daaChangePct = calculatePercentageChange(metrics.daa, metrics.prev_daa);
+    // Only a previous USD balance is provided, so the ETH view reuses the USD change.
+    const stablesChangePct = calculatePercentageChange(metrics.stables_balance_usd, metrics.prev_stables_balance_usd);
 
     let originKeys: string[] = [];
 
@@ -289,7 +315,9 @@ function aggregateProjectData(
       gas_fees_eth_change_pct: gasEthChangePct,
       gas_fees_usd_change_pct: gasEthChangePct, // These are the same in your code
       txcount_change_pct: txCountChangePct,
-      daa_change_pct: daaChangePct
+      daa_change_pct: daaChangePct,
+      stables_balance_usd_change_pct: stablesChangePct,
+      stables_balance_eth_change_pct: stablesChangePct,
     };
   });
 
@@ -308,6 +336,8 @@ function aggregateProjectData(
   assignRanks(filteredResults, 'gas_fees_usd');
   assignRanks(filteredResults, 'txcount');
   assignRanks(filteredResults, 'daa');
+  assignRanks(filteredResults, 'stables_balance_usd');
+  assignRanks(filteredResults, 'stables_balance_eth');
 
   // Cache the results
   memoizedResults.set(cacheKey, {
@@ -457,10 +487,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
   /* </ Query Params > */
 
 
-  const getMetricKeyFromMetric = useCallback((metric: string) => {
-    if (metric === "gas_fees") return showUsd ? "gas_fees_usd" : "gas_fees_eth";
-    return metric;
-  }, [showUsd]);
+  const getMetricKeyFromMetric = useCallback((metric: string) => getMetricDataKey(metric, showUsd), [showUsd]);
 
   const medianMetric = useMemo(() => {
     if (Object.keys(metricsDef).includes(sort.metric)) {
@@ -648,7 +675,7 @@ export const ApplicationsDataProvider = ({ children, disableShowLoading = false 
     showUsd: boolean
   ) => {
     return (items: AggregatedDataRow[], metric: string, sortOrder: SortOrder): AggregatedDataRow[] => {
-      let actualMetric = metric === "gas_fees" ? (showUsd ? "gas_fees_usd" : "gas_fees_eth") : metric;
+      let actualMetric = getMetricDataKey(metric, showUsd);
 
       const config: SortConfig<AggregatedDataRow> = {
         metric: actualMetric as keyof AggregatedDataRow,

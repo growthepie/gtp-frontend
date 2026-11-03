@@ -863,6 +863,10 @@ export const MetricTooltip = ({ metric }: { metric: string }) => {
       title: metricsDef["daa"].name,
       content: "The total number of unique addresses that interacted with the contracts in the selected timeframe across the selected chains.",
     },
+    stables_balance: {
+      title: metricsDef["stables_balance"]?.name ?? "Stablecoin Balance",
+      content: "The value of stablecoins held by the contracts and addresses of this application at the end of the latest day, summed across the selected chains. The change compares it to the balance one timeframe earlier.",
+    },
   }
 
 

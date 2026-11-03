@@ -2,7 +2,7 @@
 import { memo, useCallback } from "react";
 import { MultipleSelectTopRowChild } from "./Components";
 import { useTimespan } from "../_contexts/TimespanContext";
-import { useMetrics } from "../_contexts/MetricsContext";
+import { OVERVIEW_EXTRA_METRICS, useMetrics } from "../_contexts/MetricsContext";
 import { useSort } from "../_contexts/SortContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 import Icon from "@/components/layout/Icon";
@@ -52,7 +52,7 @@ const Controls = memo(() => {
           <MultipleSelectTopRowChild 
             handleNext={handleNextMetric}
             handlePrev={handlePrevMetric}
-            options={Object.keys(metricsDef).filter((key) => metricsDef[key].fundamental).map((key) => ({
+            options={Object.keys(metricsDef).filter((key) => metricsDef[key].fundamental || OVERVIEW_EXTRA_METRICS.has(key)).map((key) => ({
               key,
               name: metricsDef[key].name,
               icon: metricIcons[key] ? metricIcons[key] : "",

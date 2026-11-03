@@ -10,7 +10,17 @@ const metricIcons = {
   gas_fees: "gtp-metrics-transactioncosts",
   txcount: "gtp-metrics-transactioncount",
   daa: "gtp-metrics-activeaddresses",
+  stables_balance: "gtp-metrics-stablecoinmarketcap",
 };
+
+// Non-fundamental metrics that are still offered on the applications overview tables.
+export const OVERVIEW_EXTRA_METRICS = new Set(["stables_balance"]);
+
+// Metrics with separate USD and ETH data keys (e.g. gas_fees -> gas_fees_usd / gas_fees_eth).
+const CURRENCY_METRICS = new Set(["gas_fees", "stables_balance"]);
+
+export const getMetricDataKey = (metric: string, showUsd: boolean) =>
+  CURRENCY_METRICS.has(metric) ? `${metric}_${showUsd ? "usd" : "eth"}` : metric;
 
 // Default metric to use if none is specified
 const DEFAULT_METRIC = "txcount";
@@ -48,7 +58,7 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     const fundamentalMetrics = Object.fromEntries(
-      Object.entries(masterData.app_metrics).filter(([, metric]) => metric.fundamental),
+      Object.entries(masterData.app_metrics).filter(([key, metric]) => metric.fundamental || OVERVIEW_EXTRA_METRICS.has(key)),
     );
 
     return Object.keys(fundamentalMetrics).length > 0 ? fundamentalMetrics : masterData.app_metrics;
@@ -164,12 +174,7 @@ export const MetricsProvider = ({ children }: { children: React.ReactNode }) => 
   
   // Map metrics to their actual data keys
   const selectedMetricKeys = useMemo(() => {
-    return orderedMetrics.map((metric) => {
-      if (metric === "gas_fees") {
-        return showUsd ? "gas_fees_usd" : "gas_fees_eth";
-      }
-      return metric;
-    });
+    return orderedMetrics.map((metric) => getMetricDataKey(metric, showUsd));
   }, [orderedMetrics, showUsd]);
   
   // Create the context value

@@ -26,6 +26,8 @@ import { track } from "@/lib/tracking";
 type ApplicationDetailsData = ReturnType<typeof useApplicationDetailsData>["data"];
 
 const CONTRACT_GRID_COLS = "grid-cols-[minmax(220px,1fr),130px,160px,105px,105px,100px]";
+// Used once contracts_table ships stables_balance_usd / stables_balance_eth.
+const CONTRACT_GRID_COLS_WITH_STABLES = "grid-cols-[minmax(220px,1fr),130px,160px,105px,105px,100px,120px]";
 
 // Timespan options for the contracts table. The selected key indexes into
 // data.contracts_table (see activeContractsTable below) to drive the displayed rows.
@@ -107,6 +109,9 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
   // Contracts data for the currently selected timespan (1d / 7d / 180d / max).
   // Falls back to undefined if that timespan has no table, in which case the list is empty.
   const activeContractsTable = data.contracts_table?.[selectedTableTimespan];
+  const hasStables = activeContractsTable?.types.includes("stables_balance_usd") ?? false;
+  const gridCols = hasStables ? CONTRACT_GRID_COLS_WITH_STABLES : CONTRACT_GRID_COLS;
+  const stablesUnits = master?.app_metrics["stables_balance"]?.units[showUsd ? "usd" : "eth"];
 
   // Subtitle phrase that matches the selected timespan (e.g. "in the last 30 days").
   const activeTimespanSubtitle =
@@ -123,6 +128,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
       txcount: "txcount",
       activeAddresses: "daa",
       feesPaid: showUsd ? "fees_paid_usd" : "fees_paid_eth",
+      stablesBalance: showUsd ? "stables_balance_usd" : "stables_balance_eth",
     };
 
     const stringMetrics = new Set(["name", "category", "subcategory"]);
@@ -183,6 +189,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
     });
     const types = activeContractsTable.types;
     const headers = ["Address", "Name", "Chain", "Category", "Subcategory", "Transaction Count", "Active Addresses", "Fees Paid"];
+    if (hasStables) headers.push("Stablecoin Balance");
     const rows = sortedContracts.map((contract) => {
       const contractMap = {
         address: contract[types.indexOf("address")],
@@ -198,7 +205,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
       const mainCategoryName = master?.blockspace_categories.main_categories?.[contractMap.main_category_key as string] ?? "Unlabeled";
       const subCategoryName = master?.blockspace_categories.sub_categories?.[contractMap.sub_category_key as string] ?? "Unlabeled";
 
-      return [
+      const row = [
         contractMap.address,
         contractMap.name,
         chainName,
@@ -208,6 +215,8 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
         contractMap.daa,
         contractMap.fees_paid,
       ];
+      if (hasStables) row.push(contract[types.indexOf(showUsd ? "stables_balance_usd" : "stables_balance_eth")] ?? 0);
+      return row;
     });
 
     const csv = [
@@ -283,10 +292,10 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
       </div>
 
       {/* Scrollable table */}
-        <HorizontalScrollContainer enableDragScroll={true} includeMargin={false} forcedMinWidth={992} hideScrollbar={true}>
+        <HorizontalScrollContainer enableDragScroll={true} includeMargin={false} forcedMinWidth={hasStables ? 1122 : 992} hideScrollbar={true}>
           <div ref={tableHeaderRef}>
           <GridTableHeader
-            gridDefinitionColumns={CONTRACT_GRID_COLS}
+            gridDefinitionColumns={gridCols}
             className="!pt-[0px] !pb-[0px] !gap-x-[10px] !pl-0 !pr-[65px]"
           >
             {/* Column 0: pl-[36px] = icon container (30px) + gap (6px), aligns label with contract name text */}
@@ -295,7 +304,10 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
             <GridTableHeaderCellButton label="Subcategory"       metric="subcategory"     sort={sort} setSort={setSort} justify="start" size="xs" className="" />
             <GridTableHeaderCellButton label="Transaction Count" metric="txcount"         sort={sort} setSort={setSort} justify="end"   size="xs" />
             <GridTableHeaderCellButton label="Active Addresses"  metric="activeAddresses" sort={sort} setSort={setSort} justify="end"   size="xs" />
-            <GridTableHeaderCellButton label="Fees Paid (USD)"   metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs" className="-mr-[12px]" />
+            <GridTableHeaderCellButton label={`Fees Paid (${showUsd ? "USD" : "ETH"})`} metric="feesPaid"        sort={sort} setSort={setSort} justify="end"   size="xs" className={hasStables ? "" : "-mr-[12px]"} />
+            {hasStables && (
+              <GridTableHeaderCellButton label={`Stablecoins (${showUsd ? "USD" : "ETH"})`} metric="stablesBalance" sort={sort} setSort={setSort} justify="end" size="xs" className="-mr-[12px]" />
+            )}
           </GridTableHeader>
           </div>
 
@@ -336,7 +348,7 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                 return (
                   <GridTableRow
                     key={address + index.toString() + "CONTRACT_ROW"}
-                    gridDefinitionColumns={CONTRACT_GRID_COLS}
+                    gridDefinitionColumns={gridCols}
                     className="h-[34px] text-[12px] !py-0 !gap-x-[10px]"
                     style={{ paddingLeft: "0px" }}
                   >
@@ -448,6 +460,13 @@ const MostActiveContracts = ({ data, containerHeight, owner_project }: { data: A
                     <div className="flex items-center justify-end numbers-xs">
                       {prefix}{(contractMap.fees_paid as number).toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
                     </div>
+
+                    {/* Stablecoin Balance (end-of-day snapshot) */}
+                    {hasStables && (
+                      <div className="flex items-center justify-end numbers-xs">
+                        {stablesUnits?.prefix ?? ""}{((contract[types.indexOf(showUsd ? "stables_balance_usd" : "stables_balance_eth")] as number) ?? 0).toLocaleString("en-GB", { minimumFractionDigits: stablesUnits?.decimals ?? 0, maximumFractionDigits: stablesUnits?.decimals ?? 0 })}{stablesUnits?.suffix ?? ""}
+                      </div>
+                    )}
                   </GridTableRow>
                 );
               })}
