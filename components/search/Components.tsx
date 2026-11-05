@@ -772,9 +772,13 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       }
     };
 
+    // True while typed text is waiting on the debounce, i.e. localQuery is newer than the URL
+    const hasPendingUrlUpdateRef = useRef(false);
+
     // Create a debounced version of the search update function
     const debouncedUpdateSearch = useMemo(
-      () => debounce((newValue: string) => {
+      () => debounce((newValue: string, onSettled: () => void) => {
+        onSettled();
         const sp = new URLSearchParams(window.location.search);
         const current = sp.get("query") ?? "";
         if (current === newValue) return;
@@ -789,8 +793,19 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       [pathname]
     );
 
-    // Update local query when URL query changes
+    const scheduleUrlUpdate = (newValue: string) => {
+      hasPendingUrlUpdateRef.current = true;
+      debouncedUpdateSearch(newValue, () => {
+        hasPendingUrlUpdateRef.current = false;
+      });
+    };
+
+    // Update local query when the URL query changes externally. useSearchParams reports
+    // our own replaceState writes late (in a transition), so skip values that are already
+    // out of date, otherwise they overwrite whatever was typed since and drop characters.
     useEffect(() => {
+      const urlQuery = new URLSearchParams(window.location.search).get("query") ?? "";
+      if (hasPendingUrlUpdateRef.current || query !== urlQuery) return;
       setLocalQuery(query);
     }, [query]);
 
@@ -833,7 +848,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       }
 
       // Call the debounced function for URL updates
-      debouncedUpdateSearch(newValue);
+      scheduleUrlUpdate(newValue);
 
       // Restore cursor position after React updates the input
       requestAnimationFrame(() => {
@@ -848,12 +863,14 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     useEffect(() => {
       return () => {
         debouncedUpdateSearch.cancel();
+        hasPendingUrlUpdateRef.current = false;
       };
     }, [debouncedUpdateSearch]);
 
     useEffect(() => {
       const handleClearSearchOrClose = () => {
         debouncedUpdateSearch.cancel();
+        hasPendingUrlUpdateRef.current = false;
         setLocalQuery("");
         localInputRef.current?.blur();
       };
@@ -944,7 +961,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   className={`hidden sm:hidden md:flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                   onClick={(e) => {
                     setLocalQuery("");
-                    debouncedUpdateSearch("");
+                    scheduleUrlUpdate("");
                     e.stopPropagation();
                   }}
                 >
@@ -1013,7 +1030,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                   className={`${hideClearButtonOnMobile ? 'hidden md:flex' : 'flex'} flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px] rounded-full transition-colors duration-200 ${GTP_BUTTON_INTERACTION_CLASSES}`}
                   onClick={(e) => {
                     setLocalQuery("");
-                    debouncedUpdateSearch("");
+                    scheduleUrlUpdate("");
                     e.stopPropagation();
                   }}
                 >
