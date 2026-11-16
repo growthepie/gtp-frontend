@@ -14,15 +14,15 @@ export const EVENTS_BY_ID = {
   "app-count": appCount,
   "fusaka": fusaka,
   "stablecoin-fiat": stablecoinFiat,
-  "ath-robinhood-stablecoins": {
-    title: "All-Time High: Stablecoin Supply for Robinhood Chain",
-    description: "Daily Stablecoin Supply on Robinhood Chain, highlighting its all-time high.",
-    question: "Which chain has recently reached a new high in Stablecoin Supply?",
-    image: "gtp-metrics-stablecoinmarketcap",
-    link: "/fundamentals/stablecoin-market-cap",
+  "ath-optimism-active-addresses": {
+    title: "All-Time High: Active Addresses for OP Mainnet",
+    description: "Daily Active Addresses on OP Mainnet, highlighting its all-time high.",
+    question: "Which chain has recently reached a new high in Active Addresses?",
+    image: "gtp-metrics-activeaddresses",
+    link: "/fundamentals/daily-active-addresses",
     allTimeHigh: {
-      chainKey: "robinhood",
-      metricKey: "stablecoin-market-cap",
+      chainKey: "optimism",
+      metricKey: "daily-active-addresses",
     },
   },
   "arbitrum-timeboost": arbitrumTimeboost,
