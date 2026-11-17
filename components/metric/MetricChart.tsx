@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
-import GTPChart, { GTPChartSeries } from "@/components/GTPComponents/GTPChart";
+import GTPChart, { GTPChartSeries, GTPChartXAxisLine } from "@/components/GTPComponents/GTPChart";
 import { useMaster } from "@/contexts/MasterContext";
 import { useMetricData, useSyncSelectedChainsToDataContext } from "./MetricDataContext";
 import { useMetricChartControls } from "./MetricChartControlsContext";
@@ -41,6 +41,8 @@ type MetricChartProps = {
    *  by the sidebar. */
   isStacked?: boolean;
   revealProgress?: number | null;
+  /** Vertical marker lines (e.g. numbered spike markers on the transaction-count page). */
+  xAxisLines?: GTPChartXAxisLine[];
 };
 
 const getSeriesType = (
@@ -52,7 +54,7 @@ const getSeriesType = (
   return timeIntervalKey === "daily" || timeIntervalKey === "daily_7d_rolling" ? "area" : "bar";
 };
 
-export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false, revealProgress = null }: MetricChartProps) {
+export default function MetricChart({ metric_type, suffix, prefix, decimals, selectedRange, setSelectedRange, collapseTable, isStacked = false, revealProgress = null, xAxisLines }: MetricChartProps) {
   const { data: master } = useMaster();
   const isSidebarOpen = useUIContext((state) => state.isSidebarOpen);
   const [showUsd] = useLocalStorage("showUsd", true);
@@ -300,6 +302,7 @@ export default function MetricChart({ metric_type, suffix, prefix, decimals, sel
           legendLift={!isStacked}
           legendInactiveSeries={legendInactiveSeriesNames}
           onLegendToggle={handleLegendToggle}
+          xAxisLines={xAxisLines}
         />
   </div>
 

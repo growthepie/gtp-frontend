@@ -42,6 +42,10 @@ import {
 } from "./launchDate";
 import { useChartReplay } from "@/hooks/useChartReplay";
 import ChartReplayButton from "../GTPComponents/ChartReplayButton";
+import MetricSpikeInsights, { type SpikeDisplayUnit } from "./MetricSpikeInsights";
+import { DAY_MS, detectSpikes, isSpikeMetric, type MetricSpike } from "@/lib/spikes/metricSpikes";
+import { GTPChartXAxisLine } from "../GTPComponents/GTPChart";
+import { useTheme } from "next-themes";
 
 const escapeCsvCell = (value: string | number | null | undefined) => {
     if (value === null || value === undefined) return "";
@@ -169,7 +173,61 @@ export default function MetricsContainer({
     const replayXMax = selectedRange?.[1] ?? replayTimespan?.xMax;
     const chartReplay = useChartReplay(selectedTimespan, replayXMin, replayXMax);
 
-    const { data: master, DefaultChainSelection } = useMaster();
+    const { data: master, DefaultChainSelection, AllChainsByKeys } = useMaster();
+    const { theme } = useTheme();
+    const [focusEnabled] = useLocalStorage("focusEnabled", false);
+
+    // "Why did it spike?" — transaction count + chain revenue. Detected on the daily series
+    // of the chains currently drawn, within the visible range; attribution is fetched per spike.
+    const spikeMetric = metric_type === "fundamentals" && isSpikeMetric(metric_id) ? metric_id : null;
+    const showSpikeInsights = spikeMetric !== null && !isSinceLaunch;
+    // Detection walks every selected chain's full daily history, so key the memo on
+    // primitives: this container re-renders every frame during the chart replay animation.
+    const spikeRangeMin = selectedRange?.[0] ?? replayTimespan?.xMin;
+    const spikeRangeMax = selectedRange?.[1] ?? replayTimespan?.xMax;
+    const spikeChainsKey = showSpikeInsights
+        ? chainKeys
+            .filter((key) => selectedChains.includes(key))
+            .filter((key) => key !== "ethereum" || !focusEnabled || showEthereumMainnet)
+            .join(",")
+        : "";
+    const spikeDataChains = metricData?.chains;
+    // Currency metrics (revenue) are detected on the column the chart shows (USD or ETH).
+    const spikeColumn = showUsd ? "usd" : "eth";
+    const spikes = useMemo<MetricSpike[]>(() => {
+        if (!spikeChainsKey || !spikeDataChains || spikeRangeMin === undefined || spikeRangeMax === undefined) return [];
+        const seriesByChain: Record<string, [number, number | null][]> = {};
+        spikeChainsKey.split(",").forEach((key) => {
+            const daily = spikeDataChains[key]?.daily;
+            if (!daily?.data) return;
+            const types: string[] = daily.types ?? [];
+            const columnIndex = types.indexOf(spikeColumn);
+            const valueIndex = columnIndex > 0 ? columnIndex : 1;
+            seriesByChain[key] = (daily.data as (number | null)[][]).map((row) => [row[0] as number, row[valueIndex] ?? null]);
+        });
+        return detectSpikes(seriesByChain, spikeRangeMin, spikeRangeMax, 3);
+    }, [spikeChainsKey, spikeDataChains, spikeRangeMin, spikeRangeMax, spikeColumn]);
+
+    const spikeXAxisLines = useMemo<GTPChartXAxisLine[] | undefined>(() => {
+        if (spikes.length === 0) return undefined;
+        return spikes.map((spike, index) => {
+            const color = AllChainsByKeys[spike.chainKey]?.colors?.[theme ?? "dark"]?.[0] ?? "#CDD8D3";
+            return {
+                xValue: spike.timestamp,
+                annotationText: `${index + 1}`,
+                lineStyle: "dashed",
+                lineColor: color,
+                backgroundColor: color,
+                textColor: "#1F2726",
+                textFontSize: 10,
+            };
+        });
+    }, [spikes, AllChainsByKeys, theme]);
+
+    const zoomToSpike = useCallback((spike: MetricSpike) => {
+        setSelectedRange([spike.timestamp - 30 * DAY_MS, spike.timestamp + 30 * DAY_MS]);
+        cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, []);
     const metricsDict = metric_type === "fundamentals" ? master?.metrics : master?.da_metrics;
     const catalogItems = metric_type === "fundamentals" ? metricItems : daMetricItems;
     const metricUnits = metricsDict?.[metric_id]?.units ?? {};
@@ -210,7 +268,6 @@ export default function MetricsContainer({
         defaultChains: DefaultChainSelection.filter((chain: string) => chainKeys.includes(chain)),
     });
 
-    const [focusEnabled] = useLocalStorage("focusEnabled", false);
     const [topIsWrapping, setTopIsWrapping] = useState(false);
     const [bottomIsWrapping, setBottomIsWrapping] = useState(false);
     const metricConfig = metric_type === "fundamentals"
@@ -930,11 +987,19 @@ export default function MetricsContainer({
                 }
                 right={
                     <div className=" w-full h-full items-center justify-center">
-                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type={metric_type} suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} revealProgress={chartReplay.revealProgress} />
+                        <MetricChart collapseTable={collapseTable} isStacked={isChartStacked} selectedRange={selectedRange} setSelectedRange={setSelectedRange} metric_type={metric_type} suffix={gweiOverrides ? " Gwei" : suffix ?? undefined} prefix={prefix ?? undefined} decimals={gweiOverrides ? decimals - 6 : decimals ?? undefined} revealProgress={chartReplay.revealProgress} xAxisLines={spikeXAxisLines} />
                     </div>
                 }
             />
         </GTPCardLayout>
+        {showSpikeInsights && spikeMetric && (
+            <MetricSpikeInsights
+                metric={spikeMetric}
+                spikes={spikes}
+                displayUnit={(spikeMetric === "fees" ? spikeColumn : "count") as SpikeDisplayUnit}
+                onZoomToSpike={zoomToSpike}
+            />
+        )}
         </>
     );
 }
